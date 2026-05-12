@@ -1124,40 +1124,51 @@
           <h2 style="font-size:1.4rem;font-weight:800;color:var(--text)">Planınızı seçin</h2>
           <p style="font-size:.85rem;color:var(--muted);margin-top:.4rem">Mevcut plan: <strong style="color:var(--text)" id="current-plan-label">Başlangıç (Ücretsiz)</strong></p>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1.25rem">
           <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
-            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:.75rem">Başlangıç</div>
-            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">Ücretsiz</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Sonsuza kadar</div>
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:.75rem">Bireysel</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">99 <span style="font-size:.9rem">TL/ay</span></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Ev kullanımı için</div>
             <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
-              <li>✓ Gerçek zamanlı izleme</li>
-              <li>✓ 1 cihaz</li>
-              <li>✓ 30 günlük geçmiş</li>
+              <li>✓ 1 cihaz kurulumu</li>
+              <li>✓ Tüm özellikler</li>
+              <li>✓ 7/24 bildirimler</li>
             </ul>
-            <div id="plan-action-starter" style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Mevcut Plan</div>
+            <div id="plan-action-individual"><button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('individual')">Seç</button></div>
           </div>
           <div class="card" style="border:1px solid rgba(59,130,246,.4);padding:1.5rem;position:relative">
             <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;white-space:nowrap">EN POPÜLER</div>
-            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--blue);text-transform:uppercase;margin-bottom:.75rem">Pro</div>
-            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">99 <span style="font-size:.9rem">TL/ay</span></div>
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Yıllık: 79 TL/ay</div>
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--blue);text-transform:uppercase;margin-bottom:.75rem">İşletme</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">249 <span style="font-size:.9rem">TL/ay</span></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Küçük işletmeler için</div>
             <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
-              <li>✓ 5 cihaza kadar</li>
-              <li>✓ 1 yıllık veri geçmişi</li>
-              <li>✓ Öncelikli bildirimler</li>
+              <li>✓ 3 cihaza kadar kurulum</li>
+              <li>✓ Tüm özellikler</li>
+              <li>✓ 7/24 bildirimler</li>
             </ul>
-            <div id="plan-action-pro"><button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('pro')">Pro'ya Geç</button></div>
+            <div id="plan-action-business"><button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('business')">Seç</button></div>
           </div>
           <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
-            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:.75rem">Aile</div>
-            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">199 <span style="font-size:.9rem">TL/ay</span></div>
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Yıllık: 159 TL/ay</div>
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:.75rem">Kurumsal</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">599 <span style="font-size:.9rem">TL/ay</span></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Çok şubeli işletmeler</div>
             <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
-              <li>✓ Sınırsız cihaz</li>
-              <li>✓ Sınırsız veri geçmişi</li>
-              <li>✓ Öncelikli destek</li>
+              <li>✓ 10 cihaza kadar kurulum</li>
+              <li>✓ Tüm özellikler</li>
+              <li>✓ 7/24 bildirimler</li>
             </ul>
-            <div id="plan-action-family"><button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('family')">Aile Planına Geç</button></div>
+            <div id="plan-action-corporate"><button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('corporate')">Seç</button></div>
+          </div>
+          <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--yellow);text-transform:uppercase;margin-bottom:.75rem">10+ Cihaz</div>
+            <div style="font-size:1.4rem;font-weight:800;color:var(--text);margin-bottom:.25rem">Özel Fiyat</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Büyük tesis / zincir</div>
+            <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
+              <li>✓ Sınırsız cihaz kurulumu</li>
+              <li>✓ Tüm özellikler</li>
+              <li>✓ Özel SLA &amp; destek</li>
+            </ul>
+            <a href="mailto:info@susayar.com" class="btn-sm" style="width:100%;justify-content:center;display:flex;background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3);text-decoration:none;padding:.45rem .85rem;border-radius:7px;font-size:.78rem;font-weight:600">Teklif Al</a>
           </div>
         </div>
       </div>
@@ -2172,28 +2183,28 @@ function renderSonOlcumler(readings) {
 }
 
 // ── Abonelik / Plan UI ───────────────────────────────────────
-const PLAN_LABELS = { starter: 'Baslangic (Ucretsiz)', pro: 'Pro — 99 TL/ay', family: 'Aile — 199 TL/ay' };
+const PLAN_LABELS = {
+  starter:    'Plan Secilmedi',
+  individual: 'Bireysel — 99 TL/ay',
+  business:   'Isletme — 249 TL/ay',
+  corporate:  'Kurumsal — 599 TL/ay',
+};
+
+const PLAN_BTNS = {
+  individual: `<button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('individual')">Sec</button>`,
+  business:   `<button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('business')">Sec</button>`,
+  corporate:  `<button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('corporate')">Sec</button>`,
+};
 
 function updatePlanUI(plan) {
   const label = document.getElementById('current-plan-label');
   if (label) label.textContent = PLAN_LABELS[plan] || PLAN_LABELS.starter;
 
-  const activeBadge = '<div style="font-size:.75rem;text-align:center;color:var(--green);padding:.6rem;background:rgba(16,185,129,.1);border-radius:.5rem;border:1px solid rgba(16,185,129,.3)">Mevcut Planınız</div>';
-  const plans = ['starter', 'pro', 'family'];
-  plans.forEach(p => {
+  const activeBadge = '<div style="font-size:.75rem;text-align:center;color:var(--green);padding:.6rem;background:rgba(16,185,129,.1);border-radius:.5rem;border:1px solid rgba(16,185,129,.3)">Mevcut Planiniz</div>';
+  ['individual', 'business', 'corporate'].forEach(p => {
     const el = document.getElementById(`plan-action-${p}`);
     if (!el) return;
-    if (p === plan) {
-      el.innerHTML = activeBadge;
-    } else {
-      if (p === 'starter') {
-        el.innerHTML = '<div style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Temel Plan</div>';
-      } else if (p === 'pro') {
-        el.innerHTML = '<button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout(\'pro\')">Pro\'ya Gec</button>';
-      } else {
-        el.innerHTML = '<button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout(\'family\')">Aile Planina Gec</button>';
-      }
-    }
+    el.innerHTML = p === plan ? activeBadge : (PLAN_BTNS[p] || '');
   });
 }
 

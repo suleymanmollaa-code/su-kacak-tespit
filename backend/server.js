@@ -211,8 +211,9 @@ const STRIPE_SUCCESS = process.env.STRIPE_SUCCESS_URL || 'https://susayar.com/su
 const STRIPE_CANCEL  = process.env.STRIPE_CANCEL_URL  || 'https://susayar.com/susayar-dashboard.html';
 
 const PLANS = {
-  pro:    { name: 'SuSayar Pro',   amount: 9900,  label: 'pro' },
-  family: { name: 'SuSayar Aile',  amount: 19900, label: 'family' },
+  individual: { name: 'SuSayar Bireysel', amount: 9900,  label: 'individual' },
+  business:   { name: 'SuSayar Isletme',  amount: 24900, label: 'business'   },
+  corporate:  { name: 'SuSayar Kurumsal', amount: 59900, label: 'corporate'  },
 };
 
 app.post('/api/stripe/checkout', requireAuth, async (req, res) => {
@@ -320,7 +321,7 @@ app.delete('/api/admin/devices/:id', requireAdmin, async (req, res) => {
 app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
   try {
     const { plan } = req.body;
-    if (!['starter', 'pro', 'family'].includes(plan)) return res.status(400).json({ error: 'Geçersiz plan' });
+    if (!['starter', 'individual', 'business', 'corporate'].includes(plan)) return res.status(400).json({ error: 'Geçersiz plan' });
     await db.queryRun(`UPDATE users SET plan=$1 WHERE id=$2`, [plan, req.params.id]);
     console.log(`[ADMIN] Plan güncellendi: ${req.params.id} → ${plan}`);
     res.json({ ok: true });

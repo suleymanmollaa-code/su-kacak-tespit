@@ -337,7 +337,7 @@ nav {
 .testi-city { font-size: .72rem; color: var(--muted); }
 
 /* ── PRICING ─────────────────────────────────────── */
-.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; align-items: start; }
+.pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; align-items: start; }
 .p-card {
   background: white; border: 1.5px solid var(--border);
   border-radius: 16px; padding: 2rem; position: relative;
@@ -472,7 +472,8 @@ nav {
   .problem-wrap, .learn-wrap { grid-template-columns: 1fr; gap: 3rem; }
   .steps-grid { grid-template-columns: 1fr; }
   .step-arrow { display: none; }
-  .feat-grid, .testi-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .feat-grid, .testi-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: repeat(2,1fr); }
   .p-card.featured { transform: none; }
   nav .nav-links { display: none; }
   .footer-wrap { flex-direction: column; text-align: center; }
@@ -776,59 +777,74 @@ nav {
 <div class="section-wrap" id="fiyatlar">
   <div class="section-header">
     <div class="s-label">Fiyatlandırma</div>
-    <h2 class="s-h">Basit ve şeffaf</h2>
-    <p class="s-p">Temel özellikler sonsuza kadar ücretsiz. Güçlü özellikler için aylık bir kahve fiyatı.</p>
+    <h2 class="s-h">Cihaz sayısına göre fiyat</h2>
+    <p class="s-p">Tüm planlar aynı özelliklere sahip. Tek fark kurulum yapılacak cihaz sayısı.</p>
   </div>
   <div class="pricing-grid">
 
     <div class="p-card">
-      <div class="p-tier">Başlangıç</div>
-      <div class="p-price">Ücretsiz</div>
-      <div class="p-note">Sonsuza kadar ücretsiz</div>
+      <div class="p-tier">Bireysel</div>
+      <div class="p-price">99 <sub>TL/ay</sub></div>
+      <div class="p-note">Ev kullanımı için ideal</div>
       <hr class="p-sep">
       <ul class="p-features">
-        <li>Gerçek zamanlı akış izleme</li>
-        <li>Günlük &amp; haftalık raporlar</li>
-        <li>1 cihaz</li>
-        <li>30 günlük veri geçmişi</li>
-        <li class="off">Çoklu cihaz</li>
-        <li class="off">Uzun süreli veri geçmişi</li>
+        <li>1 cihaz kurulumu</li>
+        <li>Gerçek zamanlı izleme</li>
+        <li>7/24 bildirimler</li>
+        <li>Tüm veri geçmişi</li>
+        <li>Aylık raporlar</li>
+        <li>Öncelikli destek</li>
       </ul>
-      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Ücretsiz Başla</a>
+      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Hemen Başla</a>
     </div>
 
     <div class="p-card featured">
       <div class="p-popular">En Popüler</div>
-      <div class="p-tier">Pro</div>
-      <div class="p-price">99 <sub>TL/ay</sub></div>
-      <div class="p-note">Yıllık ödeme: 79 TL/ay — %20 indirim</div>
+      <div class="p-tier">İşletme</div>
+      <div class="p-price">249 <sub>TL/ay</sub></div>
+      <div class="p-note">Küçük işletmeler için</div>
       <hr class="p-sep">
       <ul class="p-features">
-        <li>Başlangıç plandaki her şey</li>
-        <li>5 cihaza kadar</li>
-        <li>1 yıllık veri geçmişi</li>
-        <li>Öncelikli bildirimler</li>
-        <li>Cihazlar arası karşılaştırma</li>
+        <li>3 cihaza kadar kurulum</li>
+        <li>Gerçek zamanlı izleme</li>
+        <li>7/24 bildirimler</li>
+        <li>Tüm veri geçmişi</li>
+        <li>Aylık raporlar</li>
+        <li>Öncelikli destek</li>
       </ul>
-      <a class="btn btn-primary" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Pro'ya Geç</a>
+      <a class="btn btn-primary" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Hemen Başla</a>
     </div>
 
     <div class="p-card">
-      <div class="p-tier">Aile</div>
-      <div class="p-price">199 <sub>TL/ay</sub></div>
-      <div class="p-note">Yıllık ödeme: 159 TL/ay — %20 indirim</div>
+      <div class="p-tier">Kurumsal</div>
+      <div class="p-price">599 <sub>TL/ay</sub></div>
+      <div class="p-note">Çok şubeli işletmeler için</div>
       <hr class="p-sep">
       <ul class="p-features">
-        <li>Pro plandaki her şey</li>
-        <li>5 cihaza kadar (her oda / daire)</li>
-        <li>Sınır olmadan kullanıcı</li>
-        <li>Cihazlar arası karşılaştırma</li>
-        <li>Tüketim raporları (PDF)</li>
+        <li>10 cihaza kadar kurulum</li>
+        <li>Gerçek zamanlı izleme</li>
+        <li>7/24 bildirimler</li>
+        <li>Tüm veri geçmişi</li>
+        <li>Aylık raporlar</li>
         <li>Öncelikli destek</li>
-        <li>Sınırsız veri geçmişi</li>
-        <li>Yeni özellikler ilk deneme hakkı</li>
       </ul>
-      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Aile Planını Seç</a>
+      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Hemen Başla</a>
+    </div>
+
+    <div class="p-card">
+      <div class="p-tier">10+ Cihaz</div>
+      <div class="p-price" style="font-size:1.6rem">Özel Fiyat</div>
+      <div class="p-note">Büyük tesis / zincir işletmeler</div>
+      <hr class="p-sep">
+      <ul class="p-features">
+        <li>Sınırsız cihaz kurulumu</li>
+        <li>Gerçek zamanlı izleme</li>
+        <li>7/24 bildirimler</li>
+        <li>Tüm veri geçmişi</li>
+        <li>Aylık raporlar</li>
+        <li>Özel SLA &amp; destek</li>
+      </ul>
+      <a class="btn btn-ghost" href="mailto:info@susayar.com" style="width:100%;justify-content:center;display:flex">Teklif Al</a>
     </div>
 
   </div>
