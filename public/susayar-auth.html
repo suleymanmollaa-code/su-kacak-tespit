@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuSayar — Giriş / Kayıt</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    /* ── Arka plan desen ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16,185,129,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .auth-card {
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    /* ── Logo ── */
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .logo-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: .5rem;
+    }
+    .logo-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo-sub {
+      font-size: .8rem;
+      color: #64748b;
+      margin-top: .25rem;
+    }
+
+    /* ── Sekmeler ── */
+    .tabs {
+      display: flex;
+      background: rgba(30,41,59,0.6);
+      border-radius: .75rem;
+      padding: .25rem;
+      margin-bottom: 2rem;
+      gap: .25rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: .6rem 1rem;
+      border: none;
+      border-radius: .5rem;
+      background: transparent;
+      color: #64748b;
+      font-size: .9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .tab-btn.active {
+      background: rgba(59,130,246,0.2);
+      color: #3b82f6;
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+
+    /* ── Form ── */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    .field {
+      margin-bottom: 1.1rem;
+    }
+    label {
+      display: block;
+      font-size: .82rem;
+      color: #94a3b8;
+      margin-bottom: .4rem;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: .7rem 1rem;
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(71,85,105,0.5);
+      border-radius: .6rem;
+      color: #e2e8f0;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input::placeholder { color: #475569; }
+    input:focus { border-color: rgba(59,130,246,0.6); }
+
+    .btn-primary {
+      width: 100%;
+      padding: .8rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      border-radius: .6rem;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: .5rem;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    .error-box {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171;
+      border-radius: .6rem;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .error-box.show { display: block; }
+
+    .success-box {
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399;
+      border-radius: .6rem;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .success-box.show { display: block; }
+
+    .hint {
+      text-align: center;
+      font-size: .8rem;
+      color: #475569;
+      margin-top: 1.5rem;
+    }
+    .hint a {
+      color: #3b82f6;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .hint a:hover { text-decoration: underline; }
+
+    /* ── Şifre gözü ── */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 2.8rem; }
+    .pw-eye {
+      position: absolute;
+      right: .85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .pw-eye:hover { color: #94a3b8; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(71,85,105,0.3);
+      margin: 1.5rem 0;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      color: #475569;
+      font-size: .8rem;
+      text-decoration: none;
+      margin-top: 1.5rem;
+      transition: color .2s;
+    }
+    .back-link:hover { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="logo">
+      <span class="logo-icon">💧</span>
+      <div class="logo-name">SuSayar</div>
+      <div class="logo-sub">Akıllı Su Kaçak Tespit Sistemi</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Giriş Yap</button>
+      <button class="tab-btn" onclick="switchTab('register')">Kayıt Ol</button>
+    </div>
+
+    <!-- GİRİŞ FORMU -->
+    <div id="panel-login" class="form-panel active">
+      <div id="login-error" class="error-box"></div>
+      <div class="field">
+        <label>E-posta</label>
+        <input id="login-email" type="email" placeholder="ornek@email.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Şifre</label>
+        <div class="pw-wrap">
+          <input id="login-pw" type="password" placeholder="••••••" autocomplete="current-password" />
+          <button class="pw-eye" onclick="togglePw('login-pw', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Giriş Yap</button>
+      <div class="hint">
+        Hesabın yok mu? <a onclick="switchTab('register')">Kayıt ol</a>
+      </div>
+    </div>
+
+    <!-- KAYIT FORMU -->
+    <div id="panel-register" class="form-panel">
+      <div id="reg-error" class="error-box"></div>
+      <div id="reg-success" class="success-box"></div>
+      <div class="field">
+        <label>Ad Soyad</label>
+        <input id="reg-name" type="text" placeholder="Adın Soyadın" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label>E-posta</label>
+        <input id="reg-email" type="email" placeholder="ornek@email.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Şifre <span style="color:#475569">(en az 6 karakter)</span></label>
+        <div class="pw-wrap">
+          <input id="reg-pw" type="password" placeholder="••••••" autocomplete="new-password" />
+          <button class="pw-eye" onclick="togglePw('reg-pw', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Şifre Tekrar</label>
+        <div class="pw-wrap">
+          <input id="reg-pw2" type="password" placeholder="••••••" autocomplete="new-password" />
+          <button class="pw-eye" onclick="togglePw('reg-pw2', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-register" onclick="doRegister()">Kayıt Ol</button>
+      <div class="hint">
+        Zaten hesabın var mı? <a onclick="switchTab('login')">Giriş yap</a>
+      </div>
+    </div>
+
+    <a class="back-link" href="/susayar-landing.html">← Ana sayfaya dön</a>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3001';
+
+    // Daha önce giriş yapılmışsa dashboard'a yönlendir
+    (function checkExistingSession() {
+      const token = localStorage.getItem('susayar_token');
+      if (token) {
+        fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => r.ok ? location.replace('/susayar-dashboard.html') : null)
+          .catch(() => {});
+      }
+    })();
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (tab === 'login') ? i === 0 : i === 1));
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+      clearErrors();
+    }
+
+    function clearErrors() {
+      ['login-error', 'reg-error', 'reg-success'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = ''; el.classList.remove('show'); }
+      });
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    function togglePw(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Lütfen bekleyin…' : (btnId === 'btn-login' ? 'Giriş Yap' : 'Kayıt Ol');
+    }
+
+    async function doLogin() {
+      clearErrors();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-pw').value;
+
+      if (!email) return showError('login-error', 'E-posta adresi boş olamaz');
+      if (!password) return showError('login-error', 'Şifre boş olamaz');
+
+      setLoading('btn-login', true);
+      try {
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          signal: AbortSignal.timeout(8000),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError('login-error', data.error || 'Giriş başarısız'); return; }
+
+        localStorage.setItem('susayar_token', data.token);
+        localStorage.setItem('susayar_user', JSON.stringify(data.user));
+        location.replace('/susayar-dashboard.html');
+      } catch (err) {
+        showError('login-error', err.name === 'TimeoutError' ? 'Sunucuya bağlanılamadı. Backend çalışıyor mu?' : 'Bağlantı hatası: ' + err.message);
+      } finally {
+        setLoading('btn-login', false);
+      }
+    }
+
+    async function doRegister() {
+      clearErrors();
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-pw').value;
+      const password2 = document.getElementById('reg-pw2').value;
+
+      if (!name)     return showError('reg-error', 'Ad Soyad boş olamaz');
+      if (!email)    return showError('reg-error', 'E-posta boş olamaz');
+      if (!password) return showError('reg-error', 'Şifre boş olamaz');
+      if (password.length < 6) return showError('reg-error', 'Şifre en az 6 karakter olmalıdır');
+      if (password !== password2) return showError('reg-error', 'Şifreler eşleşmiyor');
+
+      setLoading('btn-register', true);
+      try {
+        const res = await fetch(`${API}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+          signal: AbortSignal.timeout(8000),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError('reg-error', data.error || 'Kayıt başarısız'); return; }
+
+        localStorage.setItem('susayar_token', data.token);
+        localStorage.setItem('susayar_user', JSON.stringify(data.user));
+        location.replace('/susayar-dashboard.html');
+      } catch (err) {
+        showError('reg-error', err.name === 'TimeoutError' ? 'Sunucuya bağlanılamadı. Backend çalışıyor mu?' : 'Bağlantı hatası: ' + err.message);
+      } finally {
+        setLoading('btn-register', false);
+      }
+    }
+
+    // Enter tuşu desteği
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const loginActive = document.getElementById('panel-login').classList.contains('active');
+      if (loginActive) doLogin();
+      else doRegister();
+    });
+  </script>
+</body>
+</html>

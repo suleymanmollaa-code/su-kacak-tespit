@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Su Sayar — ESP32 Kurulum Rehberi</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #4361ee;
+    --accent2: #0077b6;
+    --green: #2ea043;
+    --orange: #e76f51;
+    --yellow: #f4c542;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --code-bg: #0d1117;
+    --code-border: #30363d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    background: rgba(13,17,23,.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: .9rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .nav-logo .drop { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .88rem;
+    transition: color .2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-btn {
+    background: var(--accent);
+    color: white;
+    padding: .45rem 1rem;
+    border-radius: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity .2s;
+  }
+
+  .nav-btn:hover { opacity: .85; }
+
+  /* HERO */
+  .hero {
+    padding: 4rem 2rem 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .breadcrumb {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 640px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .35rem .85rem;
+    font-size: .78rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+
+  .badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* MAIN LAYOUT */
+  .layout {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* SIDEBAR TOC */
+  .toc {
+    position: sticky;
+    top: 80px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+  }
+
+  .toc-title {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: .8rem;
+  }
+
+  .toc ul {
+    list-style: none;
+  }
+
+  .toc li {
+    margin-bottom: .3rem;
+  }
+
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .82rem;
+    display: block;
+    padding: .25rem .5rem;
+    border-radius: 5px;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+
+  .toc a:hover {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(67,97,238,.08);
+  }
+
+  /* CONTENT */
+  .content section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    background: var(--accent);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  p { color: var(--muted); margin-bottom: 1rem; font-size: .92rem; }
+  p strong { color: var(--text); }
+
+  /* CODE BLOCK */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+  }
+
+  .code-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: .6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .code-lang {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .code-filename {
+    font-size: .78rem;
+    color: var(--muted);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  .copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: .25rem .65rem;
+    border-radius: 5px;
+    font-size: .73rem;
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .copy-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  pre {
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+    font-size: .82rem;
+    line-height: 1.7;
+  }
+
+  .kw  { color: #ff7b72; }   /* keywords */
+  .fn  { color: #d2a8ff; }   /* functions */
+  .str { color: #a5d6ff; }   /* strings */
+  .num { color: #79c0ff; }   /* numbers */
+  .cmt { color: #8b949e; font-style: italic; }   /* comments */
+  .pp  { color: #ffa657; }   /* preprocessor / #define */
+  .typ { color: #f0883e; }   /* types */
+
+  /* INFO BOXES */
+  .info-box {
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 1.2rem 0;
+    font-size: .85rem;
+    display: flex;
+    gap: .75rem;
+  }
+
+  .info-box.tip {
+    background: rgba(46,160,67,.08);
+    border: 1px solid rgba(46,160,67,.25);
+    color: #7ee787;
+  }
+
+  .info-box.warn {
+    background: rgba(244,197,66,.08);
+    border: 1px solid rgba(244,197,66,.25);
+    color: #f0c441;
+  }
+
+  .info-box.note {
+    background: rgba(67,97,238,.08);
+    border: 1px solid rgba(67,97,238,.25);
+    color: #a5b4fc;
+  }
+
+  .info-box-icon { flex-shrink: 0; font-size: 1rem; }
+
+  /* STEP LIST */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    margin: 1rem 0;
+  }
+
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    font-size: .88rem;
+    color: var(--muted);
+  }
+
+  .steps li::before {
+    content: counter(step);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+
+  /* WIRING TABLE */
+  .wire-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: .85rem;
+  }
+
+  .wire-table th {
+    background: var(--surface2);
+    color: var(--text);
+    padding: .65rem 1rem;
+    text-align: left;
+    font-size: .78rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .wire-table td {
+    padding: .65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .wire-table tr:last-child td { border-bottom: none; }
+  .wire-table tr:hover td { background: rgba(255,255,255,.02); }
+
+  .wire-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .wire-dot::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .wire-red::before   { background: #e63946; }
+  .wire-black::before { background: #8b949e; border: 1px solid #444; }
+  .wire-yellow::before { background: #f4c542; }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .arch-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .75rem 1.1rem;
+    text-align: center;
+    font-size: .8rem;
+  }
+
+  .arch-node .icon { font-size: 1.6rem; display: block; margin-bottom: .25rem; }
+  .arch-node .label { font-weight: 600; color: var(--text); }
+  .arch-node .sublabel { color: var(--muted); font-size: .72rem; margin-top: .15rem; }
+
+  .arch-node.blue  { border-color: var(--accent2); }
+  .arch-node.green { border-color: var(--green); }
+  .arch-node.purple { border-color: #8b5cf6; }
+
+  .arch-arrow {
+    font-size: 1.4rem;
+    color: var(--muted);
+    padding: 0 .75rem;
+    font-weight: 300;
+  }
+
+  /* INLINE CODE */
+  code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1rem .4rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: .82em;
+    color: #ffa657;
+  }
+
+  /* CONFIG TABLE */
+  .config-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: .83rem;
+  }
+
+  .config-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    padding: .5rem .9rem;
+    text-align: left;
+    font-size: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .config-table td {
+    padding: .55rem .9rem;
+    border-bottom: 1px solid rgba(48,54,61,.5);
+    color: var(--muted);
+  }
+
+  .config-table td:first-child {
+    font-family: monospace;
+    color: #ffa657;
+    font-size: .82rem;
+  }
+
+  /* ENDPOINT CARD */
+  .endpoint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .method {
+    background: var(--green);
+    color: white;
+    padding: .25rem .6rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: .78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+
+  .endpoint-path {
+    font-family: monospace;
+    font-size: .88rem;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+
+  .endpoint-desc {
+    font-size: .8rem;
+    color: var(--muted);
+  }
+
+  /* TEST SECTION */
+  .test-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .test-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .test-card h4 {
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: .5rem;
+    color: var(--text);
+  }
+
+  .test-card p {
+    font-size: .8rem;
+    margin-bottom: .5rem;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: .82rem;
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc { display: none; }
+    .hero h1 { font-size: 1.8rem; }
+    .arch { gap: .5rem; }
+    .arch-arrow { display: none; }
+    .test-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="susayar-landing.html">
+    <span class="drop">Su</span>Sayar
+  </a>
+  <ul class="nav-links">
+    <li><a href="susayar-landing.html">Ana Sayfa</a></li>
+    <li><a href="susayar-sema.html">Bağlantı Şeması</a></li>
+    <li><a href="susayar-dashboard.html">Dashboard</a></li>
+  </ul>
+  <a class="nav-btn" href="susayar-dashboard.html">Demo Göster</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="susayar-landing.html">Su Sayar</a> &rsaquo; ESP32 Kurulum Rehberi
+  </div>
+  <h1>ESP32 &rarr; Dashboard<br><span>Bağlantı Rehberi</span></h1>
+  <p>
+    YF-S201 akım sensörü ve ESP32 ile gerçek zamanlı su takibi. Aşağıda Arduino kodu,
+    Node.js backend ve dashboard entegrasyonu hepsi hazır — kopyala, yapılandır, yükle.
+  </p>
+  <div class="hero-badges">
+    <span class="badge"><span class="dot"></span> Arduino IDE veya PlatformIO</span>
+    <span class="badge"><span class="dot"></span> HTTP POST / JSON</span>
+    <span class="badge"><span class="dot"></span> Node.js veya Python backend</span>
+    <span class="badge"><span class="dot"></span> WebSocket canlı güncelleme</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="toc">
+    <div class="toc-title">İçerik</div>
+    <ul>
+      <li><a href="#mimari" class="toc-link">1. Mimari</a></li>
+      <li><a href="#baglanti" class="toc-link">2. Kablo Bağlantısı</a></li>
+      <li><a href="#arduino" class="toc-link">3. Arduino Kodu</a></li>
+      <li><a href="#backend" class="toc-link">4. Node.js Backend</a></li>
+      <li><a href="#python" class="toc-link">5. Python Backend</a></li>
+      <li><a href="#dashboard" class="toc-link">6. Dashboard Entegrasyon</a></li>
+      <li><a href="#test" class="toc-link">7. Test &amp; Sorun Giderme</a></li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- 1. MiMARi -->
+    <section id="mimari">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>Sistem Mimarisi</h2>
+      </div>
+
+      <p>
+        Sistem üç katmandan oluşmaktadır: <strong>ESP32 firmware</strong> (sensörü okur, WiFi üzerinden veri gönderir),
+        <strong>backend sunucu</strong> (HTTP isteklerini alır, WebSocket ile yayar), <strong>dashboard</strong>
+        (WebSocket ile anlık veriyi gösterir).
+      </p>
+
+      <div class="arch">
+        <div class="arch-node blue">
+          <span class="icon">&#x26A1;</span>
+          <div class="label">YF-S201</div>
+          <div class="sublabel">Akım sensörü</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node">
+          <span class="icon">&#x1F4BB;</span>
+          <div class="label">ESP32</div>
+          <div class="sublabel">WiFi + HTTP POST</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node green">
+          <span class="icon">&#x1F5A5;</span>
+          <div class="label">Node.js</div>
+          <div class="sublabel">HTTP + WebSocket</div>
+        </div>
+        <div class="arch-arrow">&rarr;</div>
+        <div class="arch-node purple">
+          <span class="icon">&#x1F4CA;</span>
+          <div class="label">Dashboard</div>
+          <div class="sublabel">Canlı görüntüleme</div>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <span class="info-box-icon">&#x2139;</span>
+        <div>
+          ESP32, her 2.5 saniyede bir JSON payload gönderir. Backend bu veriyi depolar ve
+          WebSocket üzerinden bağlı tüm dashboard istemcilerine anında yayar.
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. KABLO -->
+    <section id="baglanti">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Kablo Bağlantısı</h2>
+      </div>
+
+      <p>YF-S201 ile ESP32-WROOM-32U arasındaki 3 kablo bağlantısı:</p>
+
+      <table class="wire-table">
+        <thead>
+          <tr>
+            <th>YF-S201 Kablosu</th>
+            <th>Renk</th>
+            <th>ESP32 Pin</th>
+            <th>Açıklama</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="wire-dot wire-red">Kırmızı</span></td>
+            <td>Güç</td>
+            <td><strong>VIN (5V)</strong></td>
+            <td>Sensörü besler, 5V gerektirir</td>
+          </tr>
+          <tr>
+            <td><span class="wire-dot wire-black">Siyah</span></td>
+            <td>Toprak</td>
+            <td><strong>GND</strong></td>
+            <td>Ortak negatif hat</td>
+          </tr>
+          <tr>
+            <td><span class="wire-dot wire-yellow">Sarı</span></td>
+            <td>Sinyal</td>
+            <td><strong>GPIO 4</strong></td>
+            <td>Darbe sinyali — her darbe = 2.25 mL</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warn">
+        <span class="info-box-icon">&#x26A0;</span>
+        <div>
+          YF-S201 sinyal hattı 5V sürer. ESP32 GPIO pinleri 3.3V toleranslıdır.
+          Aradaki <strong>10k&Omega; pull-up direnç</strong> bu gerilim farkını dengeler.
+          Direnç olmadan pin zamanla hasar görebilir.
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <span class="info-box-icon">&#x2714;</span>
+        <div>
+          Breadboard üzerinde: kırmızı kablo VIN sütununa, siyah GND sütununa, sarı GPIO4 pinini
+          10k ohm direnç üzerinden 3.3V&apos;a bağlayarak breadboard&apos;a takabilirsiniz.
+          Jumper kablolarla lehimsiz kurulum yaparsınız.
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ARDUINO -->
+    <section id="arduino">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Arduino Kodu (ESP32)</h2>
+      </div>
+
+      <p>
+        Aşağıdaki kod interrupt tabanlı darbe sayımı yapar, L/dakika hesaplar ve
+        her 2.5 saniyede bir JSON gönderir. <strong>WiFi SSID/şifresi ile sunucu IP&apos;sini</strong> kendi
+        ortamınıza göre değiştirin.
+      </p>
+
+      <div class="info-box note">
+        <span class="info-box-icon">&#x2139;</span>
+        <div>
+          Arduino IDE&apos;de <code>File &rarr; Preferences &rarr; Additional Board Manager URLs</code> altina
+          <code>https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json</code>
+          ekleyin, ardından <em>ESP32 by Espressif Systems</em> paketini yükleyin.
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">C++ / Arduino</span>
+          <span class="code-filename">susayar_esp32.ino</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre id="code-arduino"><span class="cmt">// ================================================================
+// Su Sayar — ESP32 Firmware
+// Sensor : YF-S201 Akış Sensörü (GPIO 4)
+// Cikis  : HTTP POST JSON → Node.js backend
+// ================================================================</span>
+
+<span class="pp">#include</span> <span class="str">&lt;WiFi.h&gt;</span>
+<span class="pp">#include</span> <span class="str">&lt;HTTPClient.h&gt;</span>
+<span class="pp">#include</span> <span class="str">&lt;ArduinoJson.h&gt;</span>  <span class="cmt">// Arduino IDE Library Manager&apos;den yükleyin</span>
+
+<span class="cmt">// ---- KONFIGÜRASYON — burayı değiştirin ----</span>
+<span class="kw">const char</span>* WIFI_SSID     = <span class="str">"WiFi_Adiniz"</span>;
+<span class="kw">const char</span>* WIFI_PASS     = <span class="str">"WiFi_Sifreniz"</span>;
+<span class="kw">const char</span>* SERVER_URL    = <span class="str">"http://192.168.1.100:3000/api/sensor"</span>; <span class="cmt">// sunucu IP:PORT</span>
+<span class="kw">const char</span>* DEVICE_ID     = <span class="str">"susayar-001"</span>;  <span class="cmt">// cihaz kimlik kodu</span>
+<span class="kw">const int</span>   SENSOR_PIN    = <span class="num">4</span>;              <span class="cmt">// YF-S201 sinyal pini</span>
+<span class="kw">const int</span>   SEND_INTERVAL = <span class="num">2500</span>;           <span class="cmt">// milisaniye (2.5 sn)</span>
+<span class="cmt">// -------------------------------------------</span>
+
+<span class="cmt">// YF-S201: 1 darbe = 2.25 mL (üretici kalibrasyon değeri)
+// Frekans (Hz) = debi (L/dak) x 7.5 → debi = frekans / 7.5</span>
+<span class="kw">const float</span> PULSE_TO_ML = <span class="num">2.25</span>;
+
+<span class="kw">volatile unsigned long</span> pulseCount  = <span class="num">0</span>;
+<span class="kw">unsigned long</span>          lastSendMs  = <span class="num">0</span>;
+<span class="kw">unsigned long</span>          lastCountMs = <span class="num">0</span>;
+<span class="kw">float</span>                  totalLiters = <span class="num">0.0</span>;
+<span class="kw">unsigned long</span>          sessionStart;
+
+<span class="cmt">// Interrupt servis rutini — her sensör darbesi bu fonksiyonu çağırır</span>
+<span class="fn">IRAM_ATTR</span> <span class="kw">void</span> <span class="fn">onPulse</span>() {
+  pulseCount++;
+}
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">115200</span>);
+  <span class="fn">pinMode</span>(SENSOR_PIN, INPUT_PULLUP);
+  <span class="cmt">// RISING kenarda interrupt başlat (her darbede pulseCount artar)</span>
+  <span class="fn">attachInterrupt</span>(<span class="fn">digitalPinToInterrupt</span>(SENSOR_PIN), onPulse, RISING);
+
+  <span class="fn">Serial.println</span>(<span class="str">"Su Sayar başlıyor..."</span>);
+  <span class="fn">connectWiFi</span>();
+  sessionStart = <span class="fn">millis</span>();
+  lastSendMs   = <span class="fn">millis</span>();
+  lastCountMs  = <span class="fn">millis</span>();
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">unsigned long</span> now = <span class="fn">millis</span>();
+
+  <span class="kw">if</span> (now - lastSendMs &gt;= SEND_INTERVAL) {
+    <span class="cmt">// Interrupt&apos;ı geçici olarak devre dışı bırak, sayacı oku ve sıfırla</span>
+    <span class="fn">detachInterrupt</span>(<span class="fn">digitalPinToInterrupt</span>(SENSOR_PIN));
+    <span class="kw">unsigned long</span> count = pulseCount;
+    pulseCount = <span class="num">0</span>;
+    <span class="fn">attachInterrupt</span>(<span class="fn">digitalPinToInterrupt</span>(SENSOR_PIN), onPulse, RISING);
+
+    <span class="cmt">// Geçen süre (saniye cinsinden)</span>
+    <span class="kw">float</span> elapsed = (now - lastCountMs) / <span class="num">1000.0</span>;
+    lastCountMs = now;
+
+    <span class="cmt">// Debi hesabi: darbe_frekansı / 7.5 = L/dak</span>
+    <span class="kw">float</span> freqHz  = count / elapsed;           <span class="cmt">// darbe/saniye</span>
+    <span class="kw">float</span> flowLpm = freqHz / <span class="num">7.5</span>;              <span class="cmt">// L/dakika</span>
+    <span class="kw">float</span> volumeMl = count * PULSE_TO_ML;       <span class="cmt">// bu aralikta gecen hacim (mL)</span>
+    totalLiters += volumeMl / <span class="num">1000.0</span>;          <span class="cmt">// kumulatif toplam (L)</span>
+
+    <span class="cmt">// WiFi bağlantisi kopmussa yeniden baglan</span>
+    <span class="kw">if</span> (<span class="fn">WiFi.status</span>() != WL_CONNECTED) <span class="fn">connectWiFi</span>();
+
+    <span class="cmt">// HTTP POST ile sunucuya veri gönder</span>
+    <span class="fn">sendData</span>(flowLpm, totalLiters, count);
+
+    lastSendMs = now;
+  }
+}
+
+<span class="kw">void</span> <span class="fn">sendData</span>(<span class="kw">float</span> flowLpm, <span class="kw">float</span> totalL, <span class="kw">unsigned long</span> pulses) {
+  <span class="fn">HTTPClient</span> http;
+  http.<span class="fn">begin</span>(SERVER_URL);
+  http.<span class="fn">addHeader</span>(<span class="str">"Content-Type"</span>, <span class="str">"application/json"</span>);
+
+  <span class="cmt">// JSON payload oluştur</span>
+  <span class="fn">StaticJsonDocument</span>&lt;<span class="num">256</span>&gt; doc;
+  doc[<span class="str">"device_id"</span>]   = DEVICE_ID;
+  doc[<span class="str">"flow_lpm"</span>]    = <span class="fn">round</span>(flowLpm * <span class="num">100</span>) / <span class="num">100.0</span>;  <span class="cmt">// 2 ondalik</span>
+  doc[<span class="str">"total_liters"</span>] = <span class="fn">round</span>(totalL  * <span class="num">10</span>)  / <span class="num">10.0</span>;   <span class="cmt">// 1 ondalik</span>
+  doc[<span class="str">"pulses"</span>]      = pulses;
+  doc[<span class="str">"uptime_sec"</span>]  = (<span class="fn">millis</span>() - sessionStart) / <span class="num">1000</span>;
+  doc[<span class="str">"rssi_dbm"</span>]    = <span class="fn">WiFi.RSSI</span>();  <span class="cmt">// sinyal gücü — debug için</span>
+
+  <span class="typ">String</span> payload;
+  <span class="fn">serializeJson</span>(doc, payload);
+
+  <span class="kw">int</span> statusCode = http.<span class="fn">POST</span>(payload);
+
+  <span class="kw">if</span> (statusCode == <span class="num">200</span>) {
+    <span class="fn">Serial.printf</span>(<span class="str">"[OK] %.2f L/dak | Toplam: %.1f L\n"</span>, flowLpm, totalL);
+  } <span class="kw">else</span> {
+    <span class="fn">Serial.printf</span>(<span class="str">"[HATA] HTTP %d\n"</span>, statusCode);
+  }
+
+  http.<span class="fn">end</span>();
+}
+
+<span class="kw">void</span> <span class="fn">connectWiFi</span>() {
+  <span class="fn">WiFi.begin</span>(WIFI_SSID, WIFI_PASS);
+  <span class="fn">Serial.print</span>(<span class="str">"WiFi bağlanılıyor"</span>);
+  <span class="kw">int</span> attempts = <span class="num">0</span>;
+  <span class="kw">while</span> (<span class="fn">WiFi.status</span>() != WL_CONNECTED &amp;&amp; attempts &lt; <span class="num">20</span>) {
+    <span class="fn">delay</span>(<span class="num">500</span>);
+    <span class="fn">Serial.print</span>(<span class="str">"."</span>);
+    attempts++;
+  }
+  <span class="kw">if</span> (<span class="fn">WiFi.status</span>() == WL_CONNECTED) {
+    <span class="fn">Serial.printf</span>(<span class="str">"\nBağlandı! IP: %s\n"</span>, <span class="fn">WiFi.localIP</span>().<span class="fn">toString</span>().<span class="fn">c_str</span>());
+  } <span class="kw">else</span> {
+    <span class="fn">Serial.println</span>(<span class="str">"\nWiFi bağlantısı başarısız — 30sn sonra tekrar deneniyor"</span>);
+    <span class="fn">delay</span>(<span class="num">30000</span>);
+    <span class="fn">ESP.restart</span>();  <span class="cmt">// bağlanamassa yeniden başla</span>
+  }
+}</pre>
+      </div>
+
+      <div class="info-box tip">
+        <span class="info-box-icon">&#x2714;</span>
+        <div>
+          <strong>ArduinoJson kütüphanesini yükleyin:</strong> Arduino IDE &rarr;
+          Tools &rarr; Manage Libraries &rarr; "ArduinoJson" arayıp yükleyin (Benoit Blanchon, v7+).
+        </div>
+      </div>
+
+      <p><strong>JSON payload örneği:</strong></p>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">JSON</span>
+          <span class="code-filename">örnek payload</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre>{
+  <span class="str">"device_id"</span>:    <span class="str">"susayar-001"</span>,
+  <span class="str">"flow_lpm"</span>:     <span class="num">3.47</span>,         <span class="cmt">// anlık debi (L/dakika)</span>
+  <span class="str">"total_liters"</span>: <span class="num">142.6</span>,        <span class="cmt">// oturum başından itibaren toplam (L)</span>
+  <span class="str">"pulses"</span>:       <span class="num">386</span>,           <span class="cmt">// bu aralıkta sayılan darbe</span>
+  <span class="str">"uptime_sec"</span>:   <span class="num">8724</span>,          <span class="cmt">// cihaz çalışma süresi (sn)</span>
+  <span class="str">"rssi_dbm"</span>:     <span class="num">-58</span>            <span class="cmt">// WiFi sinyal gücü</span>
+}</pre>
+      </div>
+    </section>
+
+    <!-- 4. NODE.JS BACKEND -->
+    <section id="backend">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>Node.js Backend</h2>
+      </div>
+
+      <p>
+        ESP32&apos;den gelen HTTP POST isteklerini karşılayan, veriyi bellekte tutan ve
+        WebSocket üzerinden dashboard&apos;a anlık ileten basit bir Express sunucusu.
+      </p>
+
+      <ul class="steps">
+        <li>Node.js 18+ yüklü olduğundan emin olun</li>
+        <li>Yeni klasör oluşturun: <code>mkdir susayar-backend &amp;&amp; cd susayar-backend</code></li>
+        <li>Bağımlılıkları yükleyin: <code>npm init -y &amp;&amp; npm install express ws cors</code></li>
+        <li>Aşağıdaki kodu <code>server.js</code> olarak kaydedin</li>
+        <li>Çalıştırın: <code>node server.js</code></li>
+      </ul>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">JavaScript</span>
+          <span class="code-filename">server.js</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre id="code-node"><span class="cmt">// ================================================================
+// Su Sayar — Node.js Backend
+// HTTP: ESP32&apos;den JSON alır
+// WebSocket: Dashboard&apos;a canlı veri yayar
+// Çalıştır: node server.js
+// ================================================================</span>
+
+<span class="kw">const</span> express = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> { WebSocketServer } = <span class="fn">require</span>(<span class="str">'ws'</span>);
+<span class="kw">const</span> cors    = <span class="fn">require</span>(<span class="str">'cors'</span>);
+<span class="kw">const</span> http    = <span class="fn">require</span>(<span class="str">'http'</span>);
+
+<span class="kw">const</span> app    = <span class="fn">express</span>();
+<span class="kw">const</span> PORT   = process.env.PORT || <span class="num">3000</span>;
+
+app.<span class="fn">use</span>(<span class="fn">cors</span>());
+app.<span class="fn">use</span>(express.<span class="fn">json</span>());
+app.<span class="fn">use</span>(express.<span class="fn">static</span>(<span class="str">'public'</span>));  <span class="cmt">// dashboard HTML dosyaları buradan servislenir</span>
+
+<span class="cmt">// Son 500 okuma bellekte tutulur (geçmiş grafiği için)</span>
+<span class="kw">const</span> readings = [];
+<span class="kw">const</span> MAX_HISTORY = <span class="num">500</span>;
+
+<span class="cmt">// ── HTTP endpoint: ESP32 buraya POST atar ──────────────────────</span>
+app.<span class="fn">post</span>(<span class="str">'/api/sensor'</span>, (<span class="fn">req</span>, <span class="fn">res</span>) =&gt; {
+  <span class="kw">const</span> data = req.body;
+
+  <span class="cmt">// Temel doğrulama</span>
+  <span class="kw">if</span> (<span class="kw">typeof</span> data.flow_lpm !== <span class="str">'number'</span> || <span class="kw">typeof</span> data.total_liters !== <span class="str">'number'</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Gecersiz payload'</span> });
+  }
+
+  <span class="cmt">// Sunucu taraflı timestamp ekle</span>
+  <span class="kw">const</span> reading = { ...data, ts: <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>() };
+
+  <span class="cmt">// Geçmiş kayıt</span>
+  readings.<span class="fn">push</span>(reading);
+  <span class="kw">if</span> (readings.length &gt; MAX_HISTORY) readings.<span class="fn">shift</span>();
+
+  <span class="cmt">// WebSocket üzerinden tüm bağlı dashboard istemcilerine yay</span>
+  <span class="fn">broadcast</span>({ type: <span class="str">'sensor_update'</span>, payload: reading });
+
+  <span class="fn">console.log</span>(<span class="str">`[${reading.ts}] debi: ${data.flow_lpm} L/dak | toplam: ${data.total_liters} L`</span>);
+  res.<span class="fn">json</span>({ ok: <span class="kw">true</span>, received: reading.ts });
+});
+
+<span class="cmt">// ── Son N okumayı getir (dashboard sayfa yenileme sonrası geçmiş) ──</span>
+app.<span class="fn">get</span>(<span class="str">'/api/history'</span>, (<span class="fn">req</span>, <span class="fn">res</span>) =&gt; {
+  <span class="kw">const</span> n = Math.<span class="fn">min</span>(<span class="fn">parseInt</span>(req.query.n) || <span class="num">100</span>, MAX_HISTORY);
+  res.<span class="fn">json</span>(readings.<span class="fn">slice</span>(-n));
+});
+
+<span class="cmt">// ── En son okumayı getir ───────────────────────────────────────</span>
+app.<span class="fn">get</span>(<span class="str">'/api/latest'</span>, (<span class="fn">req</span>, <span class="fn">res</span>) =&gt; {
+  <span class="kw">if</span> (readings.length === <span class="num">0</span>) <span class="kw">return</span> res.<span class="fn">json</span>({ flow_lpm: <span class="num">0</span>, total_liters: <span class="num">0</span> });
+  res.<span class="fn">json</span>(readings[readings.length - <span class="num">1</span>]);
+});
+
+<span class="cmt">// ── WebSocket sunucusu ────────────────────────────────────────</span>
+<span class="kw">const</span> server = http.<span class="fn">createServer</span>(app);
+<span class="kw">const</span> wss    = <span class="kw">new</span> <span class="fn">WebSocketServer</span>({ server });
+
+wss.<span class="fn">on</span>(<span class="str">'connection'</span>, <span class="fn">ws</span> =&gt; {
+  <span class="fn">console.log</span>(<span class="str">'Dashboard bağlandı. Aktif istemci:'</span>, wss.clients.size);
+
+  <span class="cmt">// Yeni bağlanan istemciye son okumayı hemen gönder</span>
+  <span class="kw">if</span> (readings.length &gt; <span class="num">0</span>) {
+    ws.<span class="fn">send</span>(<span class="fn">JSON.stringify</span>({ type: <span class="str">'sensor_update'</span>, payload: readings[readings.length - <span class="num">1</span>] }));
+  }
+
+  ws.<span class="fn">on</span>(<span class="str">'close'</span>, () =&gt; <span class="fn">console.log</span>(<span class="str">'Dashboard ayrıldı. Aktif:'</span>, wss.clients.size));
+});
+
+<span class="kw">function</span> <span class="fn">broadcast</span>(msg) {
+  <span class="kw">const</span> str = <span class="fn">JSON.stringify</span>(msg);
+  wss.clients.<span class="fn">forEach</span>(<span class="fn">client</span> =&gt; {
+    <span class="kw">if</span> (client.readyState === <span class="num">1</span>) <span class="cmt">/* OPEN */</span> client.<span class="fn">send</span>(str);
+  });
+}
+
+server.<span class="fn">listen</span>(PORT, <span class="str">'0.0.0.0'</span>, () =&gt; {
+  <span class="fn">console.log</span>(<span class="str">`Su Sayar backend çalışıyor: http://localhost:${PORT}`</span>);
+  <span class="fn">console.log</span>(<span class="str">`ESP32 POST adresi: http://&lt;SUNUCU_IP&gt;:${PORT}/api/sensor`</span>);
+});</pre>
+      </div>
+
+      <p><strong>API endpoint özeti:</strong></p>
+
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <div>
+          <div class="endpoint-path">/api/sensor</div>
+          <div class="endpoint-desc">ESP32&apos;nin veri gönderdiği endpoint. JSON body bekler: <code>flow_lpm</code>, <code>total_liters</code>, <code>device_id</code></div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <span class="method" style="background:#0077b6">GET</span>
+        <div>
+          <div class="endpoint-path">/api/latest</div>
+          <div class="endpoint-desc">En son sensör okuması. Dashboard&apos;un sayfa yenileme sonrası anlık veriyi çekmesi için kullanılır.</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <span class="method" style="background:#0077b6">GET</span>
+        <div>
+          <div class="endpoint-path">/api/history?n=100</div>
+          <div class="endpoint-desc">Son N adet okumayı dizi olarak döndürür. Grafik geçmişi için kullanılır.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PYTHON BACKEND -->
+    <section id="python">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Python Backend (Alternatif)</h2>
+      </div>
+
+      <p>
+        Node.js yerine Python tercih ediyorsanız aşağıdaki FastAPI versiyonunu kullanabilirsiniz.
+        Her iki backend de aynı API arayüzünü sunar.
+      </p>
+
+      <ul class="steps">
+        <li>Python 3.10+ yüklü olduğundan emin olun</li>
+        <li>Bağımlılıkları yükleyin: <code>pip install fastapi uvicorn websockets</code></li>
+        <li>Aşağıdaki kodu <code>server.py</code> olarak kaydedin</li>
+        <li>Çalıştırın: <code>uvicorn server:app --host 0.0.0.0 --port 3000 --reload</code></li>
+      </ul>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <span class="code-filename">server.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre id="code-python"><span class="cmt"># ================================================================
+# Su Sayar — Python / FastAPI Backend
+# Çalıştır: uvicorn server:app --host 0.0.0.0 --port 3000 --reload
+# ================================================================</span>
+
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, WebSocket, WebSocketDisconnect
+<span class="kw">from</span> fastapi.middleware.cors <span class="kw">import</span> CORSMiddleware
+<span class="kw">from</span> fastapi.staticfiles <span class="kw">import</span> StaticFiles
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timezone
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">import</span> asyncio, json
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+app = <span class="fn">FastAPI</span>(title=<span class="str">"Su Sayar API"</span>)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[<span class="str">"*"</span>],
+    allow_methods=[<span class="str">"*"</span>],
+    allow_headers=[<span class="str">"*"</span>],
+)
+
+<span class="cmt"># Son 500 okuma bellekte (deque otomatik eski kaydı siler)</span>
+readings: deque = <span class="fn">deque</span>(maxlen=<span class="num">500</span>)
+clients:  list  = []  <span class="cmt"># bağlı WebSocket istemcileri</span>
+
+<span class="kw">class</span> <span class="fn">SensorReading</span>(BaseModel):
+    device_id:    str
+    flow_lpm:     float
+    total_liters: float
+    pulses:       Optional[int] = <span class="num">0</span>
+    uptime_sec:   Optional[int] = <span class="num">0</span>
+    rssi_dbm:     Optional[int] = <span class="num">0</span>
+
+<span class="cmt"># ── POST /api/sensor — ESP32&apos;den veri al ──────────────────────</span>
+@app.<span class="fn">post</span>(<span class="str">"/api/sensor"</span>)
+<span class="kw">async def</span> <span class="fn">receive_sensor</span>(reading: SensorReading):
+    data = reading.model_dump()
+    data[<span class="str">"ts"</span>] = <span class="fn">datetime.now</span>(timezone.utc).<span class="fn">isoformat</span>()
+    readings.<span class="fn">append</span>(data)
+
+    <span class="cmt"># Tüm bağlı istemcilere yay</span>
+    msg = json.<span class="fn">dumps</span>({ <span class="str">"type"</span>: <span class="str">"sensor_update"</span>, <span class="str">"payload"</span>: data })
+    dead = []
+    <span class="kw">for</span> ws <span class="kw">in</span> clients:
+        <span class="kw">try</span>:
+            <span class="kw">await</span> ws.<span class="fn">send_text</span>(msg)
+        <span class="kw">except</span>:
+            dead.<span class="fn">append</span>(ws)
+    <span class="kw">for</span> ws <span class="kw">in</span> dead:
+        clients.<span class="fn">remove</span>(ws)
+
+    <span class="fn">print</span>(<span class="str">f"[{data['ts']}] debi: {data['flow_lpm']} L/dak | toplam: {data['total_liters']} L"</span>)
+    <span class="kw">return</span> { <span class="str">"ok"</span>: <span class="kw">True</span>, <span class="str">"received"</span>: data[<span class="str">"ts"</span>] }
+
+<span class="cmt"># ── GET /api/latest ───────────────────────────────────────────</span>
+@app.<span class="fn">get</span>(<span class="str">"/api/latest"</span>)
+<span class="kw">async def</span> <span class="fn">get_latest</span>():
+    <span class="kw">if not</span> readings:
+        <span class="kw">return</span> { <span class="str">"flow_lpm"</span>: <span class="num">0</span>, <span class="str">"total_liters"</span>: <span class="num">0</span> }
+    <span class="kw">return</span> readings[-<span class="num">1</span>]
+
+<span class="cmt"># ── GET /api/history?n=100 ────────────────────────────────────</span>
+@app.<span class="fn">get</span>(<span class="str">"/api/history"</span>)
+<span class="kw">async def</span> <span class="fn">get_history</span>(n: int = <span class="num">100</span>):
+    n = <span class="fn">min</span>(n, <span class="num">500</span>)
+    <span class="kw">return</span> <span class="fn">list</span>(readings)[-n:]
+
+<span class="cmt"># ── WebSocket /ws — dashboard bağlantısı ─────────────────────</span>
+@app.<span class="fn">websocket</span>(<span class="str">"/ws"</span>)
+<span class="kw">async def</span> <span class="fn">websocket_endpoint</span>(ws: WebSocket):
+    <span class="kw">await</span> ws.<span class="fn">accept</span>()
+    clients.<span class="fn">append</span>(ws)
+    <span class="fn">print</span>(<span class="str">f"Dashboard bağlandı. Aktif: {len(clients)}"</span>)
+
+    <span class="cmt"># Yeni istemciye son okumayı hemen gönder</span>
+    <span class="kw">if</span> readings:
+        <span class="kw">await</span> ws.<span class="fn">send_text</span>(json.<span class="fn">dumps</span>({
+            <span class="str">"type"</span>: <span class="str">"sensor_update"</span>, <span class="str">"payload"</span>: readings[-<span class="num">1</span>]
+        }))
+
+    <span class="kw">try</span>:
+        <span class="kw">while True</span>:
+            <span class="kw">await</span> ws.<span class="fn">receive_text</span>()  <span class="cmt"># bağlantı sağlığını koru</span>
+    <span class="kw">except</span> WebSocketDisconnect:
+        clients.<span class="fn">remove</span>(ws)
+        <span class="fn">print</span>(<span class="str">f"Dashboard ayrıldı. Aktif: {len(clients)}"</span>)</pre>
+      </div>
+    </section>
+
+    <!-- 6. DASHBOARD ENTEGRASYON -->
+    <section id="dashboard">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Dashboard Entegrasyonu</h2>
+      </div>
+
+      <p>
+        Su Sayar dashboard&apos;ını gerçek sensörden gelen veriye bağlamak için
+        aşağıdaki JavaScript snippet&apos;ini dashboard HTML dosyanızın
+        <code>&lt;script&gt;</code> bloguna ekleyin.
+      </p>
+
+      <div class="info-box note">
+        <span class="info-box-icon">&#x2139;</span>
+        <div>
+          Demo modda dashboard kendi simüle ettiği veriyi kullanır. Gerçek mod
+          için <code>REAL_MODE = true</code> yapıp <code>WS_URL</code>&apos;i sunucu adresinizle güncelleyin.
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">JavaScript</span>
+          <span class="code-filename">dashboard entegrasyon</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre id="code-dashboard"><span class="cmt">// ================================================================
+// Su Sayar Dashboard — Gerçek Sensör Entegrasyonu
+// Bu blogu mevcut dashboard&apos;unuzun &lt;script&gt; etiketine ekleyin
+// ================================================================</span>
+
+<span class="kw">const</span> REAL_MODE = <span class="kw">false</span>;  <span class="cmt">// true yapınca canlı veri aktif olur</span>
+<span class="kw">const</span> WS_URL    = <span class="str">'ws://192.168.1.100:3000/ws'</span>;  <span class="cmt">// backend WebSocket adresi</span>
+
+<span class="kw">let</span> wsConnection = <span class="kw">null</span>;
+<span class="kw">let</span> reconnectTimer = <span class="kw">null</span>;
+
+<span class="kw">function</span> <span class="fn">connectRealSensor</span>() {
+  <span class="kw">if</span> (!REAL_MODE) <span class="kw">return</span>;  <span class="cmt">// demo modda WebSocket açılmaz</span>
+
+  <span class="fn">clearTimeout</span>(reconnectTimer);
+  wsConnection = <span class="kw">new</span> <span class="fn">WebSocket</span>(WS_URL);
+
+  wsConnection.<span class="fn">addEventListener</span>(<span class="str">'open'</span>, () =&gt; {
+    <span class="fn">console.log</span>(<span class="str">'[Su Sayar] Sensor baglandı'</span>);
+    <span class="fn">updateConnectionBadge</span>(<span class="kw">true</span>);
+  });
+
+  wsConnection.<span class="fn">addEventListener</span>(<span class="str">'message'</span>, (e) =&gt; {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> msg = <span class="fn">JSON.parse</span>(e.data);
+      <span class="kw">if</span> (msg.type === <span class="str">'sensor_update'</span>) <span class="fn">applyRealData</span>(msg.payload);
+    } <span class="kw">catch</span> (err) {
+      <span class="fn">console.warn</span>(<span class="str">'[Su Sayar] Parse hatası'</span>, err);
+    }
+  });
+
+  wsConnection.<span class="fn">addEventListener</span>(<span class="str">'close'</span>, () =&gt; {
+    <span class="fn">updateConnectionBadge</span>(<span class="kw">false</span>);
+    <span class="fn">console.log</span>(<span class="str">'[Su Sayar] Bağlantı koptu, 5sn sonra tekrar denenecek...'</span>);
+    reconnectTimer = <span class="fn">setTimeout</span>(connectRealSensor, <span class="num">5000</span>);
+  });
+
+  wsConnection.<span class="fn">addEventListener</span>(<span class="str">'error'</span>, (err) =&gt; {
+    <span class="fn">console.error</span>(<span class="str">'[Su Sayar] WebSocket hata'</span>, err);
+    wsConnection.<span class="fn">close</span>();
+  });
+}
+
+<span class="kw">function</span> <span class="fn">applyRealData</span>(data) {
+  <span class="cmt">// Dashboard DOM elementlerini gerçek veriyle güncelle</span>
+  <span class="kw">const</span> flowVal  = <span class="fn">parseFloat</span>(data.flow_lpm  || <span class="num">0</span>);
+  <span class="kw">const</span> totalVal = <span class="fn">parseFloat</span>(data.total_liters || <span class="num">0</span>);
+
+  <span class="cmt">// Anlık debi</span>
+  <span class="kw">const</span> flowEl = document.<span class="fn">getElementById</span>(<span class="str">'flow-value'</span>);
+  <span class="kw">if</span> (flowEl) flowEl.textContent = flowVal.<span class="fn">toFixed</span>(<span class="num">1</span>);
+
+  <span class="cmt">// Gün toplamı</span>
+  <span class="kw">const</span> todayEl = document.<span class="fn">getElementById</span>(<span class="str">'today-val'</span>);
+  <span class="kw">if</span> (todayEl) todayEl.textContent = <span class="fn">Math.round</span>(totalVal);
+
+  <span class="cmt">// Akış ring animasyonu (KPI halka grafiği)</span>
+  <span class="kw">const</span> ring = document.<span class="fn">getElementById</span>(<span class="str">'flow-ring'</span>);
+  <span class="kw">if</span> (ring) {
+    <span class="kw">const</span> pct = <span class="fn">Math.min</span>((flowVal / <span class="num">15</span>) * <span class="num">100</span>, <span class="num">100</span>);  <span class="cmt">// 15 L/dak = max kabul</span>
+    ring.style.background =
+      <span class="str">`conic-gradient(var(--accent) ${pct}%, var(--surface2) ${pct}%)`</span>;
+  }
+
+  <span class="cmt">// Durum metni</span>
+  <span class="kw">const</span> statusEl = document.<span class="fn">getElementById</span>(<span class="str">'flow-status'</span>);
+  <span class="kw">if</span> (statusEl) {
+    <span class="kw">if</span>      (flowVal === <span class="num">0</span>)   statusEl.textContent = <span class="str">'Akış yok'</span>;
+    <span class="kw">else if</span> (flowVal &lt;  <span class="num">0.5</span>) statusEl.textContent = <span class="str">'Düşük debi — damlatma?'</span>;
+    <span class="kw">else</span>                      statusEl.textContent = <span class="str">'Akış aktif'</span>;
+  }
+}
+
+<span class="kw">function</span> <span class="fn">updateConnectionBadge</span>(connected) {
+  <span class="kw">const</span> badge = document.<span class="fn">getElementById</span>(<span class="str">'connection-badge'</span>);
+  <span class="kw">if</span> (!badge) <span class="kw">return</span>;
+  badge.textContent = connected ? <span class="str">'Canlı'</span> : <span class="str">'Bağlantı yok'</span>;
+  badge.style.background = connected ? <span class="str">'rgba(46,160,67,.2)'</span> : <span class="str">'rgba(231,111,81,.2)'</span>;
+  badge.style.color       = connected ? <span class="str">'#7ee787'</span> : <span class="str">'#ff7b72'</span>;
+}
+
+<span class="cmt">// Sayfa yüklendiğinde başlat</span>
+document.<span class="fn">addEventListener</span>(<span class="str">'DOMContentLoaded'</span>, <span class="fn">connectRealSensor</span>);</pre>
+      </div>
+
+      <div class="info-box tip">
+        <span class="info-box-icon">&#x2714;</span>
+        <div>
+          <strong>Hızlı test:</strong> backend çalışırken tarayıcıdan
+          <code>http://localhost:3000/api/latest</code> adresine gidip JSON gönderildiği doğrulanabilir.
+          Cevap görüldükten sonra dashboard&apos;da <code>REAL_MODE = true</code> yapıp
+          <code>WS_URL</code>&apos;i güncelleyin.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. TEST -->
+    <section id="test">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Test ve Sorun Giderme</h2>
+      </div>
+
+      <p>
+        Kurulumu test etmek için aşağıdaki <strong>curl komutu</strong> ile ESP32 yokken
+        backend&apos;e sahte veri gönderebilirsiniz:
+      </p>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-lang">Shell</span>
+          <span class="code-filename">test komutu</span>
+          <button class="copy-btn" onclick="copyCode(this)">Kopyala</button>
+        </div>
+        <pre>curl -X POST http://localhost:3000/api/sensor \
+  -H "Content-Type: application/json" \
+  -d '{
+    "device_id":    "susayar-001",
+    "flow_lpm":     4.5,
+    "total_liters": 23.7,
+    "pulses":       512,
+    "uptime_sec":   3600,
+    "rssi_dbm":     -62
+  }'</pre>
+      </div>
+
+      <div class="test-grid">
+        <div class="test-card">
+          <h4>ESP32 seri port çıktısı</h4>
+          <p>Arduino IDE &rarr; Tools &rarr; Serial Monitor (115200 baud)</p>
+          <p>Beklenen çıktı:</p>
+          <pre style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;font-size:.75rem;overflow:auto">Su Sayar başlıyor...
+WiFi bağlanılıyor......
+Bağlandı! IP: 192.168.1.105
+[OK] 3.47 L/dak | Toplam: 0.0 L
+[OK] 3.52 L/dak | Toplam: 0.1 L</pre>
+        </div>
+        <div class="test-card">
+          <h4>Yaygın sorunlar</h4>
+          <p style="margin-bottom:.4rem"><strong style="color:#ff7b72">WiFi bağlanamıyor</strong></p>
+          <p>SSID/şifre doğru mu? 2.4 GHz ağda mı? (ESP32 5 GHz desteklemez)</p>
+          <p style="margin-bottom:.4rem;margin-top:.75rem"><strong style="color:#ff7b72">HTTP 0 ya da -1</strong></p>
+          <p>SERVER_URL&apos;deki IP doğru mu? Bilgisayar ve ESP32 aynı ağda mı?</p>
+          <p style="margin-bottom:.4rem;margin-top:.75rem"><strong style="color:#ff7b72">Debi hep 0</strong></p>
+          <p>GPIO 4 pinine sarı kablo bağlı mı? 10kΩ pull-up direnç var mı?</p>
+        </div>
+      </div>
+
+      <p style="margin-top:1rem">
+        <strong>Kalibrasyon notu:</strong> YF-S201&apos;in kalibrasyon katsayısı kablo uzunluğuna
+        ve basınç farklılıklarına göre değişebilir. Gerçek ölçüm ile
+        karşılaştırarak <code>PULSE_TO_ML</code> değerini (varsayılan 2.25 mL) ayarlayın.
+        Örnek test: 1 litre su geçişindeki darbe sayısını sayıp <code>1000 / darbe_sayisi</code>
+        mL değerini hesaplayın.
+      </p>
+
+      <div class="info-box tip">
+        <span class="info-box-icon">&#x2714;</span>
+        <div>
+          Ev ağında çalışıyor, internetten erişim istiyorsanız: router&apos;ınızda
+          port yönlendirme (<strong>port forwarding</strong>) ile 3000 portunu dışarıya açın,
+          ya da <strong>ngrok</strong> ile anlık tünel oluşturun:
+          <code>ngrok http 3000</code>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    <a href="susayar-landing.html">Su Sayar</a> &nbsp;&middot;&nbsp;
+    <a href="susayar-sema.html">Bağlantı Şeması</a> &nbsp;&middot;&nbsp;
+    <a href="susayar-dashboard.html">Dashboard Demo</a>
+  </p>
+  <p style="margin-top:.5rem">Sorularınız için GitHub Issues veya e-posta ile ulaşın.</p>
+</footer>
+
+<script>
+  // TOC aktif link vurgulama
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('section[id]');
+
+  function updateToc() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', updateToc, { passive: true });
+  updateToc();
+
+  // Kod kopyalama
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Kopyalandı!';
+      btn.style.background = 'var(--green)';
+      btn.style.color = 'white';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(() => {
+        btn.textContent = 'Kopyala';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

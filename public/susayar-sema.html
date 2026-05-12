@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Su Sayar — Bağlantı Şeması</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; }
+  .page-body { padding: 2rem; }
+  .top-nav { background: #1a1a2e; padding: .8rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .top-nav-logo { color: white; font-weight: 800; font-size: 1rem; text-decoration: none; letter-spacing: .05em; }
+  .top-nav-logo span { color: #4361ee; }
+  .top-nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .top-nav-links a { color: #94a3b8; text-decoration: none; font-size: .83rem; transition: color .15s; }
+  .top-nav-links a:hover { color: white; }
+  .top-nav-btn { background: #4361ee; color: white; padding: .4rem .9rem; border-radius: 6px; font-size: .82rem; font-weight: 600; text-decoration: none; }
+  h1 { text-align: center; color: #1a1a2e; margin-bottom: 2rem; }
+  h2 { color: #444; font-size: 1rem; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1rem; }
+  .bolum { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+
+  /* TESİSAT */
+  .tesisat { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; }
+  .kutu { background: #1a1a2e; color: white; padding: 1rem 1.5rem; border-radius: 8px; text-align: center; font-size: .85rem; font-weight: 600; min-width: 100px; }
+  .kutu .icon { font-size: 1.8rem; display: block; margin-bottom: .3rem; }
+  .kutu.mavi { background: #0077b6; }
+  .kutu.yesil { background: #2d6a4f; }
+  .kutu.turuncu { background: #e76f51; }
+  .ok { font-size: 2rem; color: #aaa; padding: 0 .5rem; }
+
+  /* KABLO BAĞLANTILARI */
+  .kablo-tablo { width: 100%; border-collapse: collapse; }
+  .kablo-tablo th { background: #1a1a2e; color: white; padding: .75rem 1rem; text-align: left; font-size: .82rem; }
+  .kablo-tablo td { padding: .75rem 1rem; border-bottom: 1px solid #eee; font-size: .85rem; }
+  .kablo-tablo tr:hover td { background: #f9f9f9; }
+  .renk { display: inline-block; width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; margin-right: .4rem; border: 1px solid rgba(0,0,0,.15); }
+  .kirmizi { background: #e63946; }
+  .siyah   { background: #1a1a2e; }
+  .sari    { background: #f4c542; }
+
+  /* SİSTEM AKIŞI */
+  .akis { display: flex; flex-direction: column; gap: 0; align-items: center; }
+  .adim { background: #f0f4ff; border: 2px solid #4361ee; border-radius: 10px; padding: 1rem 2rem; text-align: center; width: 280px; }
+  .adim .baslik { font-weight: 700; color: #1a1a2e; font-size: .95rem; }
+  .adim .aciklama { color: #666; font-size: .8rem; margin-top: .3rem; }
+  .adim.veri { background: #f0fff4; border-color: #2d6a4f; }
+  .adim.uyari { background: #fff8f0; border-color: #e76f51; }
+  .asagi { font-size: 1.8rem; color: #4361ee; }
+
+  .not { background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem 1.5rem; border-radius: 4px; font-size: .85rem; color: #555; margin-top: 1rem; }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a class="top-nav-logo" href="susayar-landing.html">SU<span>SAYAR</span></a>
+  <ul class="top-nav-links">
+    <li><a href="susayar-landing.html">Ana Sayfa</a></li>
+    <li><a href="susayar-esp32.html">ESP32 Kurulum</a></li>
+    <li><a href="susayar-dashboard.html">Dashboard</a></li>
+  </ul>
+  <a class="top-nav-btn" href="susayar-dashboard.html">Demo Göster</a>
+</nav>
+
+<div class="page-body">
+
+<h1>🔵 Su Sayar — Bağlantı Şeması</h1>
+
+<!-- TESİSAT BAĞLANTISI -->
+<div class="bolum">
+  <h2>💧 1. Tesisat Bağlantısı (Musluktan Hortuma)</h2>
+  <div class="tesisat">
+    <div class="kutu mavi">
+      <span class="icon">🚿</span>
+      MUSLUK
+      <div style="font-size:.7rem;font-weight:400;margin-top:.3rem">1/2 inç çıkış</div>
+    </div>
+    <div class="ok">→</div>
+    <div class="kutu" style="background:#555">
+      <span class="icon">🔩</span>
+      ADAPTÖR
+      <div style="font-size:.7rem;font-weight:400;margin-top:.3rem">1/2 inç + teflon bant</div>
+    </div>
+    <div class="ok">→</div>
+    <div class="kutu yesil">
+      <span class="icon">⚙️</span>
+      YF-S201
+      <div style="font-size:.7rem;font-weight:400;margin-top:.3rem">Akış sensörü</div>
+    </div>
+    <div class="ok">→</div>
+    <div class="kutu turuncu">
+      <span class="icon">🌊</span>
+      HORTUM
+      <div style="font-size:.7rem;font-weight:400;margin-top:.3rem">Su çıkışı</div>
+    </div>
+  </div>
+  <div class="not">📌 Nalburdan: 1/2 inç adaptör + teflon bant + hortum kelepçesi (2 adet)</div>
+</div>
+
+<!-- KABLO BAĞLANTILARI -->
+<div class="bolum">
+  <h2>🔌 2. Kablo Bağlantıları (Sensör → ESP32)</h2>
+  <table class="kablo-tablo">
+    <tr>
+      <th>YF-S201 Kablosu</th>
+      <th>Renk</th>
+      <th>ESP32 Pin</th>
+      <th>Açıklama</th>
+    </tr>
+    <tr>
+      <td><span class="renk kirmizi"></span> Kırmızı</td>
+      <td>Güç</td>
+      <td><strong>VIN (5V)</strong></td>
+      <td>Sensörü besler</td>
+    </tr>
+    <tr>
+      <td><span class="renk siyah"></span> Siyah</td>
+      <td>Toprak</td>
+      <td><strong>GND</strong></td>
+      <td>Negatif bağlantı</td>
+    </tr>
+    <tr>
+      <td><span class="renk sari"></span> Sarı</td>
+      <td>Sinyal</td>
+      <td><strong>GPIO 4</strong></td>
+      <td>Akış verisi buradan gelir</td>
+    </tr>
+  </table>
+  <div class="not">📌 Sadece 3 kablo bağlayacaksınız. Jumper kablolarla breadboard üzerinden yapılır.</div>
+</div>
+
+<!-- SİSTEM AKIŞI -->
+<div class="bolum">
+  <h2>📡 3. Sistem Veri Akışı</h2>
+  <div class="akis">
+    <div class="adim">
+      <div class="baslik">⚙️ YF-S201 Sensör</div>
+      <div class="aciklama">Su geçtikçe sinyal üretir</div>
+    </div>
+    <div class="asagi">↓</div>
+    <div class="adim">
+      <div class="baslik">🖥️ ESP32</div>
+      <div class="aciklama">Sinyali sayar → L/dakika hesaplar → WiFi'a bağlanır</div>
+    </div>
+    <div class="asagi">↓</div>
+    <div class="adim veri">
+      <div class="baslik">📊 Veri (Seri Port / Dashboard)</div>
+      <div class="aciklama">Anlık akış, günlük kullanım, anomali tespiti</div>
+    </div>
+    <div class="asagi">↓</div>
+    <div class="adim uyari">
+      <div class="baslik">🚨 Uyarı</div>
+      <div class="aciklama">Gece akış varsa → Telefona bildirim</div>
+    </div>
+  </div>
+</div>
+
+<!-- ÖZET -->
+<div class="bolum" style="background:#1a1a2e;color:white">
+  <h2 style="color:#aaa">📦 Alınacaklar Özeti</h2>
+  <table style="width:100%;border-collapse:collapse;color:white">
+    <tr>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333">✅ ESP32-WROOM-32U</td>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333;color:#aaa">direnc.net</td>
+    </tr>
+    <tr>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333">✅ YF-S201 Su Akış Sensörü</td>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333;color:#aaa">direnc.net</td>
+    </tr>
+    <tr>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333">✅ Dişi-Dişi Jumper Kablo 40 adet</td>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333;color:#aaa">direnc.net</td>
+    </tr>
+    <tr>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333">✅ Breadboard 830 Nokta</td>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333;color:#aaa">direnc.net</td>
+    </tr>
+    <tr>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333">✅ 1/2 inç Adaptör + Teflon Bant</td>
+      <td style="padding:.6rem 1rem;border-bottom:1px solid #333;color:#aaa">Nalbur</td>
+    </tr>
+    <tr>
+      <td style="padding:.6rem 1rem">✅ Hortum + Kelepçe</td>
+      <td style="padding:.6rem 1rem;color:#aaa">Nalbur</td>
+    </tr>
+  </table>
+</div>
+
+
+</div><!-- /page-body -->
+
+<footer style="background:#1a1a2e;color:#94a3b8;text-align:center;padding:1.5rem 2rem;font-size:.82rem;margin-top:2rem">
+  <a href="susayar-landing.html" style="color:#4361ee;text-decoration:none">Su Sayar</a>
+  &nbsp;&middot;&nbsp;
+  <a href="susayar-esp32.html" style="color:#94a3b8;text-decoration:none">ESP32 Kurulum</a>
+  &nbsp;&middot;&nbsp;
+  <a href="susayar-dashboard.html" style="color:#94a3b8;text-decoration:none">Dashboard Demo</a>
+</footer>
+
+</body>
+</html>

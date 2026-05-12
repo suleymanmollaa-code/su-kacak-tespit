@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Su Sayar — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #090c14;
+    --bg2:       #0e1220;
+    --bg3:       #161c2e;
+    --bg4:       #1c2338;
+    --border:    rgba(255,255,255,.07);
+    --border2:   rgba(255,255,255,.12);
+    --blue:      #3b82f6;
+    --blue-lt:   #60a5fa;
+    --blue-dk:   #1d4ed8;
+    --cyan:      #06b6d4;
+    --green:     #10b981;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --text:      #e2e8f0;
+    --text2:     #cbd5e1;
+    --muted:     #64748b;
+    --muted2:    #94a3b8;
+    --card:      #111827;
+    --card2:     #162032;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── SIDEBAR ──────────────────────────────── */
+  .sidebar {
+    width: 236px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(59,130,246,.15) 40%, transparent);
+    pointer-events: none;
+  }
+
+  .logo {
+    padding: 1.5rem 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: .75rem;
+  }
+  .logo-inner { display: flex; align-items: center; gap: .6rem; }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(59,130,246,.25);
+  }
+  .logo-text-wrap { display: flex; flex-direction: column; }
+  .logo-top { font-size: .95rem; font-weight: 800; color: var(--text); letter-spacing: .04em; line-height: 1.1; }
+  .logo-bot { font-size: .95rem; font-weight: 800; color: var(--blue-lt); letter-spacing: .04em; line-height: 1.1; }
+  .logo-tag { font-size: .65rem; color: var(--muted); margin-top: .3rem; letter-spacing: .12em; text-transform: uppercase; }
+
+  .nav-section {
+    font-size: .62rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    padding: 1rem 1.25rem .4rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .6rem 1.25rem;
+    font-size: .82rem;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+    margin: 1px 0;
+    user-select: none;
+    border-radius: 0;
+  }
+  .nav-item:hover { color: var(--text2); background: rgba(255,255,255,.035); }
+  .nav-item.active {
+    color: var(--blue-lt);
+    background: linear-gradient(90deg, rgba(59,130,246,.12), rgba(59,130,246,.03));
+    border-left-color: var(--blue);
+    font-weight: 600;
+  }
+  .nav-icon { font-size: .9rem; width: 18px; text-align: center; flex-shrink: 0; }
+  .nav-label { font-size: .81rem; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: .6rem;
+    font-weight: 700;
+    padding: .12rem .42rem;
+    border-radius: 9px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .user-row { display: flex; align-items: center; gap: .65rem; }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59,130,246,.2);
+  }
+  .user-name { font-size: .8rem; font-weight: 600; color: var(--text); }
+  .user-plan { font-size: .66rem; color: var(--blue-lt); margin-top: .05rem; }
+
+  /* ── MAIN ───────────────────────────────── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── TOPBAR ─────────────────────────────── */
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: .875rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-title { font-size: .93rem; font-weight: 700; color: var(--text); }
+  .topbar-sub { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+  .topbar-right { display: flex; align-items: center; gap: .875rem; }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    margin-right: .35rem;
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:.5;box-shadow:0 0 2px var(--green)} }
+  .status-text { font-size: .76rem; color: var(--green); font-weight: 500; }
+
+  .btn-sm {
+    padding: .42rem .95rem;
+    border-radius: 7px;
+    font-size: .76rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59,130,246,.3);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.04); }
+
+  /* ── CONTENT ────────────────────────────── */
+  .content { flex: 1; overflow-y: auto; padding: 1.75rem; }
+
+  /* ── PAGE SYSTEM ────────────────────────── */
+  .page { display: none; animation: fadeIn .2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes tatilPulse { 0%,100%{border-color:var(--red)} 50%{border-color:rgba(239,68,68,.25)} }
+  @keyframes alertShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+
+  /* ── KPI KARTLARI ───────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 12px 12px 0 0;
+  }
+  .kpi:nth-child(1)::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .kpi:nth-child(2)::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .kpi:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .kpi:nth-child(4)::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .kpi:hover { border-color: var(--border2); }
+
+  .kpi-label {
+    font-size: .68rem;
+    color: var(--muted);
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    margin-bottom: .65rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 600;
+  }
+  .kpi-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: .3rem;
+    transition: color .3s;
+    letter-spacing: -.02em;
+  }
+  .kpi-value.blue   { color: var(--blue-lt); }
+  .kpi-value.green  { color: var(--green); }
+  .kpi-value.yellow { color: var(--yellow); }
+  .kpi-value.red    { color: var(--red); }
+  .kpi-change { font-size: .7rem; color: var(--muted); }
+  .kpi-change .up   { color: var(--red); font-weight: 600; }
+  .kpi-change .down { color: var(--green); font-weight: 600; }
+  .kpi-bar { height: 3px; background: rgba(255,255,255,.06); border-radius: 2px; margin-top: .85rem; overflow: hidden; }
+  .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width .7s ease; }
+
+  /* ── GRID LAYOUTS ───────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+  .grid3 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+  /* ── KART ───────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.375rem;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+  .card-title { font-size: .86rem; font-weight: 700; color: var(--text); }
+  .card-sub { font-size: .7rem; color: var(--muted); margin-top: .2rem; }
+
+  .chip {
+    padding: .22rem .65rem;
+    border-radius: 20px;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+  }
+  .chip-green  { background: rgba(16,185,129,.12); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
+  .chip-yellow { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
+  .chip-red    { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+  .chip-blue   { background: rgba(59,130,246,.12); color: var(--blue-lt); border: 1px solid rgba(59,130,246,.2); }
+
+  /* ── BAR CHART ──────────────────────────── */
+  .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 120px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: opacity .15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .bar:hover { opacity: .7; }
+  .bar-tooltip {
+    position: absolute;
+    bottom: 108%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: .22rem .5rem;
+    font-size: .64rem;
+    color: var(--text);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: .15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  }
+  .bar:hover .bar-tooltip { opacity: 1; }
+  .bar-lbl { font-size: .6rem; color: var(--muted); }
+
+  /* ── ANLIK AKIM ─────────────────────────── */
+  .flow-display { text-align: center; padding: 1.25rem 0; }
+  .flow-num {
+    font-size: 3.25rem;
+    font-weight: 800;
+    color: var(--cyan);
+    line-height: 1;
+    transition: .4s;
+    letter-spacing: -.03em;
+  }
+  .flow-unit { font-size: .85rem; color: var(--muted); margin-top: .35rem; font-weight: 500; }
+  .flow-ring {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 2px solid rgba(6,182,212,.2);
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 20px rgba(6,182,212,.08), inset 0 0 20px rgba(6,182,212,.04);
+  }
+  .flow-ring-inner {
+    width: 116px; height: 116px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #162032, var(--card));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  /* ── ANOMALI ────────────────────────────── */
+  .anomali-list { display: flex; flex-direction: column; gap: .6rem; }
+  .anomali-item {
+    display: flex;
+    gap: .85rem;
+    align-items: flex-start;
+    padding: .85rem 1rem;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    transition: border-color .15s;
+  }
+  .anomali-item:hover { border-color: var(--border2); }
+  .anomali-item.red-bg    { background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.18); }
+  .anomali-item.yellow-bg { background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.18); }
+  .anomali-item.blue-bg   { background: rgba(59,130,246,.05); border-color: rgba(59,130,246,.18); }
+  .anomali-icon { font-size: 1rem; margin-top: .15rem; flex-shrink: 0; }
+  .anomali-title { font-size: .82rem; font-weight: 700; margin-bottom: .2rem; color: var(--text); }
+  .anomali-desc { font-size: .73rem; color: var(--muted2); line-height: 1.55; }
+  .anomali-time { font-size: .66rem; color: var(--muted); margin-top: .3rem; }
+  .incele-btn {
+    padding: .28rem .65rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: .68rem;
+    font-weight: 700;
+    transition: filter .15s;
+    font-family: inherit;
+  }
+  .incele-btn:hover { filter: brightness(1.15); }
+
+  /* ── KULLANICI LİSTESİ ──────────────────── */
+  .user-list { display: flex; flex-direction: column; gap: .5rem; }
+  .user-item {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .6rem .8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: border-color .15s;
+  }
+  .user-item:hover { border-color: var(--border2); }
+  .user-item .av {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .user-item .un { font-size: .8rem; font-weight: 600; }
+  .user-item .ur { font-size: .68rem; color: var(--muted); }
+  .user-item .ml { margin-left: auto; }
+  .add-btn {
+    width: 100%;
+    padding: .6rem;
+    border-radius: 8px;
+    border: 1px dashed rgba(59,130,246,.3);
+    background: transparent;
+    color: var(--blue-lt);
+    font-size: .76rem;
+    cursor: pointer;
+    margin-top: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .add-btn:hover { background: rgba(59,130,246,.07); border-color: rgba(59,130,246,.5); }
+
+  /* ── TABLO ──────────────────────────────── */
+  .week-table { width: 100%; border-collapse: collapse; }
+  .week-table th {
+    font-size: .67rem;
+    color: var(--muted);
+    text-align: left;
+    padding: .45rem .75rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-table td { font-size: .8rem; padding: .6rem .75rem; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .week-table tr:last-child td { border: none; }
+  .week-table tr:hover td { background: rgba(255,255,255,.025); }
+  .trend { font-size: .7rem; font-weight: 700; }
+  .trend.up   { color: var(--red); }
+  .trend.down { color: var(--green); }
+  .trend.same { color: var(--muted); }
+
+  /* ── SCROLLBAR ──────────────────────────── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
+
+  /* ── MODAL ──────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-box {
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    width: 500px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(10px) scale(.98);
+    transition: transform .2s;
+    box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  }
+  .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.125rem 1.375rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title-text { font-size: .9rem; font-weight: 700; }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: .2rem .35rem;
+    border-radius: 6px;
+    transition: all .15s;
+  }
+  .modal-close:hover { color: var(--text); background: rgba(255,255,255,.07); }
+  .modal-body { padding: 1.375rem; }
+
+  /* ── FORM ───────────────────────────────── */
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    font-size: .71rem;
+    font-weight: 700;
+    color: var(--muted2);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: .42rem;
+    display: block;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: .6rem .8rem;
+    font-size: .83rem;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+  }
+  .form-select option { background: var(--bg3); }
+  .form-actions { display: flex; gap: .65rem; justify-content: flex-end; margin-top: 1.375rem; }
+
+  /* ── TOAST ──────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: .8rem 1.1rem;
+    font-size: .8rem;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: .25s;
+    pointer-events: none;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── OGRENME / FEEDBACK ─────────────────── */
+  .anomali-feedback { display: flex; align-items: center; gap: .45rem; margin-top: .5rem; flex-wrap: wrap; }
+  .feedback-q { font-size: .67rem; color: var(--muted); }
+  .fb-btn {
+    padding: .18rem .5rem;
+    border-radius: 5px;
+    font-size: .66rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid;
+    transition: filter .15s;
+    font-family: inherit;
+  }
+  .fb-btn:hover { filter: brightness(1.15); }
+  .fb-yes { background: rgba(239,68,68,.1); color: #f87171; border-color: rgba(239,68,68,.25); }
+  .fb-no  { background: rgba(16,185,129,.1); color: #34d399; border-color: rgba(16,185,129,.25); }
+  .fb-done { font-size: .67rem; color: var(--green); font-weight: 700; }
+
+  .kalibrасyon-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(59,130,246,.04));
+    border: 1px solid rgba(59,130,246,.18);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .kalib-progress { flex: 1; }
+  .kalib-title { font-size: .8rem; font-weight: 700; margin-bottom: .3rem; }
+  .kalib-sub { font-size: .7rem; color: var(--muted); }
+  .kalib-bar { height: 4px; background: rgba(255,255,255,.07); border-radius: 3px; margin-top: .5rem; overflow: hidden; }
+  .kalib-bar-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 3px; width: 43%; transition: width 1s ease; }
+
+  /* ── TOGGLE ROWS ────────────────────────── */
+  .toggle-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-row.paused { opacity: .7; }
+  .toggle-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+  .toggle-info { flex: 1; }
+  .toggle-title { font-size: .83rem; font-weight: 700; margin-bottom: .2rem; display: flex; align-items: center; gap: .5rem; }
+  .toggle-desc { font-size: .71rem; color: var(--muted2); line-height: 1.55; }
+  .toggle-threshold { margin-top: .55rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .toggle-threshold label { font-size: .68rem; color: var(--muted); }
+  .toggle-threshold input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: .28rem .55rem;
+    font-size: .76rem;
+    width: 70px;
+    outline: none;
+    font-family: inherit;
+  }
+  .toggle-threshold input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,130,246,.1); }
+  .toggle-threshold span { font-size: .68rem; color: var(--muted); }
+  .paused-badge {
+    font-size: .6rem;
+    font-weight: 700;
+    background: rgba(245,158,11,.12);
+    color: #fbbf24;
+    border: 1px solid rgba(245,158,11,.25);
+    border-radius: 4px;
+    padding: .1rem .38rem;
+  }
+  .paused-countdown { font-size: .68rem; color: var(--yellow); margin-top: .28rem; }
+  .toggle-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: .45rem; }
+  .state-badge { font-size: .68rem; font-weight: 700; padding: .22rem .6rem; border-radius: 6px; }
+  .state-on  { background: rgba(16,185,129,.12); color: #34d399; border: 1px solid rgba(16,185,129,.25); }
+  .state-off { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.25); }
+  .cfg-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted2);
+    border-radius: 6px;
+    padding: .27rem .65rem;
+    font-size: .68rem;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .cfg-btn:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,.04); }
+  .cfg-btn.re-enable { border-color: rgba(16,185,129,.35); color: #34d399; }
+  .cfg-btn.re-enable:hover { background: rgba(16,185,129,.08); }
+
+  /* ── ANOMALİ DETAY KART ─────────────────── */
+  .anomali-rich {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 1rem 1.1rem;
+    margin-bottom: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    transition: border-color .15s;
+  }
+  .anomali-rich:hover { border-color: var(--border2); }
+  .anomali-rich.red-bg    { background: rgba(239,68,68,.04); border-color: rgba(239,68,68,.18); }
+  .anomali-rich.yellow-bg { background: rgba(245,158,11,.04); border-color: rgba(245,158,11,.18); }
+  .anomali-rich.blue-bg   { background: rgba(59,130,246,.04); border-color: rgba(59,130,246,.18); }
+  .anomali-rich.resolved  { opacity: .4; }
+  .ar-head { display: flex; align-items: flex-start; gap: .8rem; }
+  .ar-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+  .ar-main { flex: 1; }
+  .ar-top { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-bottom: .2rem; }
+  .ar-title { font-size: .84rem; font-weight: 700; }
+  .ar-sev { font-size: .6rem; font-weight: 700; padding: .12rem .42rem; border-radius: 4px; }
+  .sev-red    { background: rgba(239,68,68,.18); color: #f87171; }
+  .sev-yellow { background: rgba(245,158,11,.18); color: #fbbf24; }
+  .sev-blue   { background: rgba(59,130,246,.18); color: var(--blue-lt); }
+  .ar-desc { font-size: .73rem; color: var(--muted2); line-height: 1.55; }
+  .ar-time { font-size: .66rem; color: var(--muted); margin-top: .22rem; }
+  .ar-metrics { display: flex; gap: .55rem; flex-wrap: wrap; }
+  .ar-metric {
+    background: rgba(255,255,255,.035);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: .38rem .65rem;
+    text-align: center;
+    flex: 1;
+    min-width: 68px;
+  }
+  .ar-metric-val { font-size: .86rem; font-weight: 700; }
+  .ar-metric-lbl { font-size: .58rem; color: var(--muted); margin-top: .1rem; }
+  .ar-spark { height: 32px; display: flex; align-items: flex-end; gap: 2px; }
+  .ar-spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; }
+  .ar-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .45rem; }
+  .ar-actions { display: flex; gap: .45rem; align-items: center; }
+  .ar-link { font-size: .66rem; color: var(--muted); cursor: pointer; text-decoration: underline; transition: color .15s; }
+  .ar-link:hover { color: var(--blue-lt); }
+
+  .pause-opts { display: flex; flex-direction: column; gap: .45rem; }
+  .pause-opt {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .7rem .95rem;
+    text-align: left;
+    color: var(--text2);
+    font-size: .8rem;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .pause-opt:hover { border-color: var(--blue); background: rgba(59,130,246,.06); color: var(--text); }
+  .pause-opt-warn { border-color: rgba(239,68,68,.25); color: #f87171; }
+  .pause-opt-warn:hover { background: rgba(239,68,68,.07); border-color: var(--red); }
+
+  /* ── COMING SOON ────────────────────────── */
+  .coming-soon-box {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+  .coming-soon-icon { font-size: 2.75rem; margin-bottom: 1.25rem; opacity: .5; }
+  .coming-soon-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .45rem; }
+  .coming-soon-sub { font-size: .8rem; color: var(--muted); }
+
+  /* ── ANLIK PAGE ─────────────────────────── */
+  .flow-big { text-align: center; padding: 2.5rem 2rem; }
+  .flow-big-ring {
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 40px rgba(6,182,212,.1);
+  }
+  .flow-big-inner {
+    width: 168px; height: 168px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 30%, #162032, var(--card));
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+  }
+  .flow-big-num {
+    font-size: 2.85rem;
+    font-weight: 800;
+    color: var(--cyan);
+    transition: .4s;
+    letter-spacing: -.03em;
+  }
+  .flow-history { display: flex; gap: 3px; align-items: flex-end; height: 60px; margin-top: 1.5rem; }
+  .fh-bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    background: rgba(6,182,212,.35);
+    min-height: 3px;
+    transition: height .4s ease;
+  }
+
+  /* ── ANOMALI PAGE FULL ──────────────────── */
+  .anomali-filter { display: flex; gap: .45rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: .3rem .75rem;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted2);
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .filter-btn.active { background: rgba(59,130,246,.14); color: var(--blue-lt); border-color: rgba(59,130,246,.35); }
+  .filter-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ── KULLANICI PAGE FULL ────────────────── */
+  .user-full-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-inner">
+      <div class="logo-icon">&#x1F4A7;</div>
+      <div class="logo-text-wrap">
+        <div><span class="logo-top">SU</span><span class="logo-bot">SAYAR</span></div>
+        <div class="logo-tag">Akıllı Su Takip</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-section">Genel</div>
+  <div class="nav-item active" data-page="dashboard" data-title="Dashboard">
+    <span class="nav-icon">&#x1F4CA;</span><span class="nav-label">Dashboard</span>
+  </div>
+  <div class="nav-item" data-page="anlik-akis" data-title="Anlık Akış">
+    <span class="nav-icon">&#x1F4A7;</span><span class="nav-label">Anlık Akış</span>
+  </div>
+  <div class="nav-item" data-page="coming-soon" data-title="Günlük Rapor">
+    <span class="nav-icon">&#x1F4C5;</span><span class="nav-label">Günlük Rapor</span>
+  </div>
+  <div class="nav-item" data-page="coming-soon" data-title="Aylık Analiz">
+    <span class="nav-icon">&#x1F4C8;</span><span class="nav-label">Aylık Analiz</span>
+  </div>
+
+  <div class="nav-section">Uyarılar</div>
+  <div class="nav-item" data-page="anomaliler" data-title="Anomaliler">
+    <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Anomaliler</span><span class="nav-badge" id="anomali-badge">7</span>
+  </div>
+  <div class="nav-item" data-page="ogrenme" data-title="Sistem Öğreniyor">
+    <span class="nav-icon">&#x1F9E0;</span><span class="nav-label">Sistem Öğreniyor</span><span class="nav-badge" style="background:var(--blue)">YEN</span>
+  </div>
+  <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
+    <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
+  </div>
+
+  <div class="nav-section">Ayarlar</div>
+  <div class="nav-item" data-page="kullanicilar" data-title="Kullanıcılar">
+    <span class="nav-icon">&#x1F465;</span><span class="nav-label">Kullanıcılar</span>
+  </div>
+  <div class="nav-item" data-page="cihaz-ayarlari" data-title="Cihaz Ayarları">
+    <span class="nav-icon">&#x2699;&#xFE0F;</span><span class="nav-label">Cihaz Ayarları</span>
+  </div>
+  <div class="nav-item" data-page="coming-soon" data-title="Abonelik">
+    <span class="nav-icon">&#x1F4B3;</span><span class="nav-label">Abonelik</span>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="avatar">AK</div>
+      <div>
+        <div class="user-name">Ahmet K.</div>
+        <div class="user-plan">Pro Plan</div>
+      </div>
+    </div>
+    <div style="margin-top:.85rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.2rem">
+      <a href="susayar-landing.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem">&#x2190; Ana Sayfa</a>
+      <a href="susayar-esp32.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem;text-decoration:none">&#x1F527; ESP32 Kurulum</a>
+      <a href="susayar-sema.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem;text-decoration:none">&#x1F4CD; Bağlantı Şeması</a>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub">Daire 3 — İstanbul / Kadıköy</div>
+    </div>
+    <div class="topbar-right">
+      <div>
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Cihaz Bağlı</span>
+      </div>
+      <button class="btn-sm btn-ghost" id="btn-rapor">&#x1F4E4; Rapor İndir</button>
+      <button class="btn-sm" id="btn-cihaz-bagla" onclick="openCihazBaglaModal()"
+        style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;font-weight:600">
+        &#x1F50C; Cihaz Bağla
+      </button>
+      <button class="btn-sm btn-primary" id="btn-kullanici-ekle">+ Kullanıcı Ekle</button>
+      <div style="display:flex;align-items:center;gap:.5rem;border-left:1px solid rgba(255,255,255,.08);padding-left:.875rem;margin-left:.125rem">
+        <span style="font-size:.78rem;color:#94a3b8;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-display-name">Kullanıcı</span>
+        <button class="btn-sm" onclick="doLogout()" title="Çıkış Yap"
+          style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:.35rem .65rem;font-size:.78rem">
+          Çıkış
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- TATİL MODU BANNER -->
+      <div id="tatil-banner" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--red);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;animation:tatilPulse 2s infinite">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <div style="font-size:1.5rem">&#x1F9F3;</div>
+          <div style="flex:1">
+            <div style="font-size:.88rem;font-weight:700;color:var(--red);margin-bottom:.2rem">TATİL MODU AKTİF — Tüm akışlar kritik alarm olarak değerlendirilir</div>
+            <div style="font-size:.73rem;color:var(--muted)" id="tatil-sure-text">Süre: Belirsiz</div>
+          </div>
+          <button class="btn-sm" style="background:var(--green);color:#000;flex-shrink:0" onclick="deactivateTatilModu()">Eve Döndük</button>
+        </div>
+      </div>
+      <!-- KALİBRASYON BANNER -->
+      <div class="kalibrасyon-banner" id="kalib-banner">
+        <div style="font-size:1.6rem">&#x1F9E0;</div>
+        <div class="kalib-progress">
+          <div class="kalib-title">Sistem Hâlâ Öğreniyor — 3/7 Gün Tamamlandı</div>
+          <div class="kalib-sub">Anomalilere geri bildirim verdikçe sistem kullanım profilinizi öğrenir ve yanlış uyarıları azaltır.</div>
+          <div class="kalib-bar"><div class="kalib-bar-fill" id="kalib-fill"></div></div>
+        </div>
+        <button class="btn-sm btn-ghost" style="flex-shrink:0" onclick="document.getElementById('kalib-banner').style.display='none'">Kapat</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">&#x1F4A7; Anlık Akış</div>
+          <div class="kpi-value blue" id="kpi-flow">2.4 <span style="font-size:1rem">L/dk</span></div>
+          <div class="kpi-change" id="kpi-flow-sub">Mutfak musluğu açık</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-flow-bar" style="width:24%;background:var(--blue)"></div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">&#x1F4C5; Bugünkü Tüketim</div>
+          <div class="kpi-value green" id="kpi-daily">187 <span style="font-size:1rem">L</span></div>
+          <div class="kpi-change"><span class="down">&#x2193; %12</span> dünden az</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-daily-bar" style="width:62%;background:var(--green)"></div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">&#x1F4C6; Bu Ay</div>
+          <div class="kpi-value yellow">4.2 <span style="font-size:1rem">m&#xB3;</span></div>
+          <div class="kpi-change"><span class="up">&#x2191; %8</span> geçen aydan fazla</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:70%;background:var(--yellow)"></div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">&#x1F6A8; Aktif Anomali</div>
+          <div class="kpi-value red" id="kpi-anomali">7</div>
+          <div class="kpi-change">Son: <span style="color:var(--red)">Gece akışı</span> tespit edildi</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--red)"></div></div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Haftalık Tüketim</div>
+              <div class="card-sub">Son 7 gün (litre)</div>
+            </div>
+            <span class="chip chip-blue">Bu Hafta</span>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-wrap">
+              <div class="bar" style="height:55%;background:rgba(59,130,246,.5)">
+                <div class="bar-tooltip">Pzt: 198 L</div>
+              </div>
+              <div class="bar-lbl">Pzt</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:72%;background:rgba(59,130,246,.5)">
+                <div class="bar-tooltip">Sal: 224 L</div>
+              </div>
+              <div class="bar-lbl">Sal</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:48%;background:rgba(59,130,246,.5)">
+                <div class="bar-tooltip">Car: 181 L</div>
+              </div>
+              <div class="bar-lbl">Car</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:88%;background:rgba(59,130,246,.5)">
+                <div class="bar-tooltip">Per: 267 L</div>
+              </div>
+              <div class="bar-lbl">Per</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:65%;background:rgba(59,130,246,.5)">
+                <div class="bar-tooltip">Cum: 210 L</div>
+              </div>
+              <div class="bar-lbl">Cum</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:95%;background:rgba(239,68,68,.6)">
+                <div class="bar-tooltip">Cmt: 312 L</div>
+              </div>
+              <div class="bar-lbl" style="color:var(--red)">Cmt</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="bar" style="height:62%;background:var(--blue)">
+                <div class="bar-tooltip">Paz: 187 L</div>
+              </div>
+              <div class="bar-lbl" style="color:var(--blue-lt)">Paz</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:1rem;font-size:.72rem;color:var(--muted)">
+            <span>Ortalama: <strong style="color:var(--text)">213 L/gün</strong></span>
+            <span>En yüksek: <strong style="color:var(--red)">Cumartesi 312 L</strong></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Anlık Akış</div>
+              <div class="card-sub">Gerçek zamanlı</div>
+            </div>
+            <span class="chip chip-green" id="live-chip">Canlı</span>
+          </div>
+          <div class="flow-display">
+            <div class="flow-ring" id="flow-ring">
+              <div class="flow-ring-inner">
+                <div class="flow-num" id="flow-num">2.4</div>
+                <div style="font-size:.7rem;color:var(--muted)">L/dk</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-around;margin-top:1rem">
+              <div style="text-align:center">
+                <div style="font-size:1rem;font-weight:700;color:var(--green)" id="session-mini">0 L</div>
+                <div style="font-size:.65rem;color:var(--muted)">Bugün Toplam</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Anomali Uyarıları</div>
+              <div class="card-sub">Tespit edilen anormal durumlar</div>
+            </div>
+            <span class="chip chip-red" id="anomali-dash-badge">7 Aktif</span>
+          </div>
+          <div class="anomali-list">
+            <div class="anomali-item red-bg">
+              <div class="anomali-icon">&#x1F319;</div>
+              <div style="flex:1">
+                <div class="anomali-title">Gece Akışı Tespit Edildi</div>
+                <div class="anomali-desc">02:14–02:47 arası 8,3 litre akış ölçüldü.</div>
+                <div class="anomali-time">Bu gece · 02:47</div>
+                <div class="anomali-feedback">
+                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                  <button class="fb-btn fb-no" onclick="fbNo(this, 'gece-akis', '02:00–03:00')">Normaldi, öğren</button>
+                </div>
+              </div>
+              <div style="flex-shrink:0">
+                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
+              </div>
+            </div>
+            <div class="anomali-item yellow-bg">
+              <div class="anomali-icon">&#x1F4C8;</div>
+              <div style="flex:1">
+                <div class="anomali-title">Normalin %40 Üzerinde Tüketim</div>
+                <div class="anomali-desc">Cumartesi günü 312 litre tüketildi.</div>
+                <div class="anomali-time">Dün · 23:59</div>
+                <div class="anomali-feedback">
+                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                  <button class="fb-btn fb-no" onclick="fbNo(this, 'yuksek-tuketim', 'Cumartesi yüksek tüketim')">Normaldi, öğren</button>
+                </div>
+              </div>
+              <div style="flex-shrink:0">
+                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
+              </div>
+            </div>
+            <div class="anomali-item blue-bg">
+              <div class="anomali-icon">&#x23F1;&#xFE0F;</div>
+              <div style="flex:1">
+                <div class="anomali-title">Uzun Süreli Kesintisiz Akış</div>
+                <div class="anomali-desc">Perşembe 47 dakika kesintisiz 1,8 L/dk akış.</div>
+                <div class="anomali-time">3 gün önce · 14:23</div>
+                <div class="anomali-feedback">
+                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                  <button class="fb-btn fb-no" onclick="fbNo(this, 'uzun-akis', '30+ dk akış normal')">Normaldi, öğren</button>
+                </div>
+              </div>
+              <div style="flex-shrink:0">
+                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="2">İncele</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1.5rem">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Kullanıcılar</div>
+                <div class="card-sub">Bu hesaba erişim yetkisi</div>
+              </div>
+            </div>
+            <div class="user-list" id="user-list-dashboard">
+              <div class="user-item">
+                <div class="av" style="background:var(--blue)">AK</div>
+                <div><div class="un">Ahmet Kaya</div><div class="ur">Hesap Sahibi</div></div>
+                <div class="ml"><span class="chip chip-blue">Admin</span></div>
+              </div>
+              <div class="user-item">
+                <div class="av" style="background:#8b5cf6">ZK</div>
+                <div><div class="un">Zeynep Kaya</div><div class="ur">Eş — Tam Erişim</div></div>
+                <div class="ml"><span class="chip chip-green">Aktif</span></div>
+              </div>
+              <div class="user-item">
+                <div class="av" style="background:#ec4899">FH</div>
+                <div><div class="un">Anne (Fatma H.)</div><div class="ur">Sadece Görüntüleme</div></div>
+                <div class="ml"><span class="chip chip-yellow">İzleyici</span></div>
+              </div>
+            </div>
+            <button class="add-btn" id="add-btn-inline">+ Kullanıcı Ekle</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Günlük Özet</div>
+            </div>
+            <table class="week-table">
+              <tr><th>Gün</th><th>Tüketim</th><th>Fark</th></tr>
+              <tr><td>Pazartesi</td><td>198 L</td><td><span class="trend down">&#x2193; %4</span></td></tr>
+              <tr><td>Salı</td><td>224 L</td><td><span class="trend up">&#x2191; %13</span></td></tr>
+              <tr><td>Çarşamba</td><td>181 L</td><td><span class="trend down">&#x2193; %19</span></td></tr>
+              <tr><td>Perşembe</td><td>267 L</td><td><span class="trend up">&#x2191; %47</span></td></tr>
+              <tr><td>Cuma</td><td>210 L</td><td><span class="trend down">&#x2193; %21</span></td></tr>
+              <tr><td style="color:var(--red)">Cumartesi</td><td style="color:var(--red)">312 L</td><td><span class="trend up">&#x2191; %48</span></td></tr>
+              <tr><td style="color:var(--blue-lt)">Bugün</td><td style="color:var(--blue-lt)" id="today-val">187 L</td><td><span class="trend down">&#x2193; %40</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-dashboard -->
+
+    <!-- PAGE: ANLIK AKIS -->
+    <div class="page" id="page-anlik-akis">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+        <div class="card" style="text-align:center;padding:2rem">
+          <div class="card-head" style="justify-content:center;border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:1.5rem">
+            <div>
+              <div class="card-title">Anlık Debi Ölçümü</div>
+              <div class="card-sub">YF-S201 Sensör · GPIO 4</div>
+            </div>
+          </div>
+          <div class="flow-big-ring" id="flow-big-ring" style="width:200px;height:200px;border-radius:50%;margin:0 auto 1.5rem">
+            <div class="flow-big-inner">
+              <div class="flow-big-num" id="flow-big-num">2.4</div>
+              <div style="font-size:.82rem;color:var(--muted)">L/dakika</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem">
+            <div><div style="font-size:1.3rem;font-weight:700;color:var(--yellow)" id="session-vol">14.2 L</div><div style="font-size:.7rem;color:var(--muted)">Bugün Toplam</div></div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted)">Son güncelleme: <span id="last-update">az önce</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Son 30 Saniye</div>
+            <span class="chip chip-green">Canlı</span>
+          </div>
+          <div class="flow-history" id="flow-history">
+          </div>
+          <div style="margin-top:1rem">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.5rem;color:var(--muted)">Ort. Debi (5 dk)</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--cyan)" id="avg-flow">2.1 L/dk</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.5rem;color:var(--muted)">Maks. Debi (bugün)</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--blue-lt)">4.7 L/dk</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.5rem;color:var(--muted)">Cihaz Durumu</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--green)">Bağlı</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.5rem;color:var(--muted)">WiFi Sinyal</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--green)">-62 dBm (iyi)</td>
+              </tr>
+              <tr>
+                <td style="padding:.5rem;color:var(--muted)">Basınç Sensörü</td>
+                <td style="padding:.5rem;color:var(--muted);font-size:.75rem">Bağlı değil</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Bugünün Akış Geçmişi</div>
+          <span class="chip chip-blue">Saat Bazlı</span>
+        </div>
+        <div class="bar-chart" style="height:100px">
+          <div class="bar-wrap"><div class="bar" style="height:30%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">06:00 — 45 L</div></div><div class="bar-lbl">06</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:65%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">07:00 — 98 L</div></div><div class="bar-lbl">07</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:45%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">08:00 — 67 L</div></div><div class="bar-lbl">08</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:10%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">09:00 — 12 L</div></div><div class="bar-lbl">09</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:8%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">10:00 — 8 L</div></div><div class="bar-lbl">10</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:5%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">11:00 — 5 L</div></div><div class="bar-lbl">11</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:20%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">12:00 — 28 L</div></div><div class="bar-lbl">12</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:15%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">13:00 — 19 L</div></div><div class="bar-lbl">13</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:55%;background:rgba(6,182,212,.7)"><div class="bar-tooltip">14:00 — 82 L</div></div><div class="bar-lbl">14</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:25%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">15:00 — 35 L</div></div><div class="bar-lbl">15</div></div>
+          <div class="bar-wrap" id="current-hour-bar"><div class="bar" style="height:40%;background:var(--cyan)"><div class="bar-tooltip">Şimdi</div></div><div class="bar-lbl" style="color:var(--cyan)">Şim</div></div>
+        </div>
+      </div>
+    </div><!-- /page-anlik-akis -->
+
+    <!-- PAGE: ANOMALILER -->
+    <div class="page" id="page-anomaliler">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Tüm Anomaliler</div>
+            <div class="card-sub">Simüle edilmiş senaryolar — gerçek veride böyle görünür</div>
+          </div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3);border-radius:4px;padding:.2rem .55rem;font-weight:700">SIMÜLASYON</span>
+            <span class="chip chip-red" id="anomali-page-badge">7 Aktif</span>
+          </div>
+        </div>
+        <div class="anomali-filter">
+          <button class="filter-btn active" data-filter="all">Tümü</button>
+          <button class="filter-btn" data-filter="red">Kritik</button>
+          <button class="filter-btn" data-filter="yellow">Uyarı</button>
+          <button class="filter-btn" data-filter="blue">Bilgi</button>
+          <button class="filter-btn" data-filter="resolved">Çözüldü</button>
+        </div>
+
+        <div id="anomali-full-list">
+
+          <!-- 1: GECE AKISI -->
+          <div class="anomali-rich red-bg" data-type="red" data-id="0">
+            <div class="ar-head">
+              <div class="ar-icon">&#x1F319;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Gece Akışı Tespit Edildi</span>
+                  <span class="ar-sev sev-red">KRİTİK</span>
+                </div>
+                <div class="ar-desc">Gece 02:14–02:47 arasında düşük ama sürekli bir akış ölçüldü. Ev sakinlerinin uyku saatinde su kullanımı anormal — gizli bir kaçak veya damlama söz konusu olabilir.</div>
+                <div class="ar-time">Bugün · 02:47 · Tetikleyen kural: <em>Gece Akışı (00:00–06:00)</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">8.3 L</div><div class="ar-metric-lbl">Toplam</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">33 dk</div><div class="ar-metric-lbl">Süre</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,25 L/dk</div><div class="ar-metric-lbl">Ort. Debi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--muted)">02:14</div><div class="ar-metric-lbl">Başlangıç</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div><div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div>
+              <div class="ar-spark-bar" style="height:20%;background:rgba(239,68,68,.5)"></div><div class="ar-spark-bar" style="height:25%;background:rgba(239,68,68,.6)"></div>
+              <div class="ar-spark-bar" style="height:22%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:24%;background:rgba(239,68,68,.6)"></div>
+              <div class="ar-spark-bar" style="height:23%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:25%;background:rgba(239,68,68,.6)"></div>
+              <div class="ar-spark-bar" style="height:22%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:24%;background:rgba(239,68,68,.6)"></div>
+              <div class="ar-spark-bar" style="height:20%;background:rgba(239,68,68,.5)"></div><div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div>
+            </div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-0">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'gece-akis')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2: TEKRARLAYAN GECE AKISLARI -->
+          <div class="anomali-rich red-bg" data-type="red" data-id="3">
+            <div class="ar-head">
+              <div class="ar-icon">&#x1F504;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Tekrarlayan Gece Akışları — Sifon Kaçağı?</span>
+                  <span class="ar-sev sev-red">KRİTİK</span>
+                </div>
+                <div class="ar-desc">Gece 03:15, 03:42 ve 04:11'de 3 kez kısa süreli akış tespit edildi. Düzensiz aralıkta tekrarlayan kısa akışlar tuvalet sifon kaçağının klasik imzasıdır.</div>
+                <div class="ar-time">Dün gece · 3 tekrar · Tetikleyen kural: <em>Gece Akışı</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">2.1 L</div><div class="ar-metric-lbl">Toplam</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">3x</div><div class="ar-metric-lbl">Tekrar</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,7 L/dk</div><div class="ar-metric-lbl">Ort. Debi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--muted)">~27 dk</div><div class="ar-metric-lbl">Aralık</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:60%;background:rgba(239,68,68,.7)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:55%;background:rgba(239,68,68,.7)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:58%;background:rgba(239,68,68,.7)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
+            </div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-3">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'gece-akis')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3: DAMLAMA -->
+          <div class="anomali-rich red-bg" data-type="red" data-id="4">
+            <div class="ar-head">
+              <div class="ar-icon">&#x1F4A7;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Süresiz Düşük Debi — Damlama Şüphesi</span>
+                  <span class="ar-sev sev-red">KRİTİK</span>
+                </div>
+                <div class="ar-desc">Bu sabah 06:00'dan beri kesintisiz 0,06 L/dk akış var. Bu değer çok düşük olduğu için musluk açık hissedilmez; ancak gün boyunca ciddi su kaybı oluşturur. Bir yerde damlayan musluk veya boru kaçağı olabilir.</div>
+                <div class="ar-time">Bugün · 06:00'dan beri · Tetikleyen kural: <em>Süresiz Düşük Debi</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)" id="damlama-toplam">32.4 L</div><div class="ar-metric-lbl">Kayıp (artıyor)</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)" id="damlama-sure">9 saat</div><div class="ar-metric-lbl">Süre</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,06 L/dk</div><div class="ar-metric-lbl">Sabit Debi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">~1,75 m³/ay</div><div class="ar-metric-lbl">Aylık Projeksiyon</div></div>
+            </div>
+            <div class="ar-spark">
+              <!-- Düz sabit çizgi — damlatma imzası -->
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Düz çizgi = sabit düşük debi = damlama imzası</div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-4">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'damlatma')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4: ANİ ARTI -->
+          <div class="anomali-rich yellow-bg" data-type="yellow" data-id="5">
+            <div class="ar-head">
+              <div class="ar-icon">&#x26A1;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Ani Yüksek Debi Artışı</span>
+                  <span class="ar-sev sev-yellow">UYARI</span>
+                </div>
+                <div class="ar-desc">Bugün 14:35'te debi aniden 0'dan 4,8 L/dk'ya çıktı ve 2 dakika boyunca o seviyede kaldı. Bu tür ani artışlar boru patlaması, musluğun tam açılması veya basınç değişikliklerine işaret edebilir.</div>
+                <div class="ar-time">Bugün · 14:35 · Tetikleyen kural: <em>Ani Debi Artışı (4 L/dk üzeri)</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">4,8 L/dk</div><div class="ar-metric-lbl">Maks. Debi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">2 dk</div><div class="ar-metric-lbl">Süre</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">9,6 L</div><div class="ar-metric-lbl">Toplam</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--green)">Normal</div><div class="ar-metric-lbl">Öncesi/Sonrası</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:35%;background:rgba(245,158,11,.5)"></div>
+              <div class="ar-spark-bar" style="height:100%;background:rgba(245,158,11,.9)"></div>
+              <div class="ar-spark-bar" style="height:98%;background:rgba(245,158,11,.9)"></div>
+              <div class="ar-spark-bar" style="height:30%;background:rgba(245,158,11,.5)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
+            </div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-5">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'ani-artis')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5: YÜKSEK TÜKETİM -->
+          <div class="anomali-rich yellow-bg" data-type="yellow" data-id="1">
+            <div class="ar-head">
+              <div class="ar-icon">&#x1F4C8;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Normalin %40 Üzerinde Günlük Tüketim</span>
+                  <span class="ar-sev sev-yellow">UYARI</span>
+                </div>
+                <div class="ar-desc">Cumartesi günü toplam 312 litre tüketildi. Bu değer 7 günlük ortalama olan 213 L/gün'ün %46 üzerinde. Misafir, ev temizliği veya bahçe sulama olabilir; kaçak ihtimali düşük.</div>
+                <div class="ar-time">Dün · 23:59 · Tetikleyen kural: <em>Yüksek Günlük Tüketim (%40 eşiği)</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">312 L</div><div class="ar-metric-lbl">Cumartesi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--blue-lt)">213 L</div><div class="ar-metric-lbl">7-Gün Ort.</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">+46%</div><div class="ar-metric-lbl">Sapma</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">+99 L</div><div class="ar-metric-lbl">Fazla</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.4)"></div>
+              <div class="ar-spark-bar" style="height:72%;background:rgba(59,130,246,.4)"></div>
+              <div class="ar-spark-bar" style="height:48%;background:rgba(59,130,246,.4)"></div>
+              <div class="ar-spark-bar" style="height:88%;background:rgba(59,130,246,.4)"></div>
+              <div class="ar-spark-bar" style="height:65%;background:rgba(59,130,246,.4)"></div>
+              <div class="ar-spark-bar" style="height:100%;background:rgba(245,158,11,.8)"></div>
+              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
+              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
+              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
+              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
+              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
+            </div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-1">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'yuksek-tuketim')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6: UZUN AKIS -->
+          <div class="anomali-rich blue-bg" data-type="blue" data-id="2">
+            <div class="ar-head">
+              <div class="ar-icon">&#x23F1;&#xFE0F;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Uzun Süreli Kesintisiz Akış</span>
+                  <span class="ar-sev sev-blue">BİLGİ</span>
+                </div>
+                <div class="ar-desc">Perşembe 14:23–15:10 arasında 47 dakika boyunca kesintisiz 1,8 L/dk akış ölçüldü. Gündüz saatlerinde olduğu için kritik değil; ancak açık unutulan bir musluk veya bahçe hortumuyla giderilmiş olabilir.</div>
+                <div class="ar-time">3 gün önce · 14:23–15:10 · Tetikleyen kural: <em>Uzun Süreli Akış (30 dk eşiği)</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--blue-lt)">84.6 L</div><div class="ar-metric-lbl">Toplam</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">47 dk</div><div class="ar-metric-lbl">Süre</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">1,8 L/dk</div><div class="ar-metric-lbl">Sabit Debi</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--green)">Gündüz</div><div class="ar-metric-lbl">Saat Aralığı</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:4%;background:rgba(59,130,246,.3)"></div>
+              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:61%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:61%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
+              <div class="ar-spark-bar" style="height:30%;background:rgba(59,130,246,.5)"></div>
+              <div class="ar-spark-bar" style="height:4%;background:rgba(59,130,246,.3)"></div>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Düz uzun çizgi = kesintisiz akış</div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-2">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'uzun-akis')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="2">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7: AYLIK EĞİLİM -->
+          <div class="anomali-rich blue-bg" data-type="blue" data-id="6">
+            <div class="ar-head">
+              <div class="ar-icon">&#x1F4CA;</div>
+              <div class="ar-main">
+                <div class="ar-top">
+                  <span class="ar-title">Aylık Tüketim Eğilimi Yükseliyor</span>
+                  <span class="ar-sev sev-blue">BİLGİ</span>
+                </div>
+                <div class="ar-desc">Son 3 ayın verisi incelendiğinde tüketimde kademeli bir artış eğilimi görülmektedir. Bu tür yükselmeler çok küçük kaçakların birikmesiyle veya yeni bir kullanım alışkanlığıyla açıklanabilir. Ani bir olay değil, uzun vadeli trend.</div>
+                <div class="ar-time">Bu ay · Üç aylık trend analizi · Tetikleyen kural: <em>Yüksek Tüketim</em></div>
+              </div>
+            </div>
+            <div class="ar-metrics">
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">4.2 m³</div><div class="ar-metric-lbl">Bu Ay</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">3,5 m³</div><div class="ar-metric-lbl">Geçen Ay</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">3,1 m³</div><div class="ar-metric-lbl">İki Ay Önce</div></div>
+              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">+35%</div><div class="ar-metric-lbl">3 Aylık Artış</div></div>
+            </div>
+            <div class="ar-spark">
+              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
+              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
+              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
+              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
+              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
+              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
+              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
+              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
+              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
+              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
+              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
+              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Kademeli yükseliş = trend anomalisi</div>
+            <div class="ar-footer">
+              <div class="anomali-feedback" id="fb-6">
+                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
+                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
+                <button class="fb-btn fb-no" onclick="fbNo(this,'yuksek-tuketim')">Normaldi, öğren</button>
+              </div>
+              <div class="ar-actions">
+                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="0">İncele</button>
+                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /anomali-full-list -->
+
+        <!-- ÇÖZÜLMÜŞ -->
+        <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)" id="resolved-section">
+          <div style="font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Çözülmüş</div>
+          <div class="anomali-rich resolved">
+            <div class="ar-head">
+              <div class="ar-icon">&#x2705;</div>
+              <div class="ar-main">
+                <div class="ar-top"><span class="ar-title" style="text-decoration:line-through">Uzun Süreli Düşük Debi — Önceki Hafta</span></div>
+                <div class="ar-desc">Salı sabahı 4 saat boyunca 0,1 L/dk akış vardı. Mutfak musluğunun damlattığı tespit edilip tamir edildi.</div>
+                <div class="ar-time">8 gün önce · Kullanıcı tarafından çözüldü</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /page-anomaliler -->
+
+    <!-- PAGE: KULLANICILAR -->
+    <div class="page" id="page-kullanicilar">
+      <div class="card">
+        <div class="user-full-header">
+          <div>
+            <div class="card-title" style="font-size:1rem">Kullanıcı Yönetimi</div>
+            <div class="card-sub">Bu hesaba erişim yetkisi olan kişiler</div>
+          </div>
+          <button class="btn-sm btn-primary" id="btn-kullanici-ekle-2">+ Kullanıcı Ekle</button>
+        </div>
+        <div class="user-list" id="user-list-full">
+          <div class="user-item" style="padding:1rem">
+            <div class="av" style="background:var(--blue);width:38px;height:38px;font-size:.85rem">AK</div>
+            <div style="flex:1">
+              <div class="un">Ahmet Kaya</div>
+              <div class="ur">ahmet@ornek.com · Hesap Sahibi</div>
+            </div>
+            <span class="chip chip-blue">Admin</span>
+          </div>
+          <div class="user-item" style="padding:1rem">
+            <div class="av" style="background:#8b5cf6;width:38px;height:38px;font-size:.85rem">ZK</div>
+            <div style="flex:1">
+              <div class="un">Zeynep Kaya</div>
+              <div class="ur">zeynep@ornek.com · Eş — Tam Erişim</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="chip chip-green">Aktif</span>
+              <button class="btn-sm btn-ghost" style="font-size:.68rem;padding:.25rem .55rem">Düzenle</button>
+            </div>
+          </div>
+          <div class="user-item" style="padding:1rem">
+            <div class="av" style="background:#ec4899;width:38px;height:38px;font-size:.85rem">FH</div>
+            <div style="flex:1">
+              <div class="un">Fatma Hanım (Anne)</div>
+              <div class="ur">fatma@ornek.com · Sadece Görüntüleme</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span class="chip chip-yellow">İzleyici</span>
+              <button class="btn-sm btn-ghost" style="font-size:.68rem;padding:.25rem .55rem">Düzenle</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(59,130,246,.05);border-radius:8px;border:1px dashed rgba(59,130,246,.2)">
+          <div style="font-size:.78rem;color:var(--muted)">&#x2139;&#xFE0F; Pro Plan ile en fazla <strong style="color:var(--text)">5 kullanıcı</strong> ekleyebilirsiniz. Şu an 3/5 kullanıyorsunuz.</div>
+        </div>
+      </div>
+    </div><!-- /page-kullanicilar -->
+
+    <!-- PAGE: BİLDİRİMLER -->
+    <div class="page" id="page-bildirimler">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Bildirimler</div>
+          <span class="chip chip-blue">Son 7 Gün</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+          <div style="display:flex;gap:1rem;padding:.85rem;border-radius:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)">
+            <div style="font-size:1.1rem">&#x1F514;</div>
+            <div><div style="font-size:.83rem;font-weight:600;margin-bottom:.2rem">Gece akışı tespit edildi — bildirim gönderildi</div><div style="font-size:.72rem;color:var(--muted)">Bugün 02:47 · Telefon bildirimi</div></div>
+          </div>
+          <div style="display:flex;gap:1rem;padding:.85rem;border-radius:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15)">
+            <div style="font-size:1.1rem">&#x1F4E7;</div>
+            <div><div style="font-size:.83rem;font-weight:600;margin-bottom:.2rem">Haftalık rapor hazır — e-posta gönderildi</div><div style="font-size:.72rem;color:var(--muted)">Dün 08:00 · E-posta</div></div>
+          </div>
+          <div style="display:flex;gap:1rem;padding:.85rem;border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:1.1rem">&#x2705;</div>
+            <div><div style="font-size:.83rem;font-weight:600;margin-bottom:.2rem">Cihaz yeniden bağlandı</div><div style="font-size:.72rem;color:var(--muted)">2 gün önce 14:22 · Sistem</div></div>
+          </div>
+          <div style="display:flex;gap:1rem;padding:.85rem;border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:1.1rem">&#x1F4E7;</div>
+            <div><div style="font-size:.83rem;font-weight:600;margin-bottom:.2rem">Aylık rapor hazır — Nisan 2025</div><div style="font-size:.72rem;color:var(--muted)">5 gün önce 09:00 · E-posta</div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-bildirimler -->
+
+    <!-- PAGE: CİHAZ AYARLARI -->
+    <div class="page" id="page-cihaz-ayarlari">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Cihaz Ayarları</div>
+          <span class="chip chip-green">Bağlı</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+          <div>
+            <div class="form-group">
+              <label class="form-label">Cihaz Adi</label>
+              <input type="text" class="form-input" value="Daire 3 — Mutfak">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gece Akış Eşiği (L)</label>
+              <input type="number" class="form-input" value="2">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gece Saatleri</label>
+              <input type="text" class="form-input" value="00:00 – 06:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telefon Bildirimi</label>
+              <select class="form-select">
+                <option>Her anomalide</option>
+                <option>Sadece kritik</option>
+                <option>Kapalı</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div style="background:var(--bg3);border-radius:10px;padding:1.25rem;margin-bottom:1rem">
+              <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Cihaz Bilgisi</div>
+              <div style="font-size:.82rem;display:flex;flex-direction:column;gap:.5rem">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Model</span><span>ESP32-WROOM-32U</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Sensör</span><span>YF-S201</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Firmware</span><span>v2.4.1</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">IP Adresi</span><span>192.168.1.104</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">WiFi</span><span style="color:var(--green)">Bağlı (-62 dBm)</span></div>
+              </div>
+            </div>
+            <button class="btn-sm btn-ghost" style="width:100%;margin-bottom:.5rem">Firmware Güncelle</button>
+            <button class="btn-sm" style="width:100%;background:rgba(239,68,68,.15);color:var(--red);border:none;cursor:pointer">Cihazı Sıfırla</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+          <button class="btn-sm btn-ghost">İptal</button>
+          <button class="btn-sm btn-primary" onclick="showToast('&#x2705; Ayarlar kaydedildi')">Kaydet</button>
+        </div>
+      </div>
+    </div><!-- /page-cihaz-ayarlari -->
+
+    <!-- PAGE: SİSTEM ÖĞRENİYOR -->
+    <div class="page" id="page-ogrenme">
+
+      <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--muted);line-height:1.6">
+        &#x1F9E0; <strong style="color:var(--text)">Her hane farklıdır.</strong>
+        Aşağıdaki anomali tiplerini kendinize göre ayarlayın — sistem bunlara göre uyarı gönderir ya da göndermez.
+        Anomali kartlarındaki geri bildirimler de bu toggle'ları otomatik günceller.
+      </div>
+
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Anomali Tipleri</div>
+            <div class="card-sub">Hangi durumlar sizin için anomali sayılsın?</div>
+          </div>
+        </div>
+
+        <div id="toggle-list"></div>
+      </div>
+
+    </div><!-- /page-ogrenme -->
+
+    <!-- PAGE: COMING SOON -->
+    <div class="page" id="page-coming-soon">
+      <div class="coming-soon-box">
+        <div class="coming-soon-icon">&#x1F6A7;</div>
+        <div class="coming-soon-title" id="coming-soon-title">Bu Özellik</div>
+        <div class="coming-soon-sub">Yakın zamanda kullanıma açılacak. Pro Plan abonelerine öncelikli erişim sağlanacak.</div>
+        <div style="margin-top:1.5rem">
+          <button class="btn-sm btn-primary" onclick="showToast('&#x1F514; Hazır olduğunda bildirim alacaksınız!')">Beni Haberdar Et</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main><!-- /main -->
+
+<!-- MODAL OVERLAY -->
+<div class="modal-overlay" id="modal" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-text" id="modal-title">Başlık</div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================
+// AUTH GUARD
+// ============================
+(function() {
+  const token = localStorage.getItem('susayar_token');
+  if (!token) { location.replace('/susayar-auth.html'); return; }
+
+  // Token'ı arka planda doğrula (geçersizse login'e at)
+  fetch('http://localhost:3001/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+    .then(r => { if (!r.ok) { localStorage.removeItem('susayar_token'); location.replace('/susayar-auth.html'); } })
+    .catch(() => { /* Backend kapalı — token var, devam et */ });
+
+  // Kullanıcı adını topbar'a yaz
+  try {
+    const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
+    const el = document.getElementById('user-display-name');
+    if (el && user.name) el.textContent = user.name;
+  } catch {}
+})();
+
+function doLogout() {
+  localStorage.removeItem('susayar_token');
+  localStorage.removeItem('susayar_user');
+  location.replace('/susayar-auth.html');
+}
+
+// ============================
+// NAVIGATION
+// ============================
+const navItems = document.querySelectorAll('.nav-item');
+const allPages = document.querySelectorAll('.page');
+const topbarTitle = document.getElementById('topbar-title');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const pageId = item.dataset.page;
+    const title = item.dataset.title;
+
+    navItems.forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+
+    allPages.forEach(p => p.classList.remove('active'));
+
+    if (pageId === 'coming-soon') {
+      document.getElementById('page-coming-soon').classList.add('active');
+      document.getElementById('coming-soon-title').textContent = title;
+    } else {
+      const page = document.getElementById('page-' + pageId);
+      if (page) page.classList.add('active');
+    }
+
+    topbarTitle.textContent = title;
+  });
+});
+
+// ============================
+// LIVE FLOW SIMULATION
+// ============================
+const flowSequence = [2.4, 2.7, 3.1, 2.9, 2.4, 1.8, 1.2, 0.6, 0.0, 0.0, 0.3, 1.4, 2.2, 2.8, 3.0, 2.5, 2.1, 1.7, 2.4, 2.6];
+let flowIdx = 0;
+let sessionLiters = 14.2;
+const flowHistory = [];
+
+// Init flow history bars
+const flowHistEl = document.getElementById('flow-history');
+for (let i = 0; i < 30; i++) {
+  const b = document.createElement('div');
+  b.className = 'fh-bar';
+  b.style.height = Math.random() * 60 + 5 + '%';
+  flowHistEl.appendChild(b);
+  flowHistory.push(parseFloat((Math.random() * 3).toFixed(1)));
+}
+
+function updateFlow() {
+  flowIdx = (flowIdx + 1) % flowSequence.length;
+  const val = (flowSequence[flowIdx] + (Math.random() * 0.4 - 0.2)).toFixed(1);
+  const numVal = Math.max(0, parseFloat(val));
+  const displayVal = numVal.toFixed(1);
+
+  // Update dashboard ring
+  document.getElementById('flow-num').textContent = displayVal;
+  document.getElementById('kpi-flow').innerHTML = displayVal + ' <span style="font-size:1rem">L/dk</span>';
+
+  // Update ring gradient
+  const pct = Math.min(numVal / 5, 1);
+  const deg = Math.round(pct * 360);
+  const color = numVal === 0 ? 'var(--border)' : numVal > 4 ? 'var(--red)' : numVal > 2.5 ? 'var(--yellow)' : 'var(--cyan)';
+  document.getElementById('flow-ring').style.background =
+    'conic-gradient(' + color + ' 0deg ' + deg + 'deg, var(--border) ' + deg + 'deg 360deg)';
+
+  // Update anlik page
+  document.getElementById('flow-big-num').textContent = displayVal;
+  document.getElementById('flow-big-ring').style.background =
+    'conic-gradient(' + color + ' 0deg ' + deg + 'deg, var(--border) ' + deg + 'deg 360deg)';
+
+  // KPI flow sub-text
+  if (numVal === 0) {
+    document.getElementById('kpi-flow-sub').textContent = 'Akış yok';
+  } else if (numVal < 0.5) {
+    document.getElementById('kpi-flow-sub').textContent = 'Düşük debi — damlatma?';
+  } else {
+    document.getElementById('kpi-flow-sub').textContent = 'Akış aktif';
+  }
+  document.getElementById('kpi-flow-bar').style.width = (pct * 100) + '%';
+
+  // Session / daily total — 2.5 sn aralikta numVal L/dk * (2.5/60) dk = gercekci birikim
+  sessionLiters = parseFloat((parseFloat(sessionLiters) + numVal * (2.5 / 60)).toFixed(1));
+  const sesEl = document.getElementById('session-vol');
+  if (sesEl) sesEl.textContent = sessionLiters + ' L';
+
+  // Last update
+  const lu = document.getElementById('last-update');
+  if (lu) lu.textContent = 'az önce';
+
+  // Update avg flow
+  const avgEl = document.getElementById('avg-flow');
+  if (avgEl) avgEl.textContent = (numVal * 0.9 + 0.2).toFixed(1) + ' L/dk';
+
+  // Sync session to all total display elements
+  ['session-mini'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = sessionLiters + ' L';
+  });
+
+  // Daily table bugün satiri
+  const todayEl = document.getElementById('today-val');
+  if (todayEl) todayEl.textContent = Math.round(sessionLiters) + ' L';
+
+  // Flow history mini chart
+  flowHistory.push(numVal);
+  if (flowHistory.length > 30) flowHistory.shift();
+  const bars = flowHistEl.querySelectorAll('.fh-bar');
+  const maxH = Math.max(...flowHistory, 0.1);
+  bars.forEach((b, i) => {
+    const h = Math.max((flowHistory[i] / maxH) * 100, 3);
+    b.style.height = h + '%';
+    b.style.background = flowHistory[i] === 0 ? 'rgba(6,182,212,.15)' :
+      flowHistory[i] > 4 ? 'rgba(239,68,68,.6)' : 'rgba(6,182,212,.4)';
+  });
+
+}
+
+setInterval(updateFlow, 2500);
+updateFlow();
+
+// ============================
+// STATUS BAR
+// ============================
+const statusMessages = [
+  { text: 'Cihaz Bağlı', color: 'var(--green)' },
+  { text: 'Veri Alınıyor...', color: 'var(--cyan)' },
+  { text: 'Cihaz Bağlı', color: 'var(--green)' },
+  { text: 'Cihaz Bağlı', color: 'var(--green)' },
+  { text: 'Senkronize Ediliyor', color: 'var(--yellow)' },
+  { text: 'Cihaz Bağlı', color: 'var(--green)' },
+];
+let statusIdx = 0;
+setInterval(() => {
+  statusIdx = (statusIdx + 1) % statusMessages.length;
+  const s = statusMessages[statusIdx];
+  document.getElementById('status-text').textContent = s.text;
+  document.getElementById('status-text').style.color = s.color;
+  document.getElementById('status-dot').style.background = s.color;
+}, 4000);
+
+// ============================
+// TOGGLE — ÖĞRENME SİSTEMİ
+// ============================
+const anomaliTypes = [
+  {
+    key: 'gece-akis',
+    icon: '&#x1F319;',
+    title: 'Gece Akışı',
+    desc: 'Belirlenen saat aralığında herhangi bir akış tespit edilirse uyarı gönder.',
+    active: true,
+    threshold: { label: 'Gece saatleri', value: '00:00', value2: '06:00', type: 'range' }
+  },
+  {
+    key: 'yuksek-tuketim',
+    icon: '&#x1F4C8;',
+    title: 'Yüksek Günlük Tüketim',
+    desc: 'Günlük tüketim haftalık ortalamadan belirlenen oranda fazlaysa uyarı gönder.',
+    active: true,
+    threshold: { label: 'Sapma eşiği', value: '40', unit: '%', type: 'single' }
+  },
+  {
+    key: 'uzun-akis',
+    icon: '&#x23F1;&#xFE0F;',
+    title: 'Uzun Süreli Kesintisiz Akış',
+    desc: 'Akış belirlenen süre boyunca kesintisiz devam ederse uyarı gönder.',
+    active: true,
+    threshold: { label: 'Eşik süre', value: '30', unit: 'dakika', type: 'single' }
+  },
+  {
+    key: 'tekrarlayan-akis',
+    icon: '&#x1F504;',
+    title: 'Tekrarlayan Kısa Akışlar',
+    desc: 'Kısa aralıkta art arda gelen düşük debili akışlar — tuvalet sifon kaçağı veya otomatik dolan bir depo imzasıdır.',
+    active: true,
+    threshold: { label: 'Tekrar eşiği', value: '3', unit: 'kez / 2 saat', type: 'single' }
+  },
+  {
+    key: 'damlatma',
+    icon: '&#x1F4A7;',
+    title: 'Süresiz Düşük Debi (Damlatma)',
+    desc: 'Çok düşük ama sürekli bir akış — hissedilmez ama gün boyunca ciddi su kaybı oluşturur.',
+    active: true,
+    threshold: { label: 'Debi eşiği', value: '0.1', unit: 'L/dk altı', type: 'single' }
+  },
+  {
+    key: 'ani-artis',
+    icon: '&#x26A1;',
+    title: 'Ani Debi Artışı',
+    desc: 'Akış birden bire belirlenen değerin üzerine çıktığında uyarı gönder. Boru patlaması veya tam açılan musluk.',
+    active: false,
+    threshold: { label: 'Debi eşiği', value: '4', unit: 'L/dk üzeri', type: 'single' }
+  },
+  {
+    key: 'tatil-modu',
+    icon: '&#x1F9F3;',
+    title: 'Tatil / Uzak Mod',
+    desc: '"Evden uzaktayım" işaretlenince herhangi bir akış anında kritik alarm olur. Eve izinsiz giriş veya boru kaçağı için kritik.',
+    active: false,
+    threshold: { label: 'Mod', value: '0', unit: 'Manuel aktif edilir', type: 'none' }
+  },
+  {
+    key: 'gunluk-butce',
+    icon: '&#x1F4B0;',
+    title: 'Günlük Litre Bütçesi',
+    desc: 'Belirlenen günlük litre limitini geçince uyarı gönder. Kişi başına veya hane başına litre sınırı koyabilirsiniz.',
+    active: false,
+    threshold: { label: 'Günlük limit', value: '300', unit: 'litre', type: 'single' }
+  },
+  {
+    key: 'aylik-tahmin',
+    icon: '&#x1F4C5;',
+    title: 'Aylık Tüketim Tahmin Aşımı',
+    desc: 'Mevcut gidişata göre ay sonu tahmini belirlenen sınırı aşacaksa önceden uyar. Faturayı sürpriz yapma.',
+    active: false,
+    threshold: { label: 'Aylık limit', value: '12', unit: 'm3', type: 'single' }
+  },
+  {
+    key: 'trend-artis',
+    icon: '&#x1F4C9;',
+    title: 'Yavaş Trend Artışı',
+    desc: 'Son 2-4 haftada günlük ortalama kademeli yükselen bir eğilimdeyse erken uyar. Gizli büyüyen kaçağın en net işareti.',
+    active: false,
+    threshold: { label: 'Haftalık artış eşiği', value: '10', unit: '% / hafta', type: 'single' }
+  },
+  {
+    key: 'sifir-kullanim',
+    icon: '&#x1F6AB;',
+    title: 'Sıfır Kullanım Uyarısı',
+    desc: 'Gün içerisinde hiç akış olmazsa uyar. Sensör veya WiFi arızasını erken yakalar; evde biri varsa beklenmedik bir durum olabilir.',
+    active: false,
+    threshold: { label: 'Bekleme süresi', value: '12', unit: 'saat', type: 'single' }
+  },
+];
+
+function renderToggles() {
+  const list = document.getElementById('toggle-list');
+  if (!list) return;
+  list.innerHTML = '';
+  anomaliTypes.forEach(t => {
+    let thresholdHtml = '';
+    if (t.threshold.type === 'range') {
+      thresholdHtml = `<div class="toggle-threshold">
+        <label>${t.threshold.label}:</label>
+        <input type="time" value="${t.threshold.value}" onchange="updateThreshold('${t.key}','value',this.value)">
+        <span>—</span>
+        <input type="time" value="${t.threshold.value2}" onchange="updateThreshold('${t.key}','value2',this.value)">
+      </div>`;
+    } else if (t.threshold.type === 'single') {
+      thresholdHtml = `<div class="toggle-threshold">
+        <label>${t.threshold.label}:</label>
+        <input type="number" value="${t.threshold.value}" onchange="updateThreshold('${t.key}','value',this.value)">
+        <span>${t.threshold.unit}</span>
+      </div>`;
+    } else if (t.threshold.type === 'none') {
+      thresholdHtml = `<div class="toggle-threshold">
+        <span style="font-size:.7rem;color:var(--yellow);font-style:italic">&#x26A0;&#xFE0F; ${t.threshold.unit}</span>
+      </div>`;
+    }
+    const pausedInfo = t.pausedUntil
+      ? `<div class="paused-countdown" id="countdown-${t.key}">&#x23F0; Kalan süre hesaplanıyor...</div>` : '';
+
+    const row = document.createElement('div');
+    row.className = 'toggle-row' + (t.active ? '' : ' paused');
+    row.id = 'trow-' + t.key;
+    row.innerHTML = `
+      <div class="toggle-icon">${t.icon}</div>
+      <div class="toggle-info">
+        <div class="toggle-title">
+          ${t.title}
+          ${!t.active ? '<span class="paused-badge">ASKIDA</span>' : ''}
+        </div>
+        <div class="toggle-desc">${t.desc}</div>
+        ${thresholdHtml}
+        ${pausedInfo}
+      </div>
+      <div class="toggle-wrap">
+        <span class="state-badge ${t.active ? 'state-on' : 'state-off'}">${t.active ? '&#x1F6E1; Aktif' : '&#x23F8; Askıda'}</span>
+        ${t.key === 'tatil-modu'
+          ? t.active
+            ? `<button class="cfg-btn" style="border-color:rgba(16,185,129,.4);color:var(--green)" onclick="deactivateTatilModu()">Eve Döndük</button>`
+            : `<button class="cfg-btn" style="border-color:rgba(239,68,68,.4);color:var(--red)" onclick="openTatilModuModal()">Tatile Çık</button>`
+          : t.active
+            ? `<button class="cfg-btn" onclick="openPauseModal('${t.key}')">Askıya Al</button>`
+            : `<button class="cfg-btn re-enable" onclick="reEnable('${t.key}')">Tekrar Etkinleştir</button>`
+        }
+      </div>`;
+    list.appendChild(row);
+  });
+  updateCountdowns();
+}
+
+// Askıya alma — 3 adımlı akış
+let pauseTarget = null;
+let pauseStep = 1;
+let selectedReason = null;
+let selectedDuration = null;
+
+const pauseReasons = [
+  { key: 'misafir', label: '&#x1F46B; Misafir geliyor', warn: false },
+  { key: 'temizlik', label: '&#x1F9F9; Temizlik / bahce sulama', warn: false },
+  { key: 'gece-gec', label: '&#x1F303; Gece gec uyuyorum', warn: false },
+  { key: 'tadilat', label: '&#x1F6A7; Tadilat / tesisatci', warn: false },
+  { key: 'diger', label: '&#x2753; Diger', warn: false },
+];
+
+const pauseDurations = [
+  { key: '2s', label: '2 Saat', ms: 2 * 60 * 60 * 1000, warn: false },
+  { key: 'gece', label: 'Bu Gece (06:00\'a kadar)', ms: 8 * 60 * 60 * 1000, warn: false },
+  { key: 'haftasonu', label: 'Bu Hafta Sonu', ms: 48 * 60 * 60 * 1000, warn: true },
+  { key: 'suresiz', label: 'Süresiz', ms: null, warn: true },
+];
+
+function openPauseModal(key) {
+  pauseTarget = key;
+  pauseStep = 1;
+  selectedReason = null;
+  selectedDuration = null;
+  renderPauseStep();
+}
+
+function renderPauseStep() {
+  const t = anomaliTypes.find(x => x.key === pauseTarget);
+
+  if (pauseStep === 1) {
+    const reasonBtns = pauseReasons.map(r =>
+      `<button class="pause-opt" onclick="selectReason('${r.key}','${r.label}')">${r.label}</button>`
+    ).join('');
+    openModal('&#x23F8; Uyarıyı Askıya Al — 1/3', `
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--yellow)">
+        &#x26A0;&#xFE0F; <strong>${t.title}</strong> uyarısını askıya alıyorsunuz. Bu süre zarfında bu tip bir akış tespit edilirse bildirim gönderilmeyecek.
+      </div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:.75rem">Neden askıya alıyorsunuz?</div>
+      <div class="pause-opts">${reasonBtns}</div>
+      <div class="form-actions" style="margin-top:1.25rem">
+        <button class="btn-sm btn-ghost" onclick="closeModal()">İptal</button>
+      </div>`);
+  }
+
+  else if (pauseStep === 2) {
+    const durBtns = pauseDurations.map(d => {
+      const warn = d.warn ? ' pause-opt-warn' : '';
+      return `<button class="pause-opt${warn}" onclick="selectDuration('${d.key}','${d.label}',${d.ms})">${d.label}${d.warn ? ' &#x26A0;&#xFE0F;' : ''}</button>`;
+    }).join('');
+    openModal('&#x23F8; Uyarıyı Askıya Al — 2/3', `
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.25rem">
+        Sebep: <strong style="color:var(--text)">${selectedReason}</strong>
+      </div>
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:.75rem">Ne kadar süre askıya alınsın?</div>
+      <div class="pause-opts">${durBtns}</div>
+      <div class="form-actions" style="margin-top:1.25rem">
+        <button class="btn-sm btn-ghost" onclick="pauseStep=1;renderPauseStep()">&#x2190; Geri</button>
+        <button class="btn-sm btn-ghost" onclick="closeModal()">İptal</button>
+      </div>`);
+  }
+
+  else if (pauseStep === 3) {
+    const isSuresiz = selectedDuration.key === 'suresiz';
+    openModal('&#x23F8; Uyarıyı Askıya Al — 3/3 Onay', `
+      ${isSuresiz ? `
+        <div style="background:rgba(239,68,68,.1);border:2px solid var(--red);border-radius:8px;padding:1rem;margin-bottom:1.25rem">
+          <div style="font-size:.85rem;font-weight:700;color:var(--red);margin-bottom:.5rem">&#x1F6D1; Süresiz Kapatma — Ciddi Uyarı</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6">
+            Bu seçeneği seçerseniz <strong style="color:var(--text)">${t.title}</strong> uyarısı otomatik olarak yeniden açılmayacak.
+            Gerçek bir su kaçağı yaşandığında bildirim almayacaksınız.<br><br>
+            <strong style="color:var(--red)">Onaylamak için aşağıya "ASKIYA AL" yazın:</strong>
+          </div>
+          <input type="text" class="form-input" id="suresiz-confirm" placeholder="ASKIYA AL" style="margin-top:.75rem" oninput="checkSuresizConfirm()">
+        </div>` : `
+        <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--muted)">
+          &#x2139;&#xFE0F; <strong style="color:var(--blue-lt)">${selectedDuration.label}</strong> sonra uyarı otomatik olarak yeniden aktif hale gelecek.
+        </div>`}
+      <div style="font-size:.82rem;margin-bottom:.5rem;display:flex;flex-direction:column;gap:.4rem">
+        <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Uyarı tipi</span><span>${t.title}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Sebep</span><span>${selectedReason}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:.4rem 0"><span style="color:var(--muted)">Süre</span><span>${selectedDuration.label}</span></div>
+      </div>
+      <div class="form-actions" style="margin-top:1.25rem">
+        <button class="btn-sm btn-ghost" onclick="pauseStep=2;renderPauseStep()">&#x2190; Geri</button>
+        <button class="btn-sm btn-ghost" onclick="closeModal()">İptal</button>
+        <button class="btn-sm" id="confirm-pause-btn"
+          style="background:var(--yellow);color:#000;${isSuresiz ? 'opacity:.4;pointer-events:none' : ''}"
+          onclick="confirmPause()">Askıya Al</button>
+      </div>`);
+  }
+}
+
+function checkSuresizConfirm() {
+  const val = document.getElementById('suresiz-confirm').value;
+  const btn = document.getElementById('confirm-pause-btn');
+  if (btn) {
+    btn.style.opacity = val === 'ASKIYA AL' ? '1' : '.4';
+    btn.style.pointerEvents = val === 'ASKIYA AL' ? 'auto' : 'none';
+  }
+}
+
+function selectReason(key, label) {
+  selectedReason = label.replace(/&#x[^;]+;/g, '').trim();
+  pauseStep = 2;
+  renderPauseStep();
+}
+
+function selectDuration(key, label, ms) {
+  selectedDuration = { key, label, ms };
+  pauseStep = 3;
+  renderPauseStep();
+}
+
+function confirmPause() {
+  const t = anomaliTypes.find(x => x.key === pauseTarget);
+  if (!t) return;
+  t.active = false;
+  t.pausedUntil = selectedDuration.ms ? Date.now() + selectedDuration.ms : null;
+  t.pauseReason = selectedReason;
+  renderToggles();
+  closeModal();
+  showToast('&#x23F8; ' + t.title + ' askıya alındı' + (selectedDuration.ms ? ' — ' + selectedDuration.label : ' (süresiz)'));
+  updateKalibFill();
+}
+
+function reEnable(key) {
+  const t = anomaliTypes.find(x => x.key === key);
+  if (!t) return;
+  t.active = true;
+  t.pausedUntil = null;
+  t.pauseReason = null;
+  renderToggles();
+  showToast('&#x1F6E1; ' + t.title + ' yeniden etkinleştirildi');
+}
+
+function updateCountdowns() {
+  anomaliTypes.forEach(t => {
+    if (!t.pausedUntil) return;
+    const el = document.getElementById('countdown-' + t.key);
+    if (!el) return;
+    const remaining = t.pausedUntil - Date.now();
+    if (remaining <= 0) {
+      t.active = true;
+      t.pausedUntil = null;
+      renderToggles();
+      showToast('&#x1F6E1; ' + t.title + ' süresi doldu, yeniden aktif');
+      return;
+    }
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    el.textContent = '⏰ ' + (h > 0 ? h + ' saat ' : '') + m + ' dakika sonra otomatik açılacak';
+  });
+}
+
+setInterval(updateCountdowns, 30000);
+
+// Damlatma simülasyonu — her 5 sn'de kayıp artar
+let damlamaKayip = 32.4;
+let damlaSaat = 9;
+setInterval(() => {
+  damlamaKayip = parseFloat((damlamaKayip + 0.06 * (5/60)).toFixed(2));
+  damlaSaat = parseFloat((damlaSaat + 5/3600).toFixed(1));
+  const kEl = document.getElementById('damlama-toplam');
+  const sEl = document.getElementById('damlama-sure');
+  if (kEl) kEl.textContent = damlamaKayip + ' L';
+  if (sEl) sEl.textContent = damlaSaat + ' saat';
+}, 5000);
+
+function updateThreshold(key, field, val) {
+  const t = anomaliTypes.find(x => x.key === key);
+  if (t) t.threshold[field] = val;
+}
+
+function updateKalibFill() {
+  const fill = document.getElementById('kalib-fill');
+  if (!fill) return;
+  const cur = parseFloat(fill.style.width) || 43;
+  fill.style.width = Math.min(cur + 7, 100) + '%';
+}
+
+// ============================
+// TATİL MODU
+// ============================
+let tatilSimTimer = null;
+
+function openTatilModuModal() {
+  openModal('&#x1F9F3; Tatil Modunu Aktif Et', `
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:.9rem 1rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--muted);line-height:1.6">
+      &#x26A0;&#xFE0F; Tatil modu aktifken <strong style="color:var(--text)">herhangi bir su akışı</strong> anında kritik alarm olarak değerlendirilir. Yanlış aktif bırakmayın.
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ne kadar süre dışarıda olacaksınız?</label>
+      <select class="form-select" id="tatil-sure">
+        <option value="2">2 gün</option>
+        <option value="5" selected>5 gün</option>
+        <option value="10">10 gün</option>
+        <option value="0">Dönene kadar (manuel kapat)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Eve girebilecek yetkili kişi (opsiyonel)</label>
+      <input type="text" class="form-input" id="tatil-yetkili" placeholder="Örnek: Komşu Ayşe H. — temizlik için">
+    </div>
+    <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem;font-size:.75rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">
+      &#x2139;&#xFE0F; Akış tespit edilince önce <strong style="color:var(--text)">"Yetkili kişi mi?"</strong> diye sorulacak.
+      Evet derseniz alarm kapatılır. Hayır derseniz kritik bildirim gönderilir.
+    </div>
+    <div class="form-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal()">İptal</button>
+      <button class="btn-sm" style="background:var(--red);color:white" onclick="confirmTatilModu()">Tatil Modunu Aktif Et</button>
+    </div>`);
+}
+
+function confirmTatilModu() {
+  const gun = parseInt(document.getElementById('tatil-sure').value);
+  const yetkili = document.getElementById('tatil-yetkili').value.trim();
+  const t = anomaliTypes.find(x => x.key === 'tatil-modu');
+  t.active = true;
+  t.yetkili = yetkili;
+  t.pausedUntil = null;
+
+  // Banner goster
+  const banner = document.getElementById('tatil-banner');
+  if (banner) {
+    banner.style.display = 'block';
+    const sureText = gun > 0
+      ? gun + ' gün (' + new Date(Date.now() + gun * 86400000).toLocaleDateString('tr-TR') + ' tarihine kadar)'
+      : 'Dönene kadar aktif';
+    document.getElementById('tatil-sure-text').textContent =
+      'Süre: ' + sureText + (yetkili ? ' · Yetkili: ' + yetkili : '');
+  }
+
+  // Dashboard nav'a kirmizi nokta
+  document.querySelectorAll('.nav-item[data-page="dashboard"]').forEach(n => {
+    if (!n.querySelector('.tatil-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'tatil-dot nav-badge';
+      dot.style.background = 'var(--red)';
+      dot.style.animation = 'pulse 1s infinite';
+      dot.textContent = 'TAT';
+      n.appendChild(dot);
+    }
+  });
+
+  renderToggles();
+  closeModal();
+  showToast('&#x1F9F3; Tatil modu aktif — iyi tatiller!');
+
+  // 6 sn sonra simule akis tespiti
+  tatilSimTimer = setTimeout(() => simulateTatilAkis(yetkili), 6000);
+}
+
+function simulateTatilAkis(yetkili) {
+  // Sayaclari artir
+  const kpiEl   = document.getElementById('kpi-anomali');
+  const badgeEl = document.getElementById('anomali-badge');
+  const pageEl  = document.getElementById('anomali-page-badge');
+  const dashEl  = document.getElementById('anomali-dash-badge');
+  const cur = parseInt(kpiEl.textContent) || 0;
+  const n = cur + 1;
+  [kpiEl, badgeEl].forEach(el => { if (el) el.textContent = n; });
+  if (pageEl) pageEl.textContent = n + ' Aktif';
+  if (dashEl) dashEl.textContent = n + ' Aktif';
+
+  // KPI karti salla
+  const kpiCard = kpiEl ? kpiEl.closest('.kpi') : null;
+  if (kpiCard) { kpiCard.style.animation = 'alertShake .4s ease'; setTimeout(() => kpiCard.style.animation = '', 500); }
+
+  // Anomaliler listesine canli kart ekle
+  const list = document.getElementById('anomali-full-list');
+  if (list) {
+    const saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const kart = document.createElement('div');
+    kart.className = 'anomali-rich red-bg';
+    kart.setAttribute('data-type', 'red');
+    kart.style.animation = 'alertShake .5s ease, fadeIn .3s ease';
+    kart.style.borderWidth = '2px';
+    kart.innerHTML = `
+      <div class="ar-head">
+        <div class="ar-icon" style="animation:pulse .8s infinite">&#x1F6A8;</div>
+        <div class="ar-main">
+          <div class="ar-top">
+            <span class="ar-title" style="color:var(--red)">TATİL MODUNDA AKIŞ TESPİT EDİLDİ</span>
+            <span class="ar-sev sev-red" style="animation:pulse 1s infinite">CANLI</span>
+          </div>
+          <div class="ar-desc">Siz evden uzaktayken <strong style="color:var(--text)">1,4 L/dk</strong> akış başladı.
+          ${yetkili ? ' &nbsp;<span style="color:var(--yellow)">Yetkili kişi: ' + yetkili + ' mi?</span>' : ' Yetkisiz giriş veya boru kaçağı olabilir.'}</div>
+          <div class="ar-time">&#x1F534; CANLI · ${saat} · Tetikleyen: <em>Tatil Modu</em></div>
+        </div>
+      </div>
+      <div class="ar-metrics">
+        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)" id="tatil-litre">0,0 L</div><div class="ar-metric-lbl">Toplam (artıyor)</div></div>
+        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">1,4 L/dk</div><div class="ar-metric-lbl">Anlık Debi</div></div>
+        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">&#x1F534; Aktif</div><div class="ar-metric-lbl">Durum</div></div>
+      </div>
+      <div class="ar-footer">
+        <div id="tatil-fb-row" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <span style="font-size:.72rem;color:var(--muted)">Bu akış kim?</span>
+          ${yetkili ? `<button class="fb-btn fb-no" onclick="tatilYetkiliOnayla(this)">&#x2705; ${yetkili}</button>` : ''}
+          <button class="fb-btn fb-yes" onclick="tatilAlarmGonder(this)" style="font-weight:700">&#x1F6A8; Alarm Ver!</button>
+          <button class="fb-btn" style="background:rgba(255,255,255,.08);color:var(--muted);border-color:var(--border)" onclick="tatilYanlisOnayla(this)">Hata, normal</button>
+        </div>
+        <div class="ar-actions">
+          <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" onclick="resolveAnomali(this)">Çözüldü</button>
+        </div>
+      </div>`;
+    list.insertBefore(kart, list.firstChild);
+  }
+
+  // Canlı litre sayaci
+  let litre = 0;
+  const litreTimer = setInterval(() => {
+    litre = parseFloat((litre + 1.4 * (2/60)).toFixed(2));
+    const el = document.getElementById('tatil-litre');
+    if (el) el.textContent = litre + ' L';
+    else clearInterval(litreTimer);
+  }, 2000);
+
+  showToast('&#x1F6A8;&#x1F6A8; TATİL MODUNDA AKIŞ! — ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}));
+
+  // Dashboard'a otomatik gel
+  document.querySelectorAll('.nav-item[data-page="anomaliler"]').forEach(n => n.click());
+}
+
+function tatilYetkiliOnayla(btn) {
+  document.getElementById('tatil-fb-row').innerHTML =
+    '<span class="fb-done">&#x2705; Yetkili kişi onaylandı — alarm kapatıldı, sistem sakinleşti</span>';
+  showToast('&#x2705; Yetkili kişi eylemi — alarm iptal');
+}
+
+function tatilAlarmGonder(btn) {
+  document.getElementById('tatil-fb-row').innerHTML =
+    '<span class="fb-done" style="color:var(--red);font-weight:700">&#x1F6A8; KRİTİK ALARM GÖNDERİLDİ — Acil bildirim yolda!</span>';
+  showToast('&#x1F6A8; Kritik alarm gönderildi! Acil bildirim yolda.');
+}
+
+function tatilYanlisOnayla(btn) {
+  document.getElementById('tatil-fb-row').innerHTML =
+    '<span class="fb-done">&#x1F44D; Yanlış alarm olarak işaretlendi — sistem öğrendi</span>';
+  showToast('&#x1F9E0; Sistem öğrendi: bu akış normal kabul edildi');
+}
+
+function deactivateTatilModu() {
+  const t = anomaliTypes.find(x => x.key === 'tatil-modu');
+  if (t) { t.active = false; t.pausedUntil = null; t.yetkili = ''; }
+  const banner = document.getElementById('tatil-banner');
+  if (banner) banner.style.display = 'none';
+  document.querySelectorAll('.tatil-dot').forEach(d => d.remove());
+  clearTimeout(tatilSimTimer);
+  renderToggles();
+  showToast('&#x1F3E0; Tatil modu kapatıldı — hoş geldiniz!');
+}
+
+// Feedback butonlari — askiya alma akisini tetikler
+function fbYes(btn) {
+  btn.closest('.anomali-feedback').innerHTML = '<span class="fb-done">&#x2705; Onaylandı — sistem bu tip için uyarmaya devam edecek</span>';
+  showToast('&#x1F6A8; Anomali onaylandi.');
+}
+
+function fbNo(btn, ruleKey) {
+  btn.closest('.anomali-feedback').innerHTML = '<span class="fb-done">&#x1F9E0; "Sistem Öğreniyor" sayfasından ayarlayabilirsiniz</span>';
+  // Sayfaya yonlendir
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.dataset.page === 'ogrenme') item.click();
+  });
+  setTimeout(() => openPauseModal(ruleKey), 400);
+}
+
+renderToggles();
+
+// ============================
+// ANOMALI DATA
+// ============================
+const anomaliData = [
+  {
+    icon: '&#x1F319;',
+    title: 'Gece Akışı Tespit Edildi',
+    color: 'var(--red)',
+    badge: 'Kritik',
+    badgeClass: 'chip-red',
+    time: 'Bugün, 02:47',
+    details: `
+      <div style="margin-bottom:1.25rem">
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">02:14 ile 02:47 arasında toplam <strong style="color:var(--text)">8,3 litre</strong> akış tespit edildi.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--red)">8,3 L</div>
+            <div style="font-size:.68rem;color:var(--muted)">Toplam Akış</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--yellow)">33 dk</div>
+            <div style="font-size:.68rem;color:var(--muted)">Süre</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--cyan)">0,25 L/dk</div>
+            <div style="font-size:.68rem;color:var(--muted)">Ort. Debi</div>
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+          Düşük debili uzun süreli bir akış gece saatlerinde tespit edildi. Bu tür akışlar genellikle muslukta damlatma, tuvalet sifonu kaçağı veya gizli bir boru kaçağına işaret eder.
+        </div>
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.85rem;font-size:.78rem;color:var(--red)">
+          &#x26A0;&#xFE0F; Tavsiye: Ev sakinleri uyurken her odadaki musluk ve tuvaletleri kontrol edin.
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn-sm btn-ghost" onclick="closeModal()">Kapat</button>
+        <button class="btn-sm btn-primary" onclick="showToast('&#x2705; Anomali çözüldü olarak işaretlendi');closeModal()">Çözüldü</button>
+      </div>`
+  },
+  {
+    icon: '&#x1F4C8;',
+    title: 'Normalin %40 Üzerinde Tüketim',
+    color: 'var(--yellow)',
+    badge: 'Uyarı',
+    badgeClass: 'chip-yellow',
+    time: 'Dün, 23:59',
+    details: `
+      <div style="margin-bottom:1.25rem">
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Cumartesi günü günlük tüketim <strong style="color:var(--text)">312 litre</strong> olarak ölçüldü. Haftalık ortalama 213 L/gün.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--red)">312 L</div>
+            <div style="font-size:.68rem;color:var(--muted)">Cumartesi</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--blue-lt)">213 L</div>
+            <div style="font-size:.68rem;color:var(--muted)">7-Gün Ort.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--yellow)">+46%</div>
+            <div style="font-size:.68rem;color:var(--muted)">Sapma</div>
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+          Cumartesi öğün saatlerinde yoğun akış görüldü. Misafir geliş veya özel bir kullanım (temizlik, bahçe sulama vb.) bu artışı açıklayabilir.
+        </div>
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:.85rem;font-size:.78rem;color:var(--yellow)">
+          &#x1F4A1; Not: Bu anomali kaçak değil, yüksek kullanımı işaret ediyor. Endişe verici değil.
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn-sm btn-ghost" onclick="closeModal()">Kapat</button>
+        <button class="btn-sm btn-primary" onclick="showToast('&#x2705; Anomali çözüldü olarak işaretlendi');closeModal()">Çözüldü</button>
+      </div>`
+  },
+  {
+    icon: '&#x23F1;&#xFE0F;',
+    title: 'Uzun Süreli Kesintisiz Akış',
+    color: 'var(--blue-lt)',
+    badge: 'Bilgi',
+    badgeClass: 'chip-blue',
+    time: '3 gün önce, 14:23',
+    details: `
+      <div style="margin-bottom:1.25rem">
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Perşembe 14:23 - 15:10 arasında <strong style="color:var(--text)">47 dakika</strong> kesintisiz 1,8 L/dk akış ölçüldü.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--blue-lt)">47 dk</div>
+            <div style="font-size:.68rem;color:var(--muted)">Süre</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--cyan)">1,8 L/dk</div>
+            <div style="font-size:.68rem;color:var(--muted)">Debi</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--yellow)">84,6 L</div>
+            <div style="font-size:.68rem;color:var(--muted)">Toplam</div>
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+          Gündüz saatinde 47 dakikalık kesintisiz akış tespit edildi. Ev sakinleri uyumadığı için kritik sınıflandırma yapılmadı, ancak açık kalan musluk veya bahçe sulama olabilir.
+        </div>
+        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem;font-size:.78rem;color:var(--blue-lt)">
+          &#x2139;&#xFE0F; Tavsiye: Uzun süre evde yokken cihazı izleme moduna alın.
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button class="btn-sm btn-ghost" onclick="closeModal()">Kapat</button>
+        <button class="btn-sm btn-primary" onclick="showToast('&#x2705; Anomali çözüldü olarak işaretlendi');closeModal()">Çözüldü</button>
+      </div>`
+  }
+];
+
+// ============================
+// INCELE BUTTONS
+// ============================
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-anomali]');
+  if (btn) {
+    const idx = parseInt(btn.dataset.anomali);
+    const a = anomaliData[idx];
+    openModal(a.icon + ' ' + a.title, a.details);
+  }
+});
+
+// ============================
+// KULLANICI EKLE MODAL
+// ============================
+const addUserModal = `
+  <div class="form-group">
+    <label class="form-label">Ad Soyad</label>
+    <input type="text" class="form-input" id="new-user-name" placeholder="Örnek: Mehmet Yılmaz">
+  </div>
+  <div class="form-group">
+    <label class="form-label">E-posta</label>
+    <input type="email" class="form-input" id="new-user-email" placeholder="ornek@email.com">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Rol</label>
+    <select class="form-select" id="new-user-role">
+      <option value="admin">Admin (Tam Kontrol)</option>
+      <option value="full" selected>Tam Erişim</option>
+      <option value="viewer">Sadece Görüntüleme</option>
+    </select>
+  </div>
+  <div class="form-actions">
+    <button class="btn-sm btn-ghost" onclick="closeModal()">İptal</button>
+    <button class="btn-sm btn-primary" onclick="addUser()">Davet Gönder</button>
+  </div>`;
+
+['btn-kullanici-ekle', 'btn-kullanici-ekle-2', 'add-btn-inline'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => openModal('&#x1F465; Kullanıcı Ekle', addUserModal));
+});
+
+function addUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const role = document.getElementById('new-user-role').value;
+  if (!name) { showToast('&#x26A0;&#xFE0F; Ad soyad girin'); return; }
+
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  const colors = ['#8b5cf6', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const roleLabels = { admin: 'Admin', full: 'Tam Erişim', viewer: 'İzleyici' };
+  const chipClasses = { admin: 'chip-blue', full: 'chip-green', viewer: 'chip-yellow' };
+
+  const item = document.createElement('div');
+  item.className = 'user-item';
+  item.innerHTML = `
+    <div class="av" style="background:${color}">${initials}</div>
+    <div><div class="un">${name}</div><div class="ur">${email || 'Davet Bekliyor'}</div></div>
+    <div class="ml"><span class="chip ${chipClasses[role]}">${roleLabels[role]}</span></div>`;
+
+  ['user-list-dashboard', 'user-list-full'].forEach(listId => {
+    const list = document.getElementById(listId);
+    if (list) list.appendChild(item.cloneNode(true));
+  });
+
+  closeModal();
+  showToast('&#x2705; ' + name + ' davet edildi!');
+}
+
+// ============================
+// RESOLVE ANOMALI
+// ============================
+function resolveAnomali(btn) {
+  const item = btn.closest('.anomali-item');
+  item.style.opacity = '0.4';
+  item.style.transition = '.4s';
+  const title = item.querySelector('.anomali-title');
+  if (title) title.style.textDecoration = 'line-through';
+  btn.closest('[style*="flex-direction"]').innerHTML = '<span style="font-size:.75rem;color:var(--green)">&#x2705; Çözüldü</span>';
+
+  let count = parseInt(document.getElementById('kpi-anomali').textContent) || 0;
+  if (count > 0) count--;
+  document.getElementById('kpi-anomali').textContent = count;
+  document.getElementById('anomali-badge').textContent = count;
+  document.getElementById('anomali-page-badge').textContent = count + ' Aktif';
+  const dash = document.getElementById('anomali-dash-badge');
+  if (dash) dash.textContent = count + ' Aktif';
+  showToast('&#x2705; Anomali çözüldü olarak işaretlendi');
+}
+
+// ============================
+// ANOMALI FILTERS
+// ============================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    document.querySelectorAll('#anomali-full-list .anomali-item').forEach(item => {
+      if (filter === 'all') {
+        item.style.display = 'flex';
+      } else if (filter === 'resolved') {
+        item.style.display = item.style.opacity === '0.4' ? 'flex' : 'none';
+      } else {
+        item.style.display = item.dataset.type === filter ? 'flex' : 'none';
+      }
+    });
+  });
+});
+
+// ============================
+// RAPOR INDIR
+// ============================
+document.getElementById('btn-rapor').addEventListener('click', () => {
+  const btn = document.getElementById('btn-rapor');
+  btn.textContent = '&#x23F3; Hazırlanıyor...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = '&#x2705; İndirildi!';
+    showToast('&#x1F4C4; Haftalık rapor indirildi (PDF)');
+    setTimeout(() => {
+      btn.textContent = '&#x1F4E4; Rapor İndir';
+      btn.disabled = false;
+    }, 2000);
+  }, 1500);
+});
+
+// ============================
+// MODAL HELPERS
+// ============================
+function openModal(title, bodyHtml) {
+  document.getElementById('modal-title').innerHTML = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+// ============================
+// TOAST
+// ============================
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================
+// ESC KEY
+// ============================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ============================================================
+// GERÇEK CİHAZ BAĞLANTISI (WebSocket / ESP32 Backend)
+// ============================================================
+let realWs          = null;
+let realModeActive  = false;
+let demoIntervalId  = null;
+let reconnectTimer  = null;
+let savedWsUrl      = localStorage.getItem('susayar_ws_url') || '';
+
+// Demo simülasyon interval'ını yakala (updateFlow setInterval'ı)
+// updateFlow zaten 2500ms interval'la çalışıyor — gerçek modda onu durdururuz
+const _origUpdateFlow = updateFlow;
+let demoRunning = true;
+
+function stopDemo() {
+  if (!demoRunning) return;
+  demoRunning = false;
+  // setInterval id'sini tespit edemediğimiz için updateFlow'u no-op yap
+  window._demoSuspended = true;
+}
+
+function startDemo() {
+  if (demoRunning) return;
+  demoRunning = true;
+  window._demoSuspended = false;
+}
+
+// updateFlow'u gerçek modda bypass et
+const __updateFlowOrig = window.updateFlow;
+window.updateFlow = function() {
+  if (window._demoSuspended) return;
+  __updateFlowOrig && __updateFlowOrig();
+};
+
+// ── Gerçek veri → dashboard DOM ─────────────────────────────
+function applyRealReading(data) {
+  const lpm      = parseFloat(data.flow_lpm  || 0);
+  const totalL   = parseFloat(data.total_liters || 0);
+  const displayV = lpm.toFixed(1);
+
+  // Anlık akış
+  const flowNumEl = document.getElementById('flow-num');
+  if (flowNumEl) flowNumEl.textContent = displayV;
+  const kpiFlowEl = document.getElementById('kpi-flow');
+  if (kpiFlowEl) kpiFlowEl.innerHTML = displayV + ' <span style="font-size:1rem">L/dk</span>';
+
+  // Ring
+  const pct   = Math.min(lpm / 5, 1);
+  const deg   = Math.round(pct * 360);
+  const color = lpm === 0 ? 'var(--border)' : lpm > 4 ? 'var(--red)' : lpm > 2.5 ? 'var(--yellow)' : 'var(--cyan)';
+  const grad  = 'conic-gradient(' + color + ' 0deg ' + deg + 'deg, var(--border) ' + deg + 'deg 360deg)';
+  const ringEl = document.getElementById('flow-ring');
+  if (ringEl) ringEl.style.background = grad;
+  const bigRingEl = document.getElementById('flow-big-ring');
+  if (bigRingEl) bigRingEl.style.background = grad;
+  const bigNumEl  = document.getElementById('flow-big-num');
+  if (bigNumEl) bigNumEl.textContent = displayV;
+  const barEl = document.getElementById('kpi-flow-bar');
+  if (barEl) barEl.style.width = (pct * 100) + '%';
+
+  // Sub text
+  const subEl = document.getElementById('kpi-flow-sub');
+  if (subEl) subEl.textContent = lpm === 0 ? 'Akış yok' : lpm < 0.5 ? 'Düşük debi — damlatma?' : 'Akış aktif';
+
+  // Bugün toplamı
+  const todayEl = document.getElementById('today-val');
+  if (todayEl) todayEl.textContent = Math.round(totalL) + ' L';
+  const sesEl = document.getElementById('session-vol');
+  if (sesEl) sesEl.textContent = totalL.toFixed(1) + ' L';
+
+  // Son güncelleme
+  const luEl = document.getElementById('last-update');
+  if (luEl) luEl.textContent = 'az önce';
+
+  // Ortalama
+  const avgEl = document.getElementById('avg-flow');
+  if (avgEl) avgEl.textContent = (lpm * 0.9 + 0.1).toFixed(1) + ' L/dk';
+}
+
+// ── Bağlantı butonu durumu ───────────────────────────────────
+function setCihazBtn(state) {
+  const btn = document.getElementById('btn-cihaz-bagla');
+  if (!btn) return;
+  if (state === 'connected') {
+    btn.style.background = 'rgba(16,185,129,.25)';
+    btn.style.borderColor = 'rgba(16,185,129,.6)';
+    btn.style.color = '#10b981';
+    btn.textContent = '🟢 Cihaz Bağlı';
+  } else if (state === 'connecting') {
+    btn.style.background = 'rgba(245,158,11,.15)';
+    btn.style.borderColor = 'rgba(245,158,11,.4)';
+    btn.style.color = '#f59e0b';
+    btn.textContent = '⏳ Bağlanıyor...';
+  } else {
+    btn.style.background = 'rgba(16,185,129,.15)';
+    btn.style.borderColor = 'rgba(16,185,129,.3)';
+    btn.style.color = '#10b981';
+    btn.innerHTML = '🔌 Cihaz Bağla';
+  }
+}
+
+// ── WebSocket bağlantısı ─────────────────────────────────────
+function connectRealBackend(wsUrl) {
+  if (realWs) { realWs.close(); realWs = null; }
+  clearTimeout(reconnectTimer);
+
+  // Token'ı URL'e ekle (sunucu kullanıcıya özel veri gönderir)
+  const token = localStorage.getItem('susayar_token');
+  const fullUrl = token ? `${wsUrl}?token=${token}` : wsUrl;
+
+  setCihazBtn('connecting');
+  const statusTextEl = document.getElementById('status-text');
+  const statusDotEl  = document.getElementById('status-dot');
+  if (statusTextEl) statusTextEl.textContent = 'Bağlanıyor...';
+
+  try {
+    realWs = new WebSocket(fullUrl);
+  } catch (e) {
+    showToast('❌ Geçersiz WebSocket URL');
+    setCihazBtn('disconnected');
+    return;
+  }
+
+  realWs.onopen = () => {
+    realModeActive = true;
+    stopDemo();
+    setCihazBtn('connected');
+    if (statusTextEl) statusTextEl.textContent = 'Gerçek Veri — ESP32 Bağlı';
+    if (statusDotEl)  statusDotEl.style.background = '#10b981';
+    showToast('✅ ESP32 backend\'e bağlandı! Gerçek veri akıyor.');
+    localStorage.setItem('susayar_ws_url', wsUrl);
+    savedWsUrl = wsUrl;
+  };
+
+  realWs.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'sensor_update') {
+        applyRealReading(msg.payload);
+      } else if (msg.type === 'init') {
+        // Başlangıç verisi
+        if (msg.payload.latest) applyRealReading(msg.payload.latest);
+      } else if (msg.type === 'anomaly') {
+        const a = msg.payload;
+        showToast('🚨 Yeni anomali: ' + a.detail);
+      }
+    } catch { /* ignore */ }
+  };
+
+  realWs.onclose = () => {
+    if (!realModeActive) return;
+    realModeActive = false;
+    startDemo();
+    setCihazBtn('disconnected');
+    if (statusTextEl) statusTextEl.textContent = 'Bağlantı kesildi — yeniden denenecek';
+    if (statusDotEl)  statusDotEl.style.background = 'var(--yellow)';
+    reconnectTimer = setTimeout(() => {
+      if (savedWsUrl) connectRealBackend(savedWsUrl);
+    }, 5000);
+  };
+
+  realWs.onerror = () => {
+    showToast('❌ Backend\'e bağlanılamadı. URL doğru mu?');
+    setCihazBtn('disconnected');
+  };
+}
+
+function disconnectRealBackend() {
+  savedWsUrl = '';
+  localStorage.removeItem('susayar_ws_url');
+  clearTimeout(reconnectTimer);
+  if (realWs) { realWs.onclose = null; realWs.close(); realWs = null; }
+  realModeActive = false;
+  startDemo();
+  setCihazBtn('disconnected');
+  const statusTextEl = document.getElementById('status-text');
+  const statusDotEl  = document.getElementById('status-dot');
+  if (statusTextEl) statusTextEl.textContent = 'Demo Modu';
+  if (statusDotEl)  statusDotEl.style.background = 'var(--cyan)';
+  showToast('Demo moduna geçildi.');
+}
+
+// ── Cihaz Bağla Modal ────────────────────────────────────────
+function openCihazBaglaModal() {
+  if (realModeActive) { disconnectRealBackend(); return; }
+
+  const API = localStorage.getItem('susayar_api_base') || 'http://localhost:3001';
+  const token = localStorage.getItem('susayar_token') || '';
+
+  const modal = document.createElement('div');
+  modal.id = 'cihaz-modal-overlay';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto
+  `;
+  modal.innerHTML = `
+    <div style="
+      background:#161c2e;border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;padding:2rem;width:100%;max-width:520px;
+      box-shadow:0 24px 64px rgba(0,0,0,.6)
+    ">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+        <span style="font-size:1.5rem">📡</span>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:#e2e8f0">Cihaz Yönetimi</div>
+          <div style="font-size:.75rem;color:#64748b;margin-top:.1rem">ESP32 cihazlarını kaydet ve API anahtarı al</div>
+        </div>
+        <button onclick="document.getElementById('cihaz-modal-overlay').remove()"
+          style="margin-left:auto;background:transparent;border:none;color:#64748b;font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+
+      <!-- Sunucu URL -->
+      <div style="margin-bottom:1.25rem">
+        <label style="font-size:.75rem;font-weight:600;color:#94a3b8;display:block;margin-bottom:.4rem">
+          Backend URL (Dashboard → WS bağlantısı için)
+        </label>
+        <div style="display:flex;gap:.5rem">
+          <input id="api-base-input" type="text"
+            value="${API}"
+            placeholder="http://localhost:3001"
+            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.15);
+                   border-radius:8px;padding:.6rem .85rem;color:#e2e8f0;font-size:.82rem;
+                   outline:none;font-family:monospace"
+          />
+          <button onclick="
+            const base = document.getElementById('api-base-input').value.trim().replace(/\\/$/,'');
+            localStorage.setItem('susayar_api_base', base);
+            const wsUrl = base.replace('https://','wss://').replace('http://','ws://') + '/ws';
+            localStorage.setItem('susayar_ws_url', wsUrl);
+            document.getElementById('cihaz-modal-overlay').remove();
+            connectRealBackend(wsUrl);
+          " style="background:#3b82f6;border:none;color:white;padding:.6rem 1rem;
+                   border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">
+            Bağlan
+          </button>
+        </div>
+        <div style="font-size:.72rem;color:#475569;margin-top:.35rem">
+          Cloud: <code style="color:#4ade80">https://susayar-backend.onrender.com</code> &nbsp;|&nbsp;
+          Yerel: <code style="color:#4ade80">http://localhost:3001</code>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:1.25rem 0">
+
+      <!-- Yeni cihaz ekle -->
+      <div style="margin-bottom:1rem">
+        <div style="font-size:.82rem;font-weight:600;color:#e2e8f0;margin-bottom:.75rem">+ Yeni ESP32 Cihazı Ekle</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+          <input id="new-dev-name" type="text" placeholder="Cihaz adı (örn: Mutfak)"
+            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.12);border-radius:8px;
+                   padding:.55rem .8rem;color:#e2e8f0;font-size:.82rem;outline:none"/>
+          <input id="new-dev-id" type="text" placeholder="device_id (örn: susayar-001)"
+            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.12);border-radius:8px;
+                   padding:.55rem .8rem;color:#e2e8f0;font-size:.82rem;outline:none;font-family:monospace"/>
+          <button id="btn-add-device" onclick="addDeviceFromModal()"
+            style="background:#10b981;border:none;color:white;padding:.55rem .9rem;
+                   border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">
+            Ekle
+          </button>
+        </div>
+        <div id="dev-add-error" style="font-size:.75rem;color:#f87171;display:none"></div>
+      </div>
+
+      <!-- Cihaz listesi -->
+      <div id="device-list-area" style="font-size:.8rem;color:#64748b">Yükleniyor…</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  loadDeviceList();
+}
+
+async function loadDeviceList() {
+  const area = document.getElementById('device-list-area');
+  if (!area) return;
+  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    const devs = await r.json();
+    if (!devs.length) {
+      area.innerHTML = '<div style="color:#475569;text-align:center;padding:.5rem">Henüz kayıtlı cihaz yok. Yukarıdan ekleyin.</div>';
+      return;
+    }
+    area.innerHTML = devs.map(d => `
+      <div style="background:#0e1220;border:1px solid rgba(255,255,255,.08);border-radius:10px;
+                  padding:.85rem 1rem;margin-bottom:.6rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="color:#e2e8f0;font-weight:600">${d.name}</div>
+            <div style="color:#64748b;font-family:monospace;font-size:.75rem">${d.device_id}</div>
+          </div>
+          <button onclick="deleteDevice('${d.id}')"
+            style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:#f87171;
+                   padding:.3rem .6rem;border-radius:6px;font-size:.72rem;cursor:pointer">Sil</button>
+        </div>
+        <div style="margin-top:.6rem;background:#161c2e;border-radius:6px;padding:.5rem .7rem;
+                    display:flex;align-items:center;gap:.5rem">
+          <code style="color:#4ade80;font-size:.72rem;flex:1;word-break:break-all">${d.api_key}</code>
+          <button onclick="navigator.clipboard.writeText('${d.api_key}');showToast('API anahtarı kopyalandı!')"
+            style="background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.3);color:#60a5fa;
+                   padding:.25rem .5rem;border-radius:5px;font-size:.7rem;cursor:pointer;white-space:nowrap">
+            Kopyala
+          </button>
+        </div>
+        <div style="font-size:.7rem;color:#475569;margin-top:.4rem">
+          Son görülme: ${d.last_seen ? new Date(d.last_seen).toLocaleString('tr-TR') : '—'}
+          ${d.rssi_dbm ? '· ' + d.rssi_dbm + ' dBm' : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    area.innerHTML = '<div style="color:#f59e0b">Cihazlar yüklenemedi. Backend çalışıyor mu?</div>';
+  }
+}
+
+async function addDeviceFromModal() {
+  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const token = localStorage.getItem('susayar_token') || '';
+  const name  = document.getElementById('new-dev-name')?.value.trim();
+  const devId = document.getElementById('new-dev-id')?.value.trim();
+  const errEl = document.getElementById('dev-add-error');
+  const btn   = document.getElementById('btn-add-device');
+
+  if (!name || !devId) { errEl.textContent = 'Ad ve device_id zorunludur'; errEl.style.display='block'; return; }
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = '…';
+
+  try {
+    const r = await fetch(`${API}/api/devices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, device_id: devId }),
+    });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || 'Hata'; errEl.style.display='block'; return; }
+    document.getElementById('new-dev-name').value = '';
+    document.getElementById('new-dev-id').value = '';
+    showToast('✅ Cihaz eklendi! API anahtarını ESP32\'ye yükleyin.');
+    loadDeviceList();
+  } catch {
+    errEl.textContent = 'Bağlantı hatası'; errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Ekle';
+  }
+}
+
+async function deleteDevice(id) {
+  if (!confirm('Bu cihazı silmek istediğinizden emin misiniz?')) return;
+  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const token = localStorage.getItem('susayar_token') || '';
+  await fetch(`${API}/api/devices/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  showToast('Cihaz silindi.');
+  loadDeviceList();
+}
+
+// Sayfa açıldığında kaydedilmiş URL varsa otomatik bağlan
+if (savedWsUrl) {
+  setTimeout(() => connectRealBackend(savedWsUrl), 1500);
+}
+</script>
+</body>
+</html>

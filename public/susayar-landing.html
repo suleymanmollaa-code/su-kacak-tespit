@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuSayar — Su Kaçağını Faturan Gelmeden Tespit Et</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:    #2563eb;
+  --blue-dk: #1d4ed8;
+  --blue-lt: #eff6ff;
+  --text:    #0f172a;
+  --sub:     #475569;
+  --muted:   #94a3b8;
+  --border:  #e2e8f0;
+  --bg:      #ffffff;
+  --bg2:     #f8fafc;
+  --green:   #16a34a;
+  --red:     #dc2626;
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 64px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 clamp(1.25rem, 5vw, 3rem);
+  gap: 2rem;
+}
+.nav-logo {
+  font-size: 1.15rem; font-weight: 900; letter-spacing: -.01em;
+  color: var(--text); flex-shrink: 0;
+}
+.nav-logo em { color: var(--blue); font-style: normal; }
+.nav-links { display: flex; gap: 1.75rem; margin-left: .5rem; }
+.nav-links a { font-size: .85rem; font-weight: 500; color: var(--sub); transition: color .15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-ctas { margin-left: auto; display: flex; gap: .6rem; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .52rem 1.2rem; border-radius: 8px;
+  font-size: .84rem; font-weight: 600; cursor: pointer;
+  border: 1.5px solid transparent; transition: all .15s;
+  white-space: nowrap;
+}
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--bg2); border-color: #cbd5e1; }
+.btn-primary { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 1px 3px rgba(37,99,235,.3); }
+.btn-primary:hover { background: var(--blue-dk); border-color: var(--blue-dk); box-shadow: 0 4px 12px rgba(37,99,235,.35); }
+.btn-lg { padding: .75rem 1.75rem; font-size: .96rem; border-radius: 10px; }
+.btn-xl { padding: .9rem 2.2rem; font-size: 1rem; border-radius: 11px; }
+.btn-white { background: white; color: var(--blue); border-color: white; }
+.btn-white:hover { background: #f0f7ff; }
+.btn-outline-white { background: transparent; color: white; border-color: rgba(255,255,255,.4); }
+.btn-outline-white:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.7); }
+
+/* ── HERO ────────────────────────────────────────── */
+.hero-wrap {
+  padding: 6rem clamp(1.25rem,5vw,3rem) 0;
+  max-width: 1160px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; align-items: center;
+  min-height: calc(100vh - 64px);
+}
+.hero-left { padding-top: 2rem; }
+.hero-chip {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--blue-lt); border: 1px solid #bfdbfe;
+  border-radius: 20px; padding: .3rem 1rem;
+  font-size: .75rem; font-weight: 700; color: var(--blue);
+  margin-bottom: 1.5rem; letter-spacing: .01em;
+}
+.hero-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.hero-h1 {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 900; line-height: 1.12; letter-spacing: -.03em;
+  color: var(--text); margin-bottom: 1.25rem;
+}
+.hero-h1 .grad {
+  background: linear-gradient(130deg, var(--blue) 0%, #0ea5e9 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-p { font-size: 1.05rem; color: var(--sub); line-height: 1.75; max-width: 480px; margin-bottom: 2rem; }
+.hero-btns { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.hero-proof {
+  display: flex; align-items: center; gap: 1rem;
+  font-size: .8rem; color: var(--muted);
+}
+.hero-proof-divider { width: 1px; height: 24px; background: var(--border); }
+.hero-proof-num { font-size: 1.1rem; font-weight: 800; color: var(--text); display: block; line-height: 1; margin-bottom: .1rem; }
+
+/* HERO MOCKUP */
+.hero-right { position: relative; padding-bottom: 3rem; }
+.hero-phone-wrap {
+  background: linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 45%, #0369a1 100%);
+  border-radius: 24px; padding: 2.5rem 2rem;
+  box-shadow: 0 40px 80px rgba(30,58,138,.25), 0 8px 20px rgba(0,0,0,.12);
+  position: relative; overflow: hidden;
+}
+.hero-phone-wrap::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.mock-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.mock-logo { font-size: .85rem; font-weight: 800; color: white; letter-spacing: .02em; }
+.mock-status {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .72rem; color: rgba(255,255,255,.7);
+}
+.mock-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: blink 2s infinite; }
+.mock-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1rem; }
+.mock-kpi {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: .85rem 1rem;
+}
+.mock-kpi-l { font-size: .62rem; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .3rem; }
+.mock-kpi-v { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1; }
+.mock-kpi-v sub { font-size: .6rem; font-weight: 400; opacity: .7; margin-left: .15rem; }
+.mock-chart-box {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 1rem;
+}
+.mock-chart-lbl { font-size: .65rem; color: rgba(255,255,255,.5); margin-bottom: .6rem; text-transform: uppercase; letter-spacing: .06em; }
+.mock-bars { display: flex; align-items: flex-end; gap: 5px; height: 56px; }
+.mock-bar { flex: 1; border-radius: 3px 3px 0 0; opacity: .7; }
+.mock-alert {
+  margin-top: .75rem;
+  background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.35);
+  border-radius: 10px; padding: .65rem .9rem;
+  display: flex; align-items: center; gap: .6rem;
+  font-size: .75rem; color: #fca5a5;
+}
+.mock-alert-icon { font-size: .9rem; flex-shrink: 0; }
+
+/* FLOATING BADGES */
+.float-badge {
+  position: absolute;
+  background: white; border-radius: 12px;
+  padding: .6rem .9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  font-size: .78rem; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: .5rem;
+  white-space: nowrap;
+}
+.float-badge-icon { font-size: 1.1rem; }
+.float-1 { bottom: 4rem; left: -2rem; }
+.float-2 { top: 2rem; right: -2rem; }
+
+/* ── SOCIAL PROOF BAR ────────────────────────────── */
+.proof-bar {
+  background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 1.25rem clamp(1.25rem,5vw,3rem);
+  display: flex; align-items: center; justify-content: center;
+  gap: 2.5rem; flex-wrap: wrap;
+}
+.proof-item { display: flex; align-items: center; gap: .6rem; font-size: .82rem; color: var(--sub); }
+.proof-item-icon { font-size: 1.1rem; }
+.proof-item strong { color: var(--text); }
+
+/* ── PROBLEM SECTION ─────────────────────────────── */
+.problem-wrap {
+  padding: 5rem clamp(1.25rem,5vw,3rem);
+  max-width: 1160px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 5rem; align-items: center;
+}
+.problem-label { font-size: .72rem; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: .15em; margin-bottom: .75rem; }
+.problem-h { font-size: clamp(1.7rem,3vw,2.4rem); font-weight: 800; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 1rem; }
+.problem-p { font-size: .95rem; color: var(--sub); line-height: 1.75; margin-bottom: 1.5rem; }
+.problem-stats { display: flex; flex-direction: column; gap: .75rem; }
+.pstat {
+  display: flex; align-items: center; gap: 1rem;
+  background: #fff5f5; border: 1px solid #fecaca;
+  border-radius: 10px; padding: .85rem 1.1rem;
+}
+.pstat-num { font-size: 1.4rem; font-weight: 900; color: var(--red); line-height: 1; min-width: 64px; }
+.pstat-text { font-size: .82rem; color: var(--sub); line-height: 1.4; }
+.problem-visual {
+  background: linear-gradient(145deg, #fff5f5, #fef2f2);
+  border: 1px solid #fecaca; border-radius: 20px;
+  padding: 2rem; position: relative; overflow: hidden;
+}
+.problem-visual::after {
+  content: ''; position: absolute;
+  bottom: -40px; right: -40px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, rgba(220,38,38,.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.pvis-title { font-size: .75rem; font-weight: 700; color: #b91c1c; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1.25rem; }
+.pvis-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem 0; border-bottom: 1px solid rgba(220,38,38,.1);
+  font-size: .84rem;
+}
+.pvis-row:last-child { border: none; }
+.pvis-row span:first-child { color: var(--sub); }
+.pvis-row span:last-child { font-weight: 700; }
+.pvis-total {
+  margin-top: 1rem; padding: .85rem; border-radius: 10px;
+  background: rgba(220,38,38,.08); border: 1px solid rgba(220,38,38,.2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.pvis-total span:first-child { font-size: .8rem; font-weight: 600; color: #b91c1c; }
+.pvis-total span:last-child { font-size: 1.2rem; font-weight: 900; color: var(--red); }
+
+/* ── HOW IT WORKS ────────────────────────────────── */
+.section-wrap { padding: 5rem clamp(1.25rem,5vw,3rem); max-width: 1160px; margin: 0 auto; }
+.section-header { text-align: center; max-width: 560px; margin: 0 auto 3.5rem; }
+.s-label { font-size: .72rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .15em; margin-bottom: .75rem; }
+.s-h { font-size: clamp(1.75rem,3vw,2.4rem); font-weight: 800; line-height: 1.2; letter-spacing: -.02em; margin-bottom: .75rem; }
+.s-p { font-size: .97rem; color: var(--sub); line-height: 1.7; }
+
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.step-card { background: white; padding: 2rem; position: relative; }
+.step-card:hover { background: var(--blue-lt); }
+.step-num-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--blue); color: white;
+  font-size: .88rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.step-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+.step-card p { font-size: .83rem; color: var(--sub); line-height: 1.65; }
+.step-arrow {
+  position: absolute; right: -13px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; background: var(--blue); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: .75rem; z-index: 2;
+}
+
+/* ── FEATURES ────────────────────────────────────── */
+.features-bg { background: var(--bg2); }
+.features-inner { padding: 5rem clamp(1.25rem,5vw,3rem); max-width: 1160px; margin: 0 auto; }
+.feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+.feat-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.6rem;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+}
+.feat-card:hover { border-color: #93c5fd; box-shadow: 0 8px 24px rgba(37,99,235,.08); transform: translateY(-2px); }
+.feat-icon-box {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; margin-bottom: 1rem;
+}
+.feat-card h4 { font-size: .92rem; font-weight: 700; margin-bottom: .4rem; }
+.feat-card p { font-size: .8rem; color: var(--sub); line-height: 1.65; }
+
+/* ── LEARN SECTION ───────────────────────────────── */
+.learn-wrap {
+  padding: 5rem clamp(1.25rem,5vw,3rem);
+  max-width: 1160px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 5rem; align-items: center;
+}
+.learn-left .s-p { margin-bottom: 1.75rem; }
+.learn-tags { display: flex; gap: .6rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  border-radius: 6px; padding: .35rem .75rem;
+  font-size: .75rem; font-weight: 600;
+}
+.tag-green { background: #dcfce7; color: #15803d; }
+.tag-blue  { background: #dbeafe; color: #1d4ed8; }
+.tag-amber { background: #fef3c7; color: #92400e; }
+.learn-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.07);
+}
+.learn-card-head {
+  background: linear-gradient(135deg, var(--blue) 0%, #0891b2 100%);
+  padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.learn-card-title { font-size: .82rem; font-weight: 700; color: white; }
+.learn-card-sub { font-size: .7rem; color: rgba(255,255,255,.65); margin-top: .1rem; }
+.learn-card-badge {
+  background: rgba(255,255,255,.2); color: white;
+  font-size: .65rem; font-weight: 700; padding: .25rem .65rem;
+  border-radius: 20px;
+}
+.learn-rules { padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: .6rem; }
+.lrule {
+  display: flex; align-items: center; gap: .85rem;
+  padding: .7rem .9rem; border-radius: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  font-size: .82rem;
+}
+.lrule-icon { font-size: 1rem; flex-shrink: 0; }
+.lrule-text { flex: 1; color: var(--text); }
+.lrule-pill {
+  font-size: .62rem; font-weight: 700;
+  padding: .15rem .55rem; border-radius: 20px;
+  background: #dcfce7; color: #15803d; flex-shrink: 0;
+}
+.lrule.learning { opacity: .5; }
+.lrule-pill.pending { background: #fef3c7; color: #92400e; }
+
+/* ── TESTIMONIALS ────────────────────────────────── */
+.testi-bg { background: var(--bg2); }
+.testi-inner { padding: 5rem clamp(1.25rem,5vw,3rem); max-width: 1160px; margin: 0 auto; }
+.testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+.testi-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.6rem;
+}
+.testi-stars { color: #f59e0b; font-size: .85rem; margin-bottom: .85rem; }
+.testi-q { font-size: .87rem; color: var(--text); line-height: 1.65; margin-bottom: 1.1rem; font-style: italic; }
+.testi-q::before { content: '"'; }
+.testi-q::after  { content: '"'; }
+.testi-author { display: flex; align-items: center; gap: .75rem; }
+.testi-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.testi-name { font-size: .82rem; font-weight: 600; }
+.testi-city { font-size: .72rem; color: var(--muted); }
+
+/* ── PRICING ─────────────────────────────────────── */
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; align-items: start; }
+.p-card {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 16px; padding: 2rem; position: relative;
+  display: flex; flex-direction: column;
+}
+.p-card.featured {
+  border-color: var(--blue);
+  box-shadow: 0 4px 24px rgba(37,99,235,.14);
+  transform: scale(1.03);
+}
+.p-popular {
+  position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  background: var(--blue); color: white;
+  font-size: .65rem; font-weight: 700; letter-spacing: .04em;
+  padding: .25rem .9rem; border-radius: 20px; white-space: nowrap;
+}
+.p-tier { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+.p-price { font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: .2rem; }
+.p-price sub { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.p-note { font-size: .75rem; color: var(--muted); margin-bottom: 1.5rem; }
+.p-sep { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+.p-features { list-style: none; display: flex; flex-direction: column; gap: .55rem; flex: 1; margin-bottom: 1.75rem; }
+.p-features li { font-size: .82rem; color: var(--sub); display: flex; gap: .6rem; align-items: flex-start; }
+.p-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: .05rem; }
+.p-features li.off { opacity: .4; }
+.p-features li.off::before { content: '—'; color: var(--muted); }
+
+/* ── CTA FINAL ───────────────────────────────────── */
+.cta-section { padding: 0 clamp(1.25rem,5vw,3rem) 5rem; }
+.cta-box {
+  max-width: 1160px; margin: 0 auto;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0369a1 100%);
+  border-radius: 24px; padding: 5rem 3rem;
+  text-align: center; position: relative; overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, rgba(255,255,255,.07) 0%, transparent 70%);
+}
+.cta-box h2 { font-size: clamp(1.8rem,3.5vw,2.8rem); font-weight: 900; letter-spacing: -.02em; color: white; margin-bottom: .75rem; }
+.cta-box p { font-size: 1.05rem; color: rgba(255,255,255,.7); margin-bottom: 2.5rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+.cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.cta-note { margin-top: 1.25rem; font-size: .78rem; color: rgba(255,255,255,.45); }
+
+/* ── FOOTER ──────────────────────────────────────── */
+.footer-wrap {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem clamp(1.25rem,5vw,3rem);
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1160px; margin: 0 auto; flex-wrap: wrap; gap: 1rem;
+}
+.footer-logo { font-size: .95rem; font-weight: 900; }
+.footer-logo em { color: var(--blue); font-style: normal; }
+.footer-links { display: flex; gap: 1.5rem; }
+.footer-links a { font-size: .8rem; color: var(--muted); transition: color .15s; }
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: .78rem; color: var(--muted); }
+
+/* ── LIVE ECOSYSTEM ──────────────────────────────── */
+.live-eco {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  padding: 3rem clamp(1.25rem,5vw,3rem);
+  position: relative; overflow: hidden;
+}
+.live-eco::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,.18) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(14,165,233,.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.live-eco-inner { max-width: 1160px; margin: 0 auto; position: relative; }
+.live-eco-head { text-align: center; margin-bottom: 2rem; }
+.live-eco-badge {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px; padding: .3rem 1rem;
+  font-size: .72rem; font-weight: 700; color: rgba(255,255,255,.65);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1rem;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: blink 2s infinite; flex-shrink: 0; }
+.live-eco-title { font-size: clamp(1.3rem,2.5vw,1.9rem); font-weight: 800; color: white; letter-spacing: -.02em; }
+.live-eco-sub { font-size: .85rem; color: rgba(255,255,255,.45); margin-top: .4rem; }
+.live-stats {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1px; background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 16px;
+  overflow: hidden; margin-bottom: 1.25rem;
+}
+.live-stat {
+  background: rgba(255,255,255,.04);
+  padding: 1.75rem 1.25rem; text-align: center;
+  transition: background .25s;
+}
+.live-stat:hover { background: rgba(255,255,255,.09); }
+.live-stat-icon { font-size: 1.6rem; margin-bottom: .55rem; }
+.live-stat-val {
+  font-size: 1.8rem; font-weight: 900; color: white;
+  letter-spacing: -.03em; line-height: 1.1; margin-bottom: .3rem;
+  font-variant-numeric: tabular-nums;
+  transition: opacity .15s;
+}
+.live-stat-val .u { font-size: .75rem; font-weight: 400; opacity: .5; margin-left: .2rem; }
+.live-stat-lbl { font-size: .68rem; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
+.live-stat-delta { font-size: .68rem; font-weight: 600; color: #4ade80; }
+.live-stat-delta.warn { color: #fbbf24; }
+
+.live-feed-pill {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: rgba(239,68,68,.2); border: 1px solid rgba(239,68,68,.3);
+  border-radius: 6px; padding: .22rem .65rem;
+  font-size: .65rem; font-weight: 700; color: #fca5a5; flex-shrink: 0;
+}
+.live-feed-text {
+  flex: 1; font-size: .8rem; color: rgba(255,255,255,.65);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.live-feed-text strong { color: white; }
+.live-feed-time { font-size: .68rem; color: rgba(255,255,255,.3); flex-shrink: 0; }
+.live-feed-flash { animation: flash-in .4s ease; }
+@keyframes flash-in { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+
+/* ── DIVIDER ─────────────────────────────────────── */
+.div-line { border: none; border-top: 1px solid var(--border); }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero-wrap { grid-template-columns: 1fr; gap: 3rem; min-height: auto; padding-bottom: 3rem; }
+  .hero-right { display: none; }
+  .problem-wrap, .learn-wrap { grid-template-columns: 1fr; gap: 3rem; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .step-arrow { display: none; }
+  .feat-grid, .testi-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .p-card.featured { transform: none; }
+  nav .nav-links { display: none; }
+  .footer-wrap { flex-direction: column; text-align: center; }
+  .footer-links { justify-content: center; }
+  .live-stats { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Su<em>Sayar</em></div>
+  <div class="nav-links">
+    <a href="#nasil-calisir">Nasıl Çalışır</a>
+    <a href="#ozellikler">Özellikler</a>
+    <a href="#fiyatlar">Fiyatlar</a>
+  </div>
+  <div class="nav-ctas">
+    <button class="btn btn-ghost" onclick="window.open('susayar-dashboard.html')">Demo</button>
+    <button class="btn btn-primary">Erken Erişim</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero-left">
+    <div class="hero-chip">
+      <span class="hero-chip-dot"></span>
+      Türkiye'nin akıllı su takip sistemi
+    </div>
+    <h1 class="hero-h1">
+      Su kaçağını<br>
+      <span class="grad">faturan gelmeden</span><br>
+      tespit et
+    </h1>
+    <p class="hero-p">
+      Evinizin ana vanasına takılır. Gece akışlarını, damlama kaçaklarını ve anormal tüketimleri
+      gerçek zamanlı izler. Sistem sizi tanıdığında yanlış alarm kalmaz.
+    </p>
+    <div class="hero-btns">
+      <button class="btn btn-primary btn-xl" onclick="window.open('susayar-dashboard.html')">
+        Canlı Demo &rarr;
+      </button>
+      <button class="btn btn-ghost btn-lg">Nasıl Çalışır</button>
+    </div>
+    <div class="hero-proof">
+      <div>
+        <span class="hero-proof-num">30 dk</span>
+        Kurulum
+      </div>
+      <div class="hero-proof-divider"></div>
+      <div>
+        <span class="hero-proof-num">7/24</span>
+        İzleme
+      </div>
+      <div class="hero-proof-divider"></div>
+      <div>
+        <span class="hero-proof-num">%0</span>
+        Yanlış alarm
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-phone-wrap">
+      <div class="mock-bar">
+        <div class="mock-logo">SuSayar</div>
+        <div class="mock-status">
+          <span class="mock-dot"></span> Canlı
+        </div>
+      </div>
+      <div class="mock-kpis">
+        <div class="mock-kpi">
+          <div class="mock-kpi-l">Anlık Akış</div>
+          <div class="mock-kpi-v" id="mock-flow">2,4 <sub>L/dk</sub></div>
+        </div>
+        <div class="mock-kpi">
+          <div class="mock-kpi-l">Bugün</div>
+          <div class="mock-kpi-v" id="mock-today">187 <sub>L</sub></div>
+        </div>
+        <div class="mock-kpi">
+          <div class="mock-kpi-l">Bu Ay</div>
+          <div class="mock-kpi-v" id="mock-month">4,2 <sub>m&sup3;</sub></div>
+        </div>
+        <div class="mock-kpi">
+          <div class="mock-kpi-l">Tasarruf</div>
+          <div class="mock-kpi-v" id="mock-save" style="color:#4ade80">&#x2193;18%</div>
+        </div>
+      </div>
+      <div class="mock-chart-box">
+        <div class="mock-chart-lbl">Haftalık Tüketim</div>
+        <div class="mock-bars">
+          <div class="mock-bar" style="height:55%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:70%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:45%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:85%;background:#f87171"></div>
+          <div class="mock-bar" style="height:62%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:50%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:78%;background:#60a5fa"></div>
+        </div>
+      </div>
+      <div class="mock-alert">
+        <span class="mock-alert-icon">&#x1F6A8;</span>
+        Gece 02:14 — Beklenmedik akış tespit edildi
+      </div>
+    </div>
+
+    <div class="float-badge float-1">
+      <span class="float-badge-icon">&#x2705;</span>
+      Kaçak tespit edildi — Bildirim gönderildi
+    </div>
+    <div class="float-badge float-2">
+      <span class="float-badge-icon">&#x1F4C9;</span>
+      Bu ay %18 tasarruf
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL PROOF BAR -->
+<div class="proof-bar">
+  <div class="proof-item">
+    <span class="proof-item-icon">&#x26A1;</span>
+    <span>Kurulum: <strong>30 dakika</strong></span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-item-icon">&#x1F4F1;</span>
+    <span>Bildirim: <strong>Anında</strong></span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-item-icon">&#x1F9E0;</span>
+    <span>Öğrenme: <strong>7 günde kalibrasyon</strong></span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-item-icon">&#x1F4B0;</span>
+    <span>Ortalama tasarruf: <strong>Ayda 180 TL</strong></span>
+  </div>
+  <div class="proof-item">
+    <span class="proof-item-icon">&#x1F512;</span>
+    <span>Veri: <strong>Yerel &amp; güvenli</strong></span>
+  </div>
+</div>
+
+<!-- CANLI EKOSİSTEM -->
+<div class="live-eco">
+  <div class="live-eco-inner">
+    <div class="live-eco-head">
+      <div class="live-eco-badge">
+        <span class="live-dot"></span>
+        Canlı Ekosistem Verisi
+      </div>
+      <div class="live-eco-title">SuSayar cihazlarından akan veri — şu an</div>
+      <div class="live-eco-sub">Tüm aktif cihazlardan gerçek zamanlı toplanan istatistikler</div>
+    </div>
+
+    <div class="live-stats">
+      <div class="live-stat">
+        <div class="live-stat-icon">📡</div>
+        <div class="live-stat-val" id="ls-devices">1.247<span class="u">cihaz</span></div>
+        <div class="live-stat-lbl">Aktif Cihaz</div>
+        <div class="live-stat-delta">▲ +3 bu hafta</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">💧</div>
+        <div class="live-stat-val" id="ls-water">2.847.312<span class="u">L</span></div>
+        <div class="live-stat-lbl">Bu Hafta Ölçülen Su</div>
+        <div class="live-stat-delta">⚡ Canlı sayılıyor</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">🚨</div>
+        <div class="live-stat-val" id="ls-leaks">183<span class="u">kaçak</span></div>
+        <div class="live-stat-lbl">Tespit Edilen Kaçak</div>
+        <div class="live-stat-delta warn">▲ +2 bugün</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">🌿</div>
+        <div class="live-stat-val" id="ls-saved">412.840<span class="u">L</span></div>
+        <div class="live-stat-lbl">Tasarruf Edilen Su</div>
+        <div class="live-stat-delta">≈ 412 m³ kurtarıldı</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROBLEM SECTION -->
+<div class="problem-wrap">
+  <div>
+    <div class="problem-label">&#x26A0; Farkında mısınız?</div>
+    <h2 class="problem-h">Su faturanızın kaynağını hiç sorguladınız mı?</h2>
+    <p class="problem-p">
+      Türkiye'de ortalama bir hanede <strong>aylık su tüketiminin %15–30'u</strong> fark edilmeyen
+      kaçaklardan kaynaklanır. Sifon kaçağı, damlayan musluk, gece bozulan boru...
+      Bunların hiçbirini fatura gelmeden öğrenemezsiniz.
+    </p>
+    <div class="problem-stats">
+      <div class="pstat">
+        <div class="pstat-num">%23</div>
+        <div class="pstat-text">Ortalama hanede tespit edilemeyen kaçak oranı</div>
+      </div>
+      <div class="pstat">
+        <div class="pstat-num">6 ay</div>
+        <div class="pstat-text">Tipik bir kaçağın fark edilmesi için geçen ortalama süre</div>
+      </div>
+      <div class="pstat">
+        <div class="pstat-num">2.160 L</div>
+        <div class="pstat-text">6 ayda damlayan musluğun harcattığı su miktarı</div>
+      </div>
+    </div>
+  </div>
+  <div class="problem-visual">
+    <div class="pvis-title">&#x1F9FE; Örnek Aylık Fatura Analizi</div>
+    <div class="pvis-row">
+      <span>Normal kullanım</span>
+      <span style="color:var(--text)">8,4 m&sup3;</span>
+    </div>
+    <div class="pvis-row">
+      <span>Sifon kaçağı (gizli)</span>
+      <span style="color:var(--red)">+1,8 m&sup3;</span>
+    </div>
+    <div class="pvis-row">
+      <span>Gece damlama (gizli)</span>
+      <span style="color:var(--red)">+0,9 m&sup3;</span>
+    </div>
+    <div class="pvis-row">
+      <span>Boru sızıntısı (gizli)</span>
+      <span style="color:var(--red)">+0,6 m&sup3;</span>
+    </div>
+    <div class="pvis-total">
+      <span>Ödenebilirdi</span>
+      <span>3,3 m&sup3; = ~280 TL</span>
+    </div>
+    <div style="text-align:center;margin-top:.75rem;font-size:.72rem;color:#b91c1c;font-weight:600">
+      &#x2197; Bu ay fazladan ödenen tutar
+    </div>
+  </div>
+</div>
+
+<hr class="div-line">
+
+<!-- NASIL CALISIR -->
+<div class="section-wrap" id="nasil-calisir">
+  <div class="section-header">
+    <div class="s-label">Nasıl Çalışır</div>
+    <h2 class="s-h">3 adımda kurulum, ömür boyu koruma</h2>
+    <p class="s-p">Elektrikçi, tesisatçı veya yazılım bilgisi gerektirmez. Paket gelir, takarsınız, sistem çalışır.</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num-circle">1</div>
+      <h3>Cihazı Al</h3>
+      <p>Hazır kurulum seti evinize gelir. Kutu açılır, su vanasına takılı adaptöre bağlantısı 5 dakika.</p>
+      <div class="step-arrow">&#x2192;</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num-circle">2</div>
+      <h3>WiFi'ye Bağlan</h3>
+      <p>Telefon uygulaması üzerinden ev WiFi'nizi seçin. Cihaz otomatik yapılanır, veri akmaya başlar.</p>
+      <div class="step-arrow">&#x2192;</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num-circle">3</div>
+      <h3>İzle &amp; Öğret</h3>
+      <p>Dashboard'dan canlı izle. Gelen bildirimlere geri bildirim ver — sistem 7 günde sizi tamamen tanıyor.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="div-line">
+
+<!-- OZELLIKLER -->
+<div class="features-bg" id="ozellikler">
+  <div class="features-inner">
+    <div class="section-header">
+      <div class="s-label">Özellikler</div>
+      <h2 class="s-h">Sadece veri değil — anlayış</h2>
+      <p class="s-p">Ne zaman aktığını değil, <em>neden aktığını</em> anlayan bir sistem.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#eff6ff">&#x1F319;</div>
+        <h4>Gece Akışı Tespiti</h4>
+        <p>Uyku saatinde herhangi bir akış olduğunda anında uyarır. Kaçağı sabah değil, gece yakalar.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4A7;</div>
+        <h4>Damlama Analizi</h4>
+        <p>Hissedilmez düşük debili sürekli akışları tespit eder. Ayda yüzlerce litre — göze görünmez ama faturaya yansır.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#fff7ed">&#x1F504;</div>
+        <h4>Sifon Kaçağı İmzası</h4>
+        <p>Kısa aralıkla tekrarlayan akışlar tuvalet sifon kaçağının klasik işaretini taşıyor. Sistem bunu otomatik tanıyor.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#fdf4ff">&#x1F9E0;</div>
+        <h4>Kullanıcı Destekli Öğrenme</h4>
+        <p>Her hane farklıdır. Geri bildirimlerinizle sistem yalnızca <strong>sizin evinize özel</strong> kurallara göre çalışır.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#eff6ff">&#x1F9F3;</div>
+        <h4>Tatil Modu</h4>
+        <p>Evden uzaktayken herhangi bir akış anında kritik alarm olur. Yetkili kişi tanımlayabilir, uzaktan onaylayabilirsiniz.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4C5;</div>
+        <h4>Aylık Tahmin &amp; Bütçe</h4>
+        <p>Mevcut gidişata göre ay sonu faturanızı önceden görür. Limit aşımını fatura gelmeden öğrenir, kendiniz sınır koyarsınız.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OGRENME BOLUMU -->
+<div class="learn-wrap">
+  <div class="learn-left">
+    <div class="s-label">Akıllı Profil</div>
+    <h2 class="s-h">Sistem sizi tanıdığında yanlış alarm kalmaz</h2>
+    <p class="s-p">
+      Sabit eşiklerle çalışan sistemler her eve uymaz. Gece 03:00'te su içtiği için
+      uyarılan, sabah çocukları için erken çalıştığında alarm alan kullanıcıları hep gördük.
+      SuSayar <strong>sizin geri bildirimlerinizle öğrenip</strong> sadece sizin için anlamlı
+      kurallara göre çalışır.
+    </p>
+    <div class="learn-tags">
+      <span class="tag tag-green">&#x2705; Yanlış alarm = 0</span>
+      <span class="tag tag-blue">&#x1F9E0; 11 öğrenilebilir kural</span>
+      <span class="tag tag-amber">&#x23F3; 7 günde kalibrasyon</span>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="window.open('susayar-dashboard.html')">Öğrenme Sistemini Göster</button>
+  </div>
+  <div>
+    <div class="learn-card">
+      <div class="learn-card-head">
+        <div>
+          <div class="learn-card-title">Ev Profili — Öğrenilen Kurallar</div>
+          <div class="learn-card-sub">Son güncelleme: bugün 08:42</div>
+        </div>
+        <div class="learn-card-badge">11 Kural</div>
+      </div>
+      <div class="learn-rules">
+        <div class="lrule">
+          <span class="lrule-icon">&#x1F319;</span>
+          <span class="lrule-text">Gece 02:00–03:00 akışı normal</span>
+          <span class="lrule-pill">Öğrenildi</span>
+        </div>
+        <div class="lrule">
+          <span class="lrule-icon">&#x1F4C8;</span>
+          <span class="lrule-text">Cumartesi yüksek tüketim normal</span>
+          <span class="lrule-pill">Öğrenildi</span>
+        </div>
+        <div class="lrule">
+          <span class="lrule-icon">&#x23F1;</span>
+          <span class="lrule-text">30+ dk akış pazar sabahı normal</span>
+          <span class="lrule-pill">Öğrenildi</span>
+        </div>
+        <div class="lrule">
+          <span class="lrule-icon">&#x1F4CA;</span>
+          <span class="lrule-text">Günlük bütçe: max 250 L</span>
+          <span class="lrule-pill">Öğrenildi</span>
+        </div>
+        <div class="lrule learning">
+          <span class="lrule-icon">&#x1F9E0;</span>
+          <span class="lrule-text" style="color:var(--muted)">Veri toplanıyor — 3 gün kaldı...</span>
+          <span class="lrule-pill pending">Öğreniliyor</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="div-line">
+
+<!-- TANIMLIKLAR / TESTIMONİALS -->
+<div class="testi-bg">
+  <div class="testi-inner">
+    <div class="section-header">
+      <div class="s-label">Kullanıcılarımızdan</div>
+      <h2 class="s-h">Gerçek evler, gerçek tasarruf</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+        <p class="testi-q">3 aydır olan sifon kaçağını ilk haftada tespit etti. Tamirden sonra faturam 180 TL düştü.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#2563eb">AK</div>
+          <div>
+            <div class="testi-name">Ahmet K.</div>
+            <div class="testi-city">İstanbul, Kadıköy</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+        <p class="testi-q">Tatil dönüşü eve geldiğimizde boru patlamış, ama sistem 20 dakikada bize haber vermişti. Büyük felaketten kurtulduk.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#059669">SY</div>
+          <div>
+            <div class="testi-name">Selin Y.</div>
+            <div class="testi-city">Ankara, Çankaya</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
+        <p class="testi-q">Benim gibi teknolojiyle arası iyi olmayan biri bile 30 dakikada kurdu. Ve artık suyumu tam olarak biliyorum.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:#7c3aed">MO</div>
+          <div>
+            <div class="testi-name">Mehmet O.</div>
+            <div class="testi-city">İzmir, Bornova</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FIYATLAR -->
+<div class="section-wrap" id="fiyatlar">
+  <div class="section-header">
+    <div class="s-label">Fiyatlandırma</div>
+    <h2 class="s-h">Basit ve şeffaf</h2>
+    <p class="s-p">Temel özellikler sonsuza kadar ücretsiz. Güçlü özellikler için aylık bir kahve fiyatı.</p>
+  </div>
+  <div class="pricing-grid">
+
+    <div class="p-card">
+      <div class="p-tier">Başlangıç</div>
+      <div class="p-price">Ücretsiz</div>
+      <div class="p-note">Sonsuza kadar ücretsiz</div>
+      <hr class="p-sep">
+      <ul class="p-features">
+        <li>Gerçek zamanlı akış izleme</li>
+        <li>Günlük &amp; haftalık raporlar</li>
+        <li>3 temel anomali tespiti</li>
+        <li>Telefon bildirimleri</li>
+        <li class="off">Öğrenme sistemi</li>
+        <li class="off">Tatil modu</li>
+        <li class="off">Aylık tahmin</li>
+        <li class="off">Çok kullanıcılı erişim</li>
+      </ul>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center">Ücretsiz Başla</button>
+    </div>
+
+    <div class="p-card featured">
+      <div class="p-popular">En Popüler</div>
+      <div class="p-tier">Pro</div>
+      <div class="p-price">49 <sub>TL/ay</sub></div>
+      <div class="p-note">Yıllık ödeme: 39 TL/ay — %20 indirim</div>
+      <hr class="p-sep">
+      <ul class="p-features">
+        <li>Başlangıç plandaki her şey</li>
+        <li>11 anomali kuralı + öğrenme</li>
+        <li>Tatil modu &amp; uzak alarm</li>
+        <li>Aylık tahmin &amp; bütçe limiti</li>
+        <li>5 kullanıcıya kadar</li>
+        <li>Öncelikli bildirimler</li>
+        <li>1 yıllık veri geçmişi</li>
+        <li class="off">Çok cihaz desteği</li>
+      </ul>
+      <button class="btn btn-primary" style="width:100%;justify-content:center">Pro'ya Geç</button>
+    </div>
+
+    <div class="p-card">
+      <div class="p-tier">Aile</div>
+      <div class="p-price">89 <sub>TL/ay</sub></div>
+      <div class="p-note">Birden fazla daire veya villa</div>
+      <hr class="p-sep">
+      <ul class="p-features">
+        <li>Pro plandaki her şey</li>
+        <li>5 cihaza kadar (her oda / daire)</li>
+        <li>Sınır olmadan kullanıcı</li>
+        <li>Cihazlar arası karşılaştırma</li>
+        <li>Tüketim raporları (PDF)</li>
+        <li>Öncelikli destek</li>
+        <li>Sınırsız veri geçmişi</li>
+        <li>Yeni özellikler ilk deneme hakkı</li>
+      </ul>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center">Aile Planını Seç</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA FINAL -->
+<div class="cta-section">
+  <div class="cta-box">
+    <h2>Sonraki su faturanizi siz kontrol edin</h2>
+    <p>Demo'yu iki dakikada test edin. Kaçak varsa, görmek için fatura beklemenize gerek yok.</p>
+    <div class="cta-btns">
+      <button class="btn btn-white btn-xl" onclick="window.open('susayar-dashboard.html')">&#x1F4CA; Canlı Demo</button>
+      <button class="btn btn-outline-white btn-xl">Erken Erişim Listesi</button>
+    </div>
+    <div class="cta-note">Kurulum 30 dakika &nbsp;·&nbsp; Kredi kartı gerekmez &nbsp;·&nbsp; İptal istediğinizde</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-logo">Su<em>Sayar</em></div>
+    <div class="footer-links">
+      <a href="susayar-dashboard.html">Dashboard Demo</a>
+      <a href="#nasil-calisir">Nasıl Çalışır</a>
+      <a href="#fiyatlar">Fiyatlar</a>
+    </div>
+    <div class="footer-copy">Prototip &mdash; 2026</div>
+  </div>
+</footer>
+
+<script>
+/* ── CANLI EKOSİSTEM SAYAÇLARI ─────────────────── */
+let waterTotal   = 2847312;
+let savedTotal   = 412840;
+let leaksTotal   = 183;
+let devicesTotal = 1247;
+let mockToday    = 187;
+let mockMonth    = 4.2;
+let realStatsMode = false; // backend'den veri gelince true olur
+
+function fmt(n) { return Math.floor(n).toLocaleString('tr-TR'); }
+
+// Backend'den istatistik çek (backend açık değilse sessizce atla)
+function fetchRealStats() {
+  fetch('http://localhost:3001/api/stats', { signal: AbortSignal.timeout(2000) })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || !data.week_water_l) return;
+      realStatsMode = true;
+      waterTotal   = data.week_water_l;
+      savedTotal   = data.saved_l;
+      leaksTotal   = data.leaks_detected;
+      devicesTotal = data.active_devices;
+      const wEl = document.getElementById('ls-water');
+      const sEl = document.getElementById('ls-saved');
+      const lEl = document.getElementById('ls-leaks');
+      const dEl = document.getElementById('ls-devices');
+      if (wEl) wEl.innerHTML = fmt(waterTotal) + '<span class="u">L</span>';
+      if (sEl) sEl.innerHTML = fmt(savedTotal) + '<span class="u">L</span>';
+      if (lEl) lEl.innerHTML = fmt(leaksTotal) + '<span class="u">kaçak</span>';
+      if (dEl) dEl.innerHTML = fmt(devicesTotal) + '<span class="u">cihaz</span>';
+    })
+    .catch(() => { /* backend kapalı, simülasyon devam eder */ });
+}
+
+// Sayfa açılışında bir kez dene, sonra 30 sn'de bir güncelle
+fetchRealStats();
+setInterval(fetchRealStats, 30000);
+
+/* Su sayacı: her saniye tüm cihazlardan ~35-80 L */
+setInterval(() => {
+  const add = Math.floor(Math.random() * 45 + 35);
+  waterTotal += add;
+  savedTotal += Math.floor(add * 0.185);
+  const wEl = document.getElementById('ls-water');
+  const sEl = document.getElementById('ls-saved');
+  if (wEl) wEl.innerHTML = fmt(waterTotal) + '<span class="u">L</span>';
+  if (sEl) sEl.innerHTML = fmt(savedTotal) + '<span class="u">L</span>';
+}, 1000);
+
+/* Kaçak sayacı: 18-55 saniyede bir rastgele +1 */
+(function schedLeak() {
+  const delay = Math.floor(Math.random() * 37000 + 18000);
+  setTimeout(() => {
+    leaksTotal++;
+    const el = document.getElementById('ls-leaks');
+    if (el) { el.innerHTML = fmt(leaksTotal) + '<span class="u">kaçak</span>'; }
+    schedLeak();
+  }, delay);
+})();
+
+/* Cihaz sayacı: ~her 4 dakikada bir yeni cihaz */
+setInterval(() => {
+  if (Math.random() < 0.004) {
+    devicesTotal++;
+    const el = document.getElementById('ls-devices');
+    if (el) el.innerHTML = fmt(devicesTotal) + '<span class="u">cihaz</span>';
+  }
+}, 1000);
+
+/* Hero mockup - Anlık akış değeri dalgalanır */
+let heroToday = 187;
+setInterval(() => {
+  const flow = (1.8 + Math.random() * 2.2).toFixed(1).replace('.', ',');
+  heroToday += Math.floor(Math.random() * 4 + 1);
+  mockMonth = +(mockMonth + 0.001).toFixed(3);
+  const fEl = document.getElementById('mock-flow');
+  const tEl = document.getElementById('mock-today');
+  const mEl = document.getElementById('mock-month');
+  if (fEl) fEl.innerHTML = flow + ' <sub>L/dk</sub>';
+  if (tEl) tEl.innerHTML = heroToday + ' <sub>L</sub>';
+  if (mEl) mEl.innerHTML = mockMonth.toFixed(1).replace('.', ',') + ' <sub>m&sup3;</sub>';
+}, 2500);
+
+</script>
+</body>
+</html>

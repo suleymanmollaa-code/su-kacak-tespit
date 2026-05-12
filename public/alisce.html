@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alisce Life</title>
+  <meta name="description" content="Alisce Life — Yaşamı satın almadan önce deneyimle." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #FFFCF8;
+      --bg-alt:   #F3EEE6;
+      --bg-dark:  #1C1A16;
+      --bg-card:  #2C2820;
+      --gold:     #B8933A;
+      --gold-lt:  #D4AC55;
+      --dark:     #1C1A16;
+      --sec:      #6B6354;
+      --muted:    #9C9184;
+      --cream:    #EBE4D8;
+      --border:   rgba(184,147,58,0.22);
+      --bdk:      rgba(184,147,58,0.15);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: Arial, sans-serif; background: var(--bg); color: var(--dark); }
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── SAYFA SİSTEMİ ── */
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .nav-in {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between; height: 68px;
+    }
+    .logo { cursor: pointer; line-height: 1; }
+    .logo .t { font-weight: 800; font-size: 1.15rem; letter-spacing: .06em; color: var(--dark); }
+    .logo .b { font-weight: 800; font-size: 1.15rem; letter-spacing: .06em; color: var(--gold); }
+    .logo .b sup { font-size: .48rem; vertical-align: super; }
+    .nav-links { display: flex; gap: 1.75rem; align-items: center; flex-wrap: wrap; }
+    .nav-links button {
+      background: none; border: none; cursor: pointer;
+      font-family: Arial, sans-serif; font-size: .8rem; font-weight: 500;
+      color: var(--sec); letter-spacing: .03em; padding: .25rem 0;
+      transition: color .2s;
+    }
+    .nav-links button:hover, .nav-links button.active { color: var(--gold); }
+    .btn-nav {
+      background: var(--dark) !important; color: var(--bg) !important;
+      padding: .5rem 1.3rem !important; font-weight: 600 !important;
+      letter-spacing: .08em !important; text-transform: uppercase !important;
+      transition: background .2s !important;
+    }
+    .btn-nav:hover { background: var(--gold) !important; color: var(--dark) !important; }
+
+    /* ── GENEL ── */
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .sec  { padding: 5.5rem 2rem; }
+    .sec-alt { padding: 5.5rem 2rem; background: var(--bg-alt); }
+    .sec-dark { padding: 5.5rem 2rem; background: var(--bg-dark); }
+
+    .tag { display: block; color: var(--gold); font-size: .7rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; margin-bottom: .75rem; }
+    h1.serif, h2.serif, h3.serif {
+      font-family: 'Cormorant Garamond', serif; font-weight: 600; line-height: 1.18;
+    }
+    h1.serif { font-size: clamp(2.6rem,5.5vw,4.4rem); color: var(--dark); }
+    h2.serif { font-size: clamp(1.9rem,4vw,3rem); color: var(--dark); }
+    h3.serif { font-size: 1.35rem; color: var(--dark); }
+    h2.serif-light { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: clamp(1.9rem,4vw,3rem); color: #FFFCF8; line-height: 1.18; }
+    .sub { color: var(--sec); font-size: .95rem; line-height: 1.8; }
+    .sec-head { text-align: center; margin-bottom: 3.5rem; }
+    .sec-head .sub { max-width: 520px; margin: .85rem auto 0; }
+
+    em.gold { color: var(--gold); font-style: italic; }
+
+    /* ── BUTONLAR ── */
+    .btn { display: inline-block; padding: .85rem 2rem; font-family: Arial, sans-serif; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; border: none; transition: .2s; }
+    .btn-d  { background: var(--dark); color: var(--bg); }
+    .btn-d:hover  { background: var(--gold); color: var(--dark); }
+    .btn-g  { background: var(--gold); color: var(--dark); font-weight: 700; }
+    .btn-g:hover  { background: var(--gold-lt); }
+    .btn-o  { background: transparent; color: var(--dark); border: 1px solid var(--border); }
+    .btn-o:hover  { border-color: var(--gold); color: var(--gold); }
+
+    /* ── GRID ── */
+    .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+    .g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 2rem; }
+    .g2-wide { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+
+    /* ── KART ── */
+    .card { border: 1px solid var(--border); background: var(--bg); overflow: hidden; }
+    .card img { width: 100%; height: 200px; object-fit: cover; }
+    .card-b { padding: 1.75rem; }
+    .ci { font-size: 1.7rem; margin-bottom: .7rem; }
+    .ct { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; color: var(--dark); margin-bottom: .5rem; }
+    .cd { color: var(--sec); font-size: .87rem; line-height: 1.75; }
+
+    /* ── FORM ── */
+    input, select, textarea {
+      display: block; width: 100%; padding: .85rem 1rem;
+      border: 1px solid var(--border); background: var(--bg);
+      font-family: Arial, sans-serif; font-size: .85rem; color: var(--dark); outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    textarea { resize: none; }
+    .gap1 { display: flex; flex-direction: column; gap: 1rem; }
+    .g2form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .mt1 { margin-top: 1rem; }
+    .btn-sub { margin-top: 1rem; background: var(--dark); color: var(--bg); padding: .9rem; width: 100%; font-family: Arial, sans-serif; font-size: .82rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; border: none; cursor: pointer; transition: .2s; }
+    .btn-sub:hover { background: var(--gold); color: var(--dark); }
+
+    /* ── ADIM KARTI ── */
+    .step { padding: 2.25rem; border: 1px solid var(--border); background: var(--bg); }
+    .snum { font-family: 'Cormorant Garamond', serif; font-size: 3.2rem; font-weight: 300; color: var(--gold); opacity: .28; line-height: 1; margin-bottom: .4rem; }
+    .sico { font-size: 1.7rem; margin-bottom: .7rem; }
+    .note { color: var(--gold); font-size: .77rem; font-weight: 600; margin-top: .9rem; }
+
+    /* ── IMG BANT ── */
+    .strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 3rem; height: 210px; overflow: hidden; }
+    .strip div { overflow: hidden; position: relative; }
+    .strip img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .strip div:hover img { transform: scale(1.05); }
+    .strip .ov { position: absolute; inset: 0; background: rgba(184,147,58,.07); }
+
+    /* ── HERO ── */
+    .hero-wrap { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 68px); overflow: hidden; }
+    .hero-l { display: flex; flex-direction: column; justify-content: center; padding: 5rem 4rem 5rem 5rem; background: linear-gradient(155deg,#FFFCF8 0%,#F3EEE6 100%); }
+    .hero-r { position: relative; overflow: hidden; }
+    .hero-r img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-r .fade { position: absolute; inset: 0; background: linear-gradient(to right,rgba(255,252,248,.25) 0%,transparent 40%); }
+    .hero-quote { position: absolute; bottom: 2.5rem; left: 2rem; right: 2rem; background: rgba(28,26,22,.82); backdrop-filter: blur(8px); padding: 1.5rem 2rem; border: 1px solid var(--bdk); }
+    .hero-quote p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; color: #FFFCF8; line-height: 1.5; }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
+    .hero-stats { display: flex; gap: 3rem; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--border); }
+    .sn { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; color: var(--gold); }
+    .sl { font-size: .7rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+
+    /* ── ÇEYİZ ── */
+    .ceyiz { display: grid; grid-template-columns: 1fr 1fr; min-height: 580px; }
+    .ceyiz-img { position: relative; overflow: hidden; }
+    .ceyiz-img img { width: 100%; height: 100%; object-fit: cover; }
+    .ceyiz-img .fade2 { position: absolute; inset: 0; background: linear-gradient(to right,transparent 60%,var(--bg-dark) 100%); }
+    .ceyiz-txt { background: var(--bg-dark); padding: 5.5rem 5rem 5.5rem 4rem; display: flex; flex-direction: column; justify-content: center; }
+    .ceyiz-txt h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 600; color: #FFFCF8; line-height: 1.2; margin-bottom: 1.25rem; }
+    .ceyiz-txt p { color: var(--muted); font-size: .92rem; line-height: 1.85; margin-bottom: 1.75rem; }
+    .ceyiz-list { list-style: none; display: flex; flex-direction: column; gap: .55rem; margin-bottom: 2rem; }
+    .ceyiz-list li { display: flex; gap: .7rem; color: var(--cream); font-size: .88rem; }
+    .ceyiz-list li::before { content: "✦"; color: var(--gold); flex-shrink: 0; }
+    .italic-gold { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; color: var(--gold); margin-bottom: 2rem; }
+
+    /* ── PROVA ── */
+    .prova-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    .prova-img { position: relative; }
+    .prova-img img { width: 100%; height: 460px; object-fit: cover; }
+    .badge { position: absolute; bottom: -1.5rem; right: -1.5rem; background: var(--bg-dark); padding: 1.4rem 1.75rem; border: 1px solid var(--bdk); }
+    .badge .bn { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 600; color: var(--gold); }
+    .badge .bl { color: var(--muted); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+    .prova-items { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
+    .pi { display: flex; gap: 1rem; padding: 1.1rem; background: var(--bg-alt); border: 1px solid var(--border); }
+    .pi .ic { font-size: 1.3rem; flex-shrink: 0; }
+    .pi .pt { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 600; color: var(--dark); }
+    .pi .pd { color: var(--sec); font-size: .83rem; margin-top: .15rem; }
+
+    /* ── HAKKIMIZDA ── */
+    .about-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .about-l p { color: var(--sec); font-size: .93rem; line-height: 1.85; margin-bottom: 1.1rem; }
+    .about-l strong { color: var(--dark); }
+    .about-l blockquote { border-left: 3px solid var(--gold); padding-left: 1.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: var(--dark); line-height: 1.6; margin-top: 2rem; }
+    .ab { padding: 1.6rem; border: 1px solid var(--border); background: var(--bg-alt); margin-bottom: 1.25rem; }
+    .ab-head { display: flex; gap: .7rem; align-items: center; margin-bottom: .7rem; }
+    .ab-head span { font-size: 1.25rem; }
+    .ab-head h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--dark); }
+    .ab ul { list-style: none; }
+    .ab li { display: flex; gap: .5rem; color: var(--sec); font-size: .84rem; margin-bottom: .4rem; }
+    .ab li::before { content: "—"; color: var(--gold); flex-shrink: 0; }
+
+    /* ── ORTAK DEĞERİ ── */
+    .dark-banner { background: var(--bg-dark); padding: 3rem; text-align: center; margin: 2rem 0; }
+    .dark-banner .lbl { color: var(--muted); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 1.1rem; }
+    .dark-banner .quote { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.1rem,2.5vw,1.65rem); color: #FFFCF8; line-height: 1.7; }
+    .dark-banner .quote em { color: var(--gold); }
+
+    /* ── PARTNER KART ── */
+    .pk { background: var(--bg); padding: 2.5rem; border: 1px solid var(--border); }
+    .pk img { width: 100%; height: 190px; object-fit: cover; margin-bottom: 1.5rem; }
+    .pk h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 600; color: var(--dark); margin-bottom: .65rem; }
+    .pk p { color: var(--sec); font-size: .87rem; line-height: 1.75; margin-bottom: 1.35rem; }
+    .pk ul { list-style: none; }
+    .pk li { display: flex; gap: .6rem; color: var(--sec); font-size: .84rem; padding: .45rem 0; border-bottom: 1px solid var(--border); }
+    .pk li::before { content: "✦"; color: var(--gold); flex-shrink: 0; }
+    .pk .pi-q { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: .98rem; color: var(--gold); margin-top: 1.35rem; }
+
+    /* ── YARIŞMA ── */
+    .comp-banner { position: relative; height: 300px; overflow: hidden; margin-bottom: 2.5rem; }
+    .comp-banner img { width: 100%; height: 100%; object-fit: cover; }
+    .comp-banner .ov { position: absolute; inset: 0; background: rgba(28,26,22,.68); }
+    .comp-banner .ct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
+    .comp-banner .ct .lbl { color: var(--muted); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; }
+    .flow { display: flex; align-items: center; gap: .85rem; flex-wrap: wrap; justify-content: center; }
+    .flow span { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: #FFFCF8; }
+    .flow .arr { color: var(--gold); font-size: 1rem; }
+    .cc { background: var(--bg-card); padding: 1.75rem; border: 1px solid var(--bdk); }
+    .cc .ci { font-size: 1.6rem; margin-bottom: .6rem; }
+    .cc h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 600; color: #FFFCF8; margin-bottom: .4rem; }
+    .cc p { color: var(--muted); font-size: .84rem; line-height: 1.7; }
+    .comp-bot { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.75rem; }
+    .cbox { background: var(--bg-card); padding: 1.75rem; border: 1px solid var(--bdk); }
+    .cbox h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: #FFFCF8; margin-bottom: 1.1rem; }
+    .sr { display: flex; justify-content: space-between; color: var(--muted); font-size: .85rem; padding: .55rem 0; border-bottom: 1px solid var(--bdk); }
+    .sr .v { color: var(--gold); font-weight: 600; }
+    .cs { display: flex; align-items: center; gap: .6rem; }
+    .cs span { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: #FFFCF8; }
+    .cs .a { color: var(--muted); font-size: .65rem; }
+    .comp-q { background: rgba(184,147,58,.07); border: 1px solid var(--bdk); padding: 2.25rem; text-align: center; margin-top: 2rem; }
+    .comp-q p { font-family: 'Cormorant Garamond', serif; font-size: clamp(.95rem,2vw,1.3rem); color: #FFFCF8; line-height: 1.75; font-style: italic; }
+
+    /* ── İLETİŞİM ── */
+    .contact-btns { display: flex; justify-content: center; gap: 1.25rem; flex-wrap: wrap; }
+    .contact-btns a { display: inline-flex; align-items: center; gap: .6rem; padding: .9rem 1.75rem; font-family: Arial, sans-serif; font-size: .82rem; font-weight: 600; }
+    .bwa  { background: #25D366; color: #fff; }
+    .btel { background: var(--bg-dark); color: var(--bg); }
+    .bml  { background: var(--gold); color: var(--dark); font-weight: 700; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--bg-dark); padding: 3rem 2rem; border-top: 1px solid var(--bdk); }
+    .fi { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem; }
+    .fl .t { font-weight: 800; font-size: 1.05rem; letter-spacing: .06em; color: #FFFCF8; }
+    .fl .b { font-weight: 800; font-size: 1.05rem; letter-spacing: .06em; color: var(--gold); }
+    .fl .b sup { font-size: .48rem; }
+    .fs { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: var(--muted); }
+    .fr { text-align: right; }
+    .fr a { color: var(--gold); font-size: .8rem; display: block; margin-bottom: .25rem; }
+    .fr p { color: var(--muted); font-size: .73rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-in">
+    <div class="logo" onclick="goPage('anasayfa')">
+      <div class="t">ALİSCE</div>
+      <div class="b">LİFE<sup>®</sup></div>
+    </div>
+    <div class="nav-links">
+      <button onclick="goPage('prova-evleri')"     id="nav-prova-evleri">Prova Evleri</button>
+      <button onclick="goPage('etkinlikler')"      id="nav-etkinlikler">Etkinlikler</button>
+      <button onclick="goPage('markalar')"         id="nav-markalar">Markalar</button>
+      <button onclick="goPage('hakkimizda')"       id="nav-hakkimizda">Hakkımızda</button>
+      <button onclick="goPage('nasil-calisir')"    id="nav-nasil-calisir">Nasıl Çalışır</button>
+      <button onclick="goPage('is-ortakligi')"     id="nav-is-ortakligi">İş Ortaklığı</button>
+      <button onclick="goPage('yarisma')"          id="nav-yarisma">Yarışma</button>
+      <button onclick="goPage('randevu')"          id="nav-randevu" class="btn-nav">Randevu Al</button>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  1. ANA SAYFA                           -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-anasayfa" class="page active">
+  <div class="hero-wrap">
+    <div class="hero-l">
+      <span class="tag">Yeni Nesil Deneyim Platformu</span>
+      <h1 class="serif">Yaşamı satın almadan önce<br /><em class="gold">deneyimle</em></h1>
+      <p class="sub" style="max-width:460px;margin-top:1.25rem;">Alisce Life, markaları ve yaşam alanlarını satın almadan önce gerçek ortamında deneyimlemeni sağlar.</p>
+      <div class="hero-btns">
+        <button class="btn btn-d" onclick="goPage('prova-evleri')">Prova Evini Keşfet</button>
+        <button class="btn btn-o" onclick="goPage('etkinlikler')">Etkinlikleri Gör</button>
+        <button class="btn btn-g" onclick="goPage('is-ortakligi')">İş Ortağı Ol</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="sn">3</div><div class="sl">Adımda Çalışır</div></div>
+        <div><div class="sn">360°</div><div class="sl">Deneyim</div></div>
+        <div><div class="sn">100+</div><div class="sl">Marka</div></div>
+      </div>
+    </div>
+    <div class="hero-r">
+      <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1400&q=85&fit=crop" alt="Alisce Life yaşam alanı" />
+      <div class="fade"></div>
+      <div class="hero-quote">
+        <p>"Alisce Life bir mağaza değil; bir yaşam deneyim sistemidir."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kısa önizleme kartları -->
+  <div class="sec-alt" style="padding:4rem 2rem;">
+    <div class="wrap g3">
+      <div class="card" style="cursor:pointer;" onclick="goPage('prova-evleri')">
+        <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600&q=80&fit=crop" alt="Prova Evleri" />
+        <div class="card-b"><div class="ci">🏡</div><div class="ct">Prova Evleri</div><p class="cd">Şehrindeki gerçek yaşam alanlarını keşfet ve randevu al.</p></div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="goPage('etkinlikler')">
+        <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80&fit=crop" alt="Etkinlikler" />
+        <div class="card-b"><div class="ci">📅</div><div class="ct">Etkinlikler</div><p class="cd">Çeyiz günleri, marka deneyim günleri ve evlilik hazırlık etkinlikleri.</p></div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="goPage('is-ortakligi')">
+        <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80&fit=crop" alt="İş Ortaklığı" />
+        <div class="card-b"><div class="ci">🤝</div><div class="ct">İş Ortaklığı</div><p class="cd">Markanı gerçek kullanıcıyla buluştur, bölgesel büyü.</p></div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  2. PROVA EVLERİ                        -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-prova-evleri" class="page">
+  <div class="sec-alt">
+    <div class="wrap">
+      <div class="prova-wrap">
+        <div>
+          <span class="tag">Prova Evleri</span>
+          <h2 class="serif" style="margin-bottom:1.5rem;">Gerçek yaşam alanlarını<br /><em class="gold">deneyimle</em></h2>
+          <p class="sub" style="margin-bottom:2rem;">Mobilya, beyaz eşya ve çeyiz ürünlerini ev ortamında gör, dene ve karar ver. Her şehirde farklı konseptler, her konseptte gerçek ürünler.</p>
+          <div class="prova-items">
+            <div class="pi"><span class="ic">🏙️</span><div><div class="pt">Şehir Seç</div><div class="pd">Bulunduğun şehirdeki prova evlerini keşfet.</div></div></div>
+            <div class="pi"><span class="ic">🛋️</span><div><div class="pt">Ev Konsepti Seç</div><div class="pd">Modern, klasik veya minimalist — istediğin stili dene.</div></div></div>
+            <div class="pi"><span class="ic">📅</span><div><div class="pt">Randevu Al</div><div class="pd">Uygun gün ve saati seç, prova evine gel.</div></div></div>
+          </div>
+          <button class="btn btn-d" onclick="goPage('randevu')">Ziyaret Planla</button>
+        </div>
+        <div class="prova-img">
+          <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&q=85&fit=crop" alt="Prova evi" />
+          <div class="badge"><div class="bn">10+</div><div class="bl">Şehirde Prova Evi</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Görsel bant -->
+  <div class="sec" style="background:var(--bg);">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">İç Mekanlar</span>
+        <h2 class="serif">Her konsept, gerçek bir yaşam alanı</h2>
+      </div>
+      <div class="g3">
+        <div class="card"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80&fit=crop" alt="Oturma odası" /><div class="card-b"><div class="ct">Oturma Odası</div><p class="cd">Farklı koltuk ve oturma grubu kombinlerini gerçek ortamda dene.</p></div></div>
+        <div class="card"><img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?w=600&q=80&fit=crop" alt="Yatak odası" /><div class="card-b"><div class="ct">Yatak Odası</div><p class="cd">Karyola, gardırop ve tekstil seçimlerini bir arada gör.</p></div></div>
+        <div class="card"><img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop" alt="Mutfak" /><div class="card-b"><div class="ct">Mutfak & Beyaz Eşya</div><p class="cd">Mutfak aletlerini ve beyaz eşyaları gerçek kullanımda test et.</p></div></div>
+      </div>
+      <div style="text-align:center;margin-top:2.5rem;">
+        <button class="btn btn-g" onclick="goPage('randevu')">Randevu Al</button>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  3. ETKİNLİKLER                         -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-etkinlikler" class="page">
+  <div class="sec" style="background:var(--bg);">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">Etkinlikler</span>
+        <h2 class="serif">Deneyim günlerini kaçırma</h2>
+        <p class="sub">Her hafta farklı markalar ve çeyiz konseptleri ile hazırlanan özel deneyim günleri.</p>
+      </div>
+      <div class="g3">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=600&q=80&fit=crop" alt="Çeyiz Günleri" />
+          <div class="card-b"><div class="ci">💍</div><div class="ct">Çeyiz Günleri</div><p class="cd">Evlilik hazırlığındaki çiftler için tüm markaların bir arada sunulduğu özel günler.</p><button class="btn btn-g" onclick="goPage('ceyiz-gunleri')" style="margin-top:1.25rem;padding:.65rem 1.5rem;font-size:.75rem;">Detaylar</button></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600&q=80&fit=crop" alt="Marka Deneyim" />
+          <div class="card-b"><div class="ci">🛋️</div><div class="ct">Marka Deneyim Günleri</div><p class="cd">Seçkin markaların ürünlerini gerçek ortamda keşfet, uzmanlarıyla tanış.</p><button class="btn btn-d" onclick="goPage('markalar')" style="margin-top:1.25rem;padding:.65rem 1.5rem;font-size:.75rem;">Markalar</button></div>
+        </div>
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80&fit=crop" alt="Evlilik Hazırlık" />
+          <div class="card-b"><div class="ci">🏡</div><div class="ct">Evlilik Hazırlık Etkinlikleri</div><p class="cd">Yeni hayatınızı kurarken ihtiyacınız olan her şeyi tek çatı altında deneyimleyin.</p><button class="btn btn-o" onclick="goPage('randevu')" style="margin-top:1.25rem;padding:.65rem 1.5rem;font-size:.75rem;">Randevu Al</button></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:3rem;">
+        <button class="btn btn-g" onclick="goPage('randevu')">Etkinliğe Katıl</button>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  4. ÇEYİZ GÜNLERİ                      -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-ceyiz-gunleri" class="page">
+  <div class="ceyiz">
+    <div class="ceyiz-img">
+      <img src="https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=900&q=85&fit=crop" alt="Çeyiz hazırlığı" />
+      <div class="fade2"></div>
+    </div>
+    <div class="ceyiz-txt">
+      <span class="tag">Çeyiz Günleri</span>
+      <h2>Yeni hayatına hazırlanırken evini önce prova et</h2>
+      <p>Çeyiz hazırlığında olan çiftler için tüm markaların bir arada olduğu özel deneyim günleri.</p>
+      <ul class="ceyiz-list">
+        <li>Mobilya kombinleri</li>
+        <li>Beyaz eşya setleri</li>
+        <li>Çeyiz ve tekstil ürünleri</li>
+      </ul>
+      <p class="italic-gold">"Satın almadan önce evini kur"</p>
+      <button class="btn btn-g" onclick="goPage('randevu')">Çeyiz Günü Randevusu Al</button>
+    </div>
+  </div>
+
+  <div class="sec" style="background:var(--bg);">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">Özel Çeyiz Paketi</span>
+        <h2 class="serif">Bir günde her şeyi gör, her şeyi dene</h2>
+        <p class="sub">100'den fazla marka, tek çatı altında, gerçek yaşam senaryosunda.</p>
+      </div>
+      <div class="g2">
+        <div style="padding:2rem;border:1px solid var(--border);background:var(--bg-alt);">
+          <h3 class="serif" style="margin-bottom:1rem;">Pakette Ne Var?</h3>
+          <ul style="list-style:none;">
+            <li style="display:flex;gap:.6rem;color:var(--sec);font-size:.87rem;padding:.5rem 0;border-bottom:1px solid var(--border);"><span style="color:var(--gold);">✦</span>100+ marka tek çatıda</li>
+            <li style="display:flex;gap:.6rem;color:var(--sec);font-size:.87rem;padding:.5rem 0;border-bottom:1px solid var(--border);"><span style="color:var(--gold);">✦</span>Uzman danışmanlık hizmeti</li>
+            <li style="display:flex;gap:.6rem;color:var(--sec);font-size:.87rem;padding:.5rem 0;border-bottom:1px solid var(--border);"><span style="color:var(--gold);">✦</span>Kombine planlama desteği</li>
+            <li style="display:flex;gap:.6rem;color:var(--sec);font-size:.87rem;padding:.5rem 0;border-bottom:1px solid var(--border);"><span style="color:var(--gold);">✦</span>Özel kampanya ve teklifler</li>
+            <li style="display:flex;gap:.6rem;color:var(--sec);font-size:.87rem;padding:.5rem 0;"><span style="color:var(--gold);">✦</span>Birebir ürün karşılaştırma</li>
+          </ul>
+        </div>
+        <div>
+          <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=700&q=80&fit=crop" alt="Çeyiz ürünleri" style="width:100%;height:300px;object-fit:cover;margin-bottom:1.5rem;" />
+          <button class="btn btn-d" onclick="goPage('randevu')" style="width:100%;text-align:center;">Randevu Oluştur</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  5. MARKALAR                            -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-markalar" class="page">
+  <div class="sec-alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">Markalar</span>
+        <h2 class="serif">Markaları evin içinde gör</h2>
+        <p class="sub">Ürünleri katalogda değil, gerçek yaşam alanında deneyimle.</p>
+      </div>
+      <div class="g3">
+        <div class="card"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80&fit=crop" alt="Mobilya" /><div class="card-b"><div class="ci">🛋️</div><div class="ct">Mobilya Markaları</div><p class="cd">Koltuk, yatak odası, yemek odası — gerçek yaşam düzeninde görmeden karar verme.</p></div></div>
+        <div class="card"><img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop" alt="Beyaz eşya" /><div class="card-b"><div class="ci">🍽️</div><div class="ct">Beyaz Eşya Markaları</div><p class="cd">Mutfak ve ev aletlerini gerçek kullanım senaryosunda test et, uzman tavsiyesi al.</p></div></div>
+        <div class="card"><img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80&fit=crop" alt="Çeyiz" /><div class="card-b"><div class="ci">🧵</div><div class="ct">Çeyiz Markaları</div><p class="cd">Tekstil, dekorasyon ve çeyiz ürünlerini bir arada gör, en doğru kombini bul.</p></div></div>
+      </div>
+      <div style="text-align:center;margin-top:3rem;">
+        <button class="btn btn-d" onclick="goPage('is-ortakligi')">Marka Başvurusu Yap</button>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  6. HAKKIMIZDA                          -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-hakkimizda" class="page">
+  <div class="sec" style="background:var(--bg);">
+    <div class="wrap">
+      <div class="about-wrap">
+        <div class="about-l">
+          <span class="tag">Hakkımızda</span>
+          <h2 class="serif" style="margin-bottom:1.75rem;">Deneyim odaklı yeni nesil bir <em class="gold">yaşam platformu</em></h2>
+          <p>Alisce Life, yaşamı satın almadan önce deneyimleme fikriyle kurulmuş yeni nesil bir deneyim platformudur.</p>
+          <p>Geleneksel alışveriş modelinin ötesine geçerek, kullanıcıların evlerini gerçek ortamda görerek karar vermesini sağlar.</p>
+          <p>Mobilya, beyaz eşya, çeyiz ve dekorasyon markalarını dijital kataloglarda değil, <strong>gerçek yaşam senaryoları içinde</strong> bir araya getirir.</p>
+          <p>Alisce Life, marka ile kullanıcıyı sadece buluşturmaz — <strong>deneyim alanı oluşturur.</strong></p>
+          <blockquote>"Alisce Life bir mağaza değil; bir yaşam deneyim sistemidir."</blockquote>
+        </div>
+        <div>
+          <div class="ab"><div class="ab-head"><span>🎯</span><h4>Amacımız</h4></div><ul><li>Satın alma kararını deneyimle vermek</li><li>Markaları gerçek kullanıcıyla buluşturmak</li><li>Yaşam alanı seçimini daha güvenli yapmak</li></ul></div>
+          <div class="ab"><div class="ab-head"><span>🏡</span><h4>Yaklaşımımız</h4></div><ul><li>Gerçek prova evleri</li><li>Yaşam senaryosu odaklı sergileme</li><li>Marka-kullanıcı buluşma ortamı</li></ul></div>
+          <div class="ab"><div class="ab-head"><span>🤝</span><h4>Değerimiz</h4></div><ul><li>Kullanıcı için doğru karar</li><li>Marka için gerçek temas</li><li>Emlak için değer üretimi</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  7. NASIL ÇALIŞIR                       -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-nasil-calisir" class="page">
+  <div class="sec" style="background:var(--bg);">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">Sistem</span>
+        <h2 class="serif">Deneyimle → Karar ver → Hayata geçir</h2>
+        <p class="sub">Sistem basit, süreç nettir. Tüm yapı 3 adımda çalışır.</p>
+      </div>
+      <div class="g3">
+        <div class="step"><div class="snum">01</div><div class="sico">🏡</div><h3 class="serif" style="margin-bottom:.6rem;">Prova Evini Seç</h3><p class="sub">Bulunduğun şehirdeki prova evini seç. Farklı yaşam konseptleri arasından mobilya ve ürünleri gerçek ev düzeninde gör.</p><p class="note">— Ürünü katalogda değil, gerçek yaşam alanında gör</p></div>
+        <div class="step"><div class="snum">02</div><div class="sico">📅</div><h3 class="serif" style="margin-bottom:.6rem;">Deneyim Gününe Katıl</h3><p class="sub">Belirlenen gün ve saatte prova evine gel. Çeyiz günleri, marka deneyim günleri ve evlilik hazırlık etkinlikleri seni bekliyor.</p><p class="note">— Ürünleri birebir dene ve karşılaştır</p></div>
+        <div class="step"><div class="snum">03</div><div class="sico">✅</div><h3 class="serif" style="margin-bottom:.6rem;">Karar Ver, Bağlantı Kur</h3><p class="sub">Beğendiklerini seç, markalarla doğrudan iletişime geç ve özel kampanyalardan yararlan.</p><p class="note">— Doğru karar + doğrudan satın alma süreci</p></div>
+      </div>
+
+      <!-- Gör – Deneyimle – Karar Ver -->
+      <div style="display:flex;justify-content:center;margin-top:3.5rem;">
+        <div style="display:inline-flex;align-items:center;gap:1.5rem;padding:1.5rem 3rem;background:var(--bg-alt);border:1px solid var(--border);">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;">Gör</span>
+          <span style="color:var(--gold);">→</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;">Deneyimle</span>
+          <span style="color:var(--gold);">→</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;">Karar Ver</span>
+        </div>
+      </div>
+
+      <div class="strip">
+        <div><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80&fit=crop" alt="Oturma" /><div class="ov"></div></div>
+        <div><img src="https://images.unsplash.com/photo-1540518614846-7eded433c457?w=600&q=80&fit=crop" alt="Yatak" /><div class="ov"></div></div>
+        <div><img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&fit=crop" alt="Mutfak" /><div class="ov"></div></div>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  8. İŞ ORTAKLIĞI                        -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-is-ortakligi" class="page">
+  <div class="sec-alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">İş Ortaklığı</span>
+        <h2 class="serif">Alisce Life ekosistemine katıl</h2>
+        <p class="sub">Markanı, ürününü ve hizmetini gerçek kullanıcı deneyimiyle buluştur.</p>
+      </div>
+      <div class="g2">
+        <div class="pk">
+          <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=700&q=80&fit=crop" alt="Markalar" />
+          <div style="font-size:2rem;margin-bottom:.75rem;">🌍</div>
+          <h3>Markalara Bölgesel Yayılma</h3>
+          <p>Şehir şehir fiziksel yatırım yapmadan büyü. Mağaza açmadan bölgesel görünürlük ve satış imkânı.</p>
+          <ul><li>Fiziksel mağaza olmadan görünürlük</li><li>Bölgesel satış erişimi</li><li>Yeni pazarlara düşük maliyetle giriş</li><li>Kampanya testleri şehir bazlı</li></ul>
+          <p class="pi-q">"Yüksek yatırım olmadan şehir şehir büyüyen satış ağı"</p>
+        </div>
+        <div class="pk">
+          <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=700&q=80&fit=crop" alt="Emlak" />
+          <div style="font-size:2rem;margin-bottom:.75rem;">🏗️</div>
+          <h3>Emlak Üreticilerine</h3>
+          <p>Boş bekleyen emlak alanları gelir üreten deneyim alanına dönüşür. Satışı bekleyen projeler markalara kiralanır.</p>
+          <ul><li>Boş alanların gelir üretmesi</li><li>Proje maliyetleri erken dönemde karşılanır</li><li>Satış süreci hızlanır</li><li>Satış öncesi talep oluşumu</li></ul>
+          <p class="pi-q">"Bekleyen projeyi gelir kaynağına çevir"</p>
+        </div>
+      </div>
+
+      <div class="dark-banner">
+        <p class="lbl">Sistemin Ortak Değeri</p>
+        <p class="quote">"Alisce Life, üreticiyi kullanıcıyla; markayı ise şehirlerle buluşturan<br /><em>deneyim tabanlı büyüme sistemidir.</em>"</p>
+      </div>
+
+      <div style="background:var(--bg);padding:3rem;border:1px solid var(--border);">
+        <h3 class="serif" style="margin-bottom:.5rem;">İş Ortağı Başvurusu</h3>
+        <p class="sub" style="margin-bottom:2rem;">Ürününü sergile, gerçek müşteriyle buluş, satışını artır.</p>
+        <div class="g2form">
+          <input type="text" placeholder="Şirket Adı" />
+          <input type="text" placeholder="Yetkili Kişi" />
+          <input type="email" placeholder="E-posta" />
+          <input type="tel" placeholder="Telefon" />
+        </div>
+        <select class="mt1">
+          <option value="">Ortaklık Türü Seçin</option>
+          <option>Mobilya Markası</option>
+          <option>Beyaz Eşya Markası</option>
+          <option>Çeyiz / Tekstil Markası</option>
+          <option>Emlak Üreticisi</option>
+          <option>Diğer</option>
+        </select>
+        <textarea class="mt1" rows="4" placeholder="Marka / Ürün hakkında kısa bilgi"></textarea>
+        <button class="btn-sub">Başvuru Gönder</button>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  9. YARIŞMA MODELİ                      -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-yarisma" class="page">
+  <div class="sec-dark">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="tag">Özel Proje</span>
+        <h2 class="serif-light">Prova Ev & Yaşam Tasarım Ligi</h2>
+        <p style="color:var(--muted);font-size:.95rem;max-width:580px;margin:.85rem auto 0;">Katılımcılar sadece yarışmıyor — gerçek bir yaşam alanı kuruyor, bütçe yönetiyor, markalarla çalışıyor.</p>
+      </div>
+
+      <div class="comp-banner">
+        <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1400&q=85&fit=crop" alt="Yarışma" />
+        <div class="ov"></div>
+        <div class="ct">
+          <span class="lbl">Modelin Döngüsü</span>
+          <div class="flow">
+            <span>Katıl</span><span class="arr">→</span>
+            <span>Tasarla</span><span class="arr">→</span>
+            <span>Deneyimle</span><span class="arr">→</span>
+            <span>Yayınlan</span><span class="arr">→</span>
+            <span>Oylan</span><span class="arr">→</span>
+            <span>Kazan</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="g3" style="gap:1.25rem;">
+        <div class="cc"><div class="ci">💰</div><h3>Sanal Yaşam Bütçesi</h3><p>Her katılımcıya sabit sanal bütçe. En pahalı değil — en doğru yaşam alanı kazanır.</p></div>
+        <div class="cc"><div class="ci">🧩</div><h3>Görev Sistemi</h3><p>Kahve köşesi tasarla, küçük alanı maksimum kullan, misafir odası kur. Görev tamamla, puan kazan.</p></div>
+        <div class="cc"><div class="ci">🛋️</div><h3>Marka Entegrasyonu</h3><p>Markalar yarışmanın aktif oyuncusu. Ürünler görevlerde kullanılır — reklam değil, deneyim.</p></div>
+        <div class="cc"><div class="ci">📺</div><h3>TV + Dijital Yayın</h3><p>Haftalık TV bölümleri, günlük dijital içerikler, oylama sistemi, canlı görev takibi.</p></div>
+        <div class="cc"><div class="ci">👥</div><h3>Katılımcı Profili</h3><p>Evlilik hazırlığı yapan çiftler, evini yenileyen bireyler, yeni yaşam kuran kullanıcılar.</p></div>
+        <div class="cc"><div class="ci">🏆</div><h3>Ödüller</h3><p>Tam yaşam paketi (mobilya + beyaz eşya + dekorasyon), marka özel ödülleri, kampanya kuponları.</p></div>
+      </div>
+
+      <div class="comp-bot">
+        <div class="cbox">
+          <h4>Puanlama Sistemi</h4>
+          <div class="sr"><span>Bütçe Yönetimi</span><span class="v">%30</span></div>
+          <div class="sr"><span>Fonksiyonellik</span><span class="v">%30</span></div>
+          <div class="sr"><span>Estetik</span><span class="v">%20</span></div>
+          <div class="sr"><span>Marka Uyumu</span><span class="v">%20</span></div>
+        </div>
+        <div class="cbox">
+          <h4>Adım Adım</h4>
+          <div class="cs"><span>Katıl</span></div>
+          <div class="cs"><span class="a">↓</span></div>
+          <div class="cs"><span>Tasarla</span></div>
+          <div class="cs"><span class="a">↓</span></div>
+          <div class="cs"><span>Deneyimle</span></div>
+          <div class="cs"><span class="a">↓</span></div>
+          <div class="cs"><span>Yayınlan & Kazan</span></div>
+        </div>
+      </div>
+
+      <div class="comp-q">
+        <p>"Alisce Life Prova Ev Yarışma Modeli, kullanıcıların sanal bütçe ve görev sistemiyle gerçek yaşam alanı tasarladığı, TV ve dijital platformlarda yayınlanan hibrit deneyim yarışma ekosistemidir."</p>
+      </div>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  10. RANDEVU                            -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-randevu" class="page">
+  <div class="sec" style="background:var(--bg);">
+    <div style="max-width:680px;margin:0 auto;">
+      <div class="sec-head">
+        <span class="tag">Randevu</span>
+        <h2 class="serif">Deneyimini planla</h2>
+        <p class="sub">Prova evlerini ve etkinlikleri ziyaret etmek için randevunu oluştur.</p>
+      </div>
+      <div style="background:var(--bg-alt);padding:3rem;border:1px solid var(--border);">
+        <div class="gap1">
+          <input type="text" placeholder="Ad Soyad" />
+          <input type="tel" placeholder="Telefon" />
+          <input type="text" placeholder="Şehir Seçin" />
+          <input type="date" />
+          <select>
+            <option value="">Etkinlik Türü Seçin</option>
+            <option>Çeyiz Günleri</option>
+            <option>Marka Deneyim Günleri</option>
+            <option>Evlilik Hazırlık Etkinlikleri</option>
+            <option>Prova Evi Ziyareti</option>
+          </select>
+          <button class="btn-sub">Randevu Al</button>
+        </div>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:.82rem;margin-top:1.5rem;">Randevu talebiniz en geç 24 saat içinde onaylanır.</p>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<!-- ════════════════════════════════════════ -->
+<!--  11. İLETİŞİM                           -->
+<!-- ════════════════════════════════════════ -->
+<div id="page-iletisim" class="page">
+  <div class="sec-alt" style="text-align:center;min-height:calc(100vh - 68px);display:flex;flex-direction:column;justify-content:center;">
+    <span class="tag" style="display:block;">İletişim</span>
+    <h2 class="serif" style="margin-bottom:1rem;">Bizimle iletişime geç</h2>
+    <p class="sub" style="max-width:520px;margin:0 auto 3rem;">Sorularınız, iş birlikleriniz veya ziyaret planlarınız için hemen iletişime geçin.</p>
+    <div class="contact-btns">
+      <a href="https://wa.me/" class="bwa">💬 WhatsApp ile Yaz</a>
+      <a href="tel:" class="btel">📞 Telefon ile Ara</a>
+      <a href="mailto:aliscelife@gmail.com" class="bml">✉️ aliscelife@gmail.com</a>
+    </div>
+  </div>
+  <footer><div class="fi"><div class="fl"><div class="t">ALİSCE</div><div class="b">LİFE<sup>®</sup></div></div><p class="fs">"Yaşamı satın almadan önce deneyimle"</p><div class="fr"><a href="mailto:aliscelife@gmail.com">aliscelife@gmail.com</a><p>© 2026 Alisce Life</p></div></div></footer>
+</div>
+
+
+<script>
+  const pages = [
+    'anasayfa','prova-evleri','etkinlikler','ceyiz-gunleri',
+    'markalar','hakkimizda','nasil-calisir','is-ortakligi',
+    'yarisma','randevu','iletisim'
+  ];
+
+  function goPage(id) {
+    pages.forEach(p => {
+      const el = document.getElementById('page-' + p);
+      if (el) el.classList.remove('active');
+    });
+    const target = document.getElementById('page-' + id);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // nav aktif durumu
+    document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
+    const navBtn = document.getElementById('nav-' + id);
+    if (navBtn) navBtn.classList.add('active');
+
+    // URL hash güncelle
+    history.pushState(null, '', '#' + id);
+  }
+
+  // Hash ile yüklenirse
+  window.addEventListener('load', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && pages.includes(hash)) goPage(hash);
+  });
+
+  // Geri/ileri tuşu
+  window.addEventListener('popstate', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && pages.includes(hash)) goPage(hash);
+    else goPage('anasayfa');
+  });
+</script>
+</body>
+</html>
