@@ -18,12 +18,6 @@ const db                = require('./db');
 const PORT         = parseInt(process.env.PORT)                  || 3001;
 const JWT_SECRET   = process.env.JWT_SECRET                      || 'susayar-gizli-anahtar-degistirin';
 const CORS_ORIGINS = process.env.CORS_ORIGINS                    || '*';
-const NIGHT_START  = parseInt(process.env.NIGHT_START_HOUR)      || 0;
-const NIGHT_END    = parseInt(process.env.NIGHT_END_HOUR)        || 5;
-const DRIP_THRESH  = parseFloat(process.env.DRIP_THRESHOLD_LPM)  || 0.5;
-const DRIP_DUR_MIN = parseInt(process.env.DRIP_DURATION_MIN)     || 10;
-const HIGH_MULT    = parseFloat(process.env.HIGH_FLOW_MULTIPLIER) || 2.0;
-const LONG_FLOW_MIN= parseInt(process.env.LONG_FLOW_MIN)         || 30;
 
 // ── Express ───────────────────────────────────────────────────
 const app = express();
@@ -52,63 +46,9 @@ async function requireDeviceKey(req, res, next) {
   next();
 }
 
-// ── Anomali takip durumu (kullanıcı başına, RAM) ──────────────
-const userState = new Map();
-function getState(userId) {
-  if (!userState.has(userId)) userState.set(userId, {
-    nightFlowActive: false, dripStart: null, flowStartTs: null, lastFlowLpm: 0,
-  });
-  return userState.get(userId);
-}
-
 function broadcastToUser(userId, msg) {
   const str = JSON.stringify(msg);
   wss.clients.forEach(c => { if (c.readyState === 1 && c.userId === userId) c.send(str); });
-}
-
-async function detectAnomalies(reading) {
-  const { user_id, device_id, flow_lpm, ts } = reading;
-  const s = getState(user_id);
-  const hour = new Date(ts).getHours();
-  const isNight = hour >= NIGHT_START && hour < NIGHT_END;
-
-  async function addAnom(type, detail) {
-    const a = { id: Date.now(), user_id, type, device: device_id, detail, ts: new Date().toISOString() };
-    await db.queryRun(
-      `INSERT INTO anomalies (id, user_id, type, device, detail, ts, resolved)
-       VALUES ($1,$2,$3,$4,$5,$6,${db.isPg ? 'FALSE' : '0'}) ON CONFLICT DO NOTHING`,
-      [a.id, a.user_id, a.type, a.device, a.detail, a.ts]
-    );
-    broadcastToUser(user_id, { type: 'anomaly', payload: { ...a, resolved: false } });
-    console.log(`[ANOMALI] ${type} | ${device_id}`);
-  }
-
-  if (isNight && flow_lpm > 0.1) {
-    if (!s.nightFlowActive) { s.nightFlowActive = true; await addAnom('night_flow', `Gece ${String(hour).padStart(2,'0')}:xx — ${flow_lpm.toFixed(2)} L/dk`); }
-  } else if (!isNight) { s.nightFlowActive = false; }
-
-  if (flow_lpm > 0 && flow_lpm < DRIP_THRESH) {
-    if (!s.dripStart) s.dripStart = new Date(ts);
-    const mins = (Date.now() - s.dripStart.getTime()) / 60000;
-    if (mins >= DRIP_DUR_MIN && s.lastFlowLpm === 0) await addAnom('drip', `${mins.toFixed(0)} dk damlama — ${flow_lpm.toFixed(2)} L/dk`);
-  } else { s.dripStart = null; }
-
-  if (flow_lpm > 0.1) {
-    if (!s.flowStartTs) s.flowStartTs = new Date(ts);
-    const mins = (Date.now() - s.flowStartTs.getTime()) / 60000;
-    if (mins >= LONG_FLOW_MIN && s.lastFlowLpm > 0.1 && Math.floor(mins) % 10 === 0)
-      await addAnom('long_flow', `${mins.toFixed(0)} dk kesintisiz — ${flow_lpm.toFixed(2)} L/dk`);
-  } else { s.flowStartTs = null; }
-
-  const avgRow = await db.queryOne(
-    `SELECT AVG(flow_lpm) as avg FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 AND flow_lpm>0`,
-    [user_id, device_id, new Date(Date.now() - 86400000).toISOString()]
-  );
-  const avg = avgRow?.avg;
-  if (avg && flow_lpm > avg * HIGH_MULT && flow_lpm > 5)
-    await addAnom('high_flow', `Günlük ort. ${HIGH_MULT}x üstü — ${flow_lpm.toFixed(2)} L/dk (ort: ${parseFloat(avg).toFixed(2)})`);
-
-  s.lastFlowLpm = flow_lpm;
 }
 
 // ── Auth ──────────────────────────────────────────────────────
@@ -210,7 +150,6 @@ app.post('/api/sensor', requireDeviceKey, async (req, res) => {
       `UPDATE devices SET last_seen=$1, rssi_dbm=$2 WHERE device_id=$3 AND user_id=$4`,
       [reading.ts, reading.rssi_dbm, reading.device_id, reading.user_id]
     );
-    await detectAnomalies(reading);
     broadcastToUser(reading.user_id, { type: 'sensor_update', payload: reading });
 
     console.log(`[${reading.ts}] ${reading.device_id} | ${data.flow_lpm} L/dk | ${data.total_liters} L`);
@@ -238,28 +177,6 @@ app.get('/api/history', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.get('/api/anomalies', requireAuth, async (req, res) => {
-  try {
-    const showResolved = req.query.resolved === 'true';
-    const rows = showResolved
-      ? await db.queryAll(`SELECT * FROM anomalies WHERE user_id=$1 ORDER BY id DESC LIMIT 200`, [req.user.id])
-      : await db.queryAll(`SELECT * FROM anomalies WHERE user_id=$1 AND resolved=${db.isPg?'FALSE':'0'} ORDER BY id DESC LIMIT 200`, [req.user.id]);
-    res.json(rows.map(db.normalizeAnomaly));
-  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
-});
-
-app.post('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const n = await db.queryRun(
-      `UPDATE anomalies SET resolved=${db.isPg?'TRUE':'1'} WHERE id=$1 AND user_id=$2`,
-      [id, req.user.id]
-    );
-    if (!n) return res.status(404).json({ error: 'Bulunamadı' });
-    broadcastToUser(req.user.id, { type: 'anomaly_resolved', payload: { id } });
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
-});
 
 app.get('/api/stats', requireAuth, async (req, res) => {
   try {
@@ -267,16 +184,13 @@ app.get('/api/stats', requireAuth, async (req, res) => {
     const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
     const weekRow = await db.queryOne(`SELECT SUM((flow_lpm/60.0)*2.5) as total FROM readings WHERE user_id=$1 AND ts>=$2`, [uid, cutoff]);
     const weekL = parseFloat(weekRow?.total || 0);
-    const [devRow, leakRow, readRow] = await Promise.all([
-      db.queryOne(`SELECT COUNT(*) as n FROM devices   WHERE user_id=$1`, [uid]),
-      db.queryOne(`SELECT COUNT(*) as n FROM anomalies WHERE user_id=$1`, [uid]),
-      db.queryOne(`SELECT COUNT(*) as n FROM readings  WHERE user_id=$1`, [uid]),
+    const [devRow, readRow] = await Promise.all([
+      db.queryOne(`SELECT COUNT(*) as n FROM devices  WHERE user_id=$1`, [uid]),
+      db.queryOne(`SELECT COUNT(*) as n FROM readings WHERE user_id=$1`, [uid]),
     ]);
     res.json({
       active_devices : parseInt(devRow?.n  || 0),
       week_water_l   : Math.round(weekL),
-      leaks_detected : parseInt(leakRow?.n || 0),
-      saved_l        : Math.round(weekL * 0.185),
       total_readings : parseInt(readRow?.n || 0),
       uptime_since   : serverStart,
     });
@@ -301,15 +215,13 @@ wss.on('connection', async (ws, req) => {
     try {
       const user = jwt.verify(token, JWT_SECRET);
       ws.userId  = user.id;
-      const [latest, history, anoms] = await Promise.all([
+      const [latest, history] = await Promise.all([
         db.queryOne(`SELECT * FROM readings WHERE user_id=$1 ORDER BY id DESC LIMIT 1`, [user.id]),
         db.queryAll(`SELECT * FROM readings WHERE user_id=$1 ORDER BY id DESC LIMIT 50`, [user.id]),
-        db.queryAll(`SELECT * FROM anomalies WHERE user_id=$1 AND resolved=${db.isPg?'FALSE':'0'} ORDER BY id DESC LIMIT 20`, [user.id]),
       ]);
       ws.send(JSON.stringify({ type: 'init', payload: {
         latest: latest || null,
         history: history.reverse(),
-        anomalies: anoms.map(db.normalizeAnomaly),
       }}));
     } catch { ws.close(1008, 'Geçersiz token'); return; }
   }

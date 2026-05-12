@@ -510,8 +510,8 @@ nav {
       tespit et
     </h1>
     <p class="hero-p">
-      Evinizin ana vanasına takılır. Gece akışlarını, damlama kaçaklarını ve anormal tüketimleri
-      gerçek zamanlı izler. Sistem sizi tanıdığında yanlış alarm kalmaz.
+      ESP32 tabanlı cihaz evinizin ana vanasına takılır. Su akışını gerçek zamanlı ölçer,
+      telefonunuzdan anlık olarak izlersiniz.
     </p>
     <div class="hero-btns">
       <a class="btn btn-primary btn-xl" href="/susayar-auth.html?tab=register">
@@ -603,58 +603,12 @@ nav {
     <span>Bildirim: <strong>Anında</strong></span>
   </div>
   <div class="proof-item">
-    <span class="proof-item-icon">&#x1F9E0;</span>
-    <span>Öğrenme: <strong>7 günde kalibrasyon</strong></span>
-  </div>
-  <div class="proof-item">
     <span class="proof-item-icon">&#x1F4B0;</span>
     <span>Ortalama tasarruf: <strong>Ayda 180 TL</strong></span>
   </div>
   <div class="proof-item">
     <span class="proof-item-icon">&#x1F512;</span>
     <span>Veri: <strong>Yerel &amp; güvenli</strong></span>
-  </div>
-</div>
-
-<!-- CANLI EKOSİSTEM -->
-<div class="live-eco">
-  <div class="live-eco-inner">
-    <div class="live-eco-head">
-      <div class="live-eco-badge">
-        <span class="live-dot"></span>
-        Canlı Ekosistem Verisi
-      </div>
-      <div class="live-eco-title">SuSayar cihazlarından akan veri — şu an</div>
-      <div class="live-eco-sub">Tüm aktif cihazlardan gerçek zamanlı toplanan istatistikler</div>
-    </div>
-
-    <div class="live-stats">
-      <div class="live-stat">
-        <div class="live-stat-icon">📡</div>
-        <div class="live-stat-val" id="ls-devices">1.247<span class="u">cihaz</span></div>
-        <div class="live-stat-lbl">Aktif Cihaz</div>
-        <div class="live-stat-delta">▲ +3 bu hafta</div>
-      </div>
-      <div class="live-stat">
-        <div class="live-stat-icon">💧</div>
-        <div class="live-stat-val" id="ls-water">2.847.312<span class="u">L</span></div>
-        <div class="live-stat-lbl">Bu Hafta Ölçülen Su</div>
-        <div class="live-stat-delta">⚡ Canlı sayılıyor</div>
-      </div>
-      <div class="live-stat">
-        <div class="live-stat-icon">🚨</div>
-        <div class="live-stat-val" id="ls-leaks">183<span class="u">kaçak</span></div>
-        <div class="live-stat-lbl">Tespit Edilen Kaçak</div>
-        <div class="live-stat-delta warn">▲ +2 bugün</div>
-      </div>
-      <div class="live-stat">
-        <div class="live-stat-icon">🌿</div>
-        <div class="live-stat-val" id="ls-saved">412.840<span class="u">L</span></div>
-        <div class="live-stat-lbl">Tasarruf Edilen Su</div>
-        <div class="live-stat-delta">≈ 412 m³ kurtarıldı</div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -753,92 +707,19 @@ nav {
     </div>
     <div class="feat-grid">
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#eff6ff">&#x1F319;</div>
-        <h4>Gece Akışı Tespiti</h4>
-        <p>Uyku saatinde herhangi bir akış olduğunda anında uyarır. Kaçağı sabah değil, gece yakalar.</p>
+        <div class="feat-icon-box" style="background:#eff6ff">&#x1F4A7;</div>
+        <h4>Gerçek Zamanlı Akış</h4>
+        <p>Su akıyor mu, akmıyor mu? Dashboard'da anlık olarak görürsünüz. Litre/dakika ve toplam tüketim sürekli güncellenir.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4A7;</div>
-        <h4>Damlama Analizi</h4>
-        <p>Hissedilmez düşük debili sürekli akışları tespit eder. Ayda yüzlerce litre — göze görünmez ama faturaya yansır.</p>
+        <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4CA;</div>
+        <h4>Geçmiş Veriler</h4>
+        <p>Tüm ölçümler bulutta saklanır. Saatlik, günlük ve haftalık tüketiminizi grafik üzerinden inceleyebilirsiniz.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#fff7ed">&#x1F504;</div>
-        <h4>Sifon Kaçağı İmzası</h4>
-        <p>Kısa aralıkla tekrarlayan akışlar tuvalet sifon kaçağının klasik işaretini taşıyor. Sistem bunu otomatik tanıyor.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-box" style="background:#fdf4ff">&#x1F9E0;</div>
-        <h4>Kullanıcı Destekli Öğrenme</h4>
-        <p>Her hane farklıdır. Geri bildirimlerinizle sistem yalnızca <strong>sizin evinize özel</strong> kurallara göre çalışır.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-box" style="background:#eff6ff">&#x1F9F3;</div>
-        <h4>Tatil Modu</h4>
-        <p>Evden uzaktayken herhangi bir akış anında kritik alarm olur. Yetkili kişi tanımlayabilir, uzaktan onaylayabilirsiniz.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4C5;</div>
-        <h4>Aylık Tahmin &amp; Bütçe</h4>
-        <p>Mevcut gidişata göre ay sonu faturanızı önceden görür. Limit aşımını fatura gelmeden öğrenir, kendiniz sınır koyarsınız.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- OGRENME BOLUMU -->
-<div class="learn-wrap">
-  <div class="learn-left">
-    <div class="s-label">Akıllı Profil</div>
-    <h2 class="s-h">Sistem sizi tanıdığında yanlış alarm kalmaz</h2>
-    <p class="s-p">
-      Sabit eşiklerle çalışan sistemler her eve uymaz. Gece 03:00'te su içtiği için
-      uyarılan, sabah çocukları için erken çalıştığında alarm alan kullanıcıları hep gördük.
-      SuSayar <strong>sizin geri bildirimlerinizle öğrenip</strong> sadece sizin için anlamlı
-      kurallara göre çalışır.
-    </p>
-    <div class="learn-tags">
-      <span class="tag tag-green">&#x2705; Yanlış alarm = 0</span>
-      <span class="tag tag-blue">&#x1F9E0; 11 öğrenilebilir kural</span>
-      <span class="tag tag-amber">&#x23F3; 7 günde kalibrasyon</span>
-    </div>
-    <a class="btn btn-primary btn-lg" href="/susayar-auth.html?tab=register">Kayıt Ol &rarr;</a>
-  </div>
-  <div>
-    <div class="learn-card">
-      <div class="learn-card-head">
-        <div>
-          <div class="learn-card-title">Ev Profili — Öğrenilen Kurallar</div>
-          <div class="learn-card-sub">Son güncelleme: bugün 08:42</div>
-        </div>
-        <div class="learn-card-badge">11 Kural</div>
-      </div>
-      <div class="learn-rules">
-        <div class="lrule">
-          <span class="lrule-icon">&#x1F319;</span>
-          <span class="lrule-text">Gece 02:00–03:00 akışı normal</span>
-          <span class="lrule-pill">Öğrenildi</span>
-        </div>
-        <div class="lrule">
-          <span class="lrule-icon">&#x1F4C8;</span>
-          <span class="lrule-text">Cumartesi yüksek tüketim normal</span>
-          <span class="lrule-pill">Öğrenildi</span>
-        </div>
-        <div class="lrule">
-          <span class="lrule-icon">&#x23F1;</span>
-          <span class="lrule-text">30+ dk akış pazar sabahı normal</span>
-          <span class="lrule-pill">Öğrenildi</span>
-        </div>
-        <div class="lrule">
-          <span class="lrule-icon">&#x1F4CA;</span>
-          <span class="lrule-text">Günlük bütçe: max 250 L</span>
-          <span class="lrule-pill">Öğrenildi</span>
-        </div>
-        <div class="lrule learning">
-          <span class="lrule-icon">&#x1F9E0;</span>
-          <span class="lrule-text" style="color:var(--muted)">Veri toplanıyor — 3 gün kaldı...</span>
-          <span class="lrule-pill pending">Öğreniliyor</span>
-        </div>
+        <div class="feat-icon-box" style="background:#fff7ed">&#x1F4F1;</div>
+        <h4>Çoklu Cihaz</h4>
+        <p>Birden fazla ESP32 cihazı tek hesaba bağlayabilirsiniz. Her cihaz ayrı API anahtarıyla güvenle veri gönderir.</p>
       </div>
     </div>
   </div>
@@ -908,14 +789,12 @@ nav {
       <ul class="p-features">
         <li>Gerçek zamanlı akış izleme</li>
         <li>Günlük &amp; haftalık raporlar</li>
-        <li>3 temel anomali tespiti</li>
-        <li>Telefon bildirimleri</li>
-        <li class="off">Öğrenme sistemi</li>
-        <li class="off">Tatil modu</li>
-        <li class="off">Aylık tahmin</li>
-        <li class="off">Çok kullanıcılı erişim</li>
+        <li>1 cihaz</li>
+        <li>30 günlük veri geçmişi</li>
+        <li class="off">Çoklu cihaz</li>
+        <li class="off">Uzun süreli veri geçmişi</li>
       </ul>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center">Ücretsiz Başla</button>
+      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Ücretsiz Başla</a>
     </div>
 
     <div class="p-card featured">
@@ -926,15 +805,12 @@ nav {
       <hr class="p-sep">
       <ul class="p-features">
         <li>Başlangıç plandaki her şey</li>
-        <li>11 anomali kuralı + öğrenme</li>
-        <li>Tatil modu &amp; uzak alarm</li>
-        <li>Aylık tahmin &amp; bütçe limiti</li>
-        <li>5 kullanıcıya kadar</li>
-        <li>Öncelikli bildirimler</li>
+        <li>5 cihaza kadar</li>
         <li>1 yıllık veri geçmişi</li>
-        <li class="off">Çok cihaz desteği</li>
+        <li>Öncelikli bildirimler</li>
+        <li>Cihazlar arası karşılaştırma</li>
       </ul>
-      <button class="btn btn-primary" style="width:100%;justify-content:center">Pro'ya Geç</button>
+      <a class="btn btn-primary" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Pro'ya Geç</a>
     </div>
 
     <div class="p-card">
@@ -952,7 +828,7 @@ nav {
         <li>Sınırsız veri geçmişi</li>
         <li>Yeni özellikler ilk deneme hakkı</li>
       </ul>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center">Aile Planını Seç</button>
+      <a class="btn btn-ghost" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Aile Planını Seç</a>
     </div>
 
   </div>
@@ -985,89 +861,20 @@ nav {
 </footer>
 
 <script>
-/* ── CANLI EKOSİSTEM SAYAÇLARI ─────────────────── */
-let waterTotal   = 2847312;
-let savedTotal   = 412840;
-let leaksTotal   = 183;
-let devicesTotal = 1247;
-let mockToday    = 187;
-let mockMonth    = 4.2;
-let realStatsMode = false; // backend'den veri gelince true olur
-
-function fmt(n) { return Math.floor(n).toLocaleString('tr-TR'); }
-
-// Backend'den istatistik çek (backend açık değilse sessizce atla)
-function fetchRealStats() {
-  fetch('http://localhost:3001/api/stats', { signal: AbortSignal.timeout(2000) })
-    .then(r => r.json())
-    .then(data => {
-      if (!data || !data.week_water_l) return;
-      realStatsMode = true;
-      waterTotal   = data.week_water_l;
-      savedTotal   = data.saved_l;
-      leaksTotal   = data.leaks_detected;
-      devicesTotal = data.active_devices;
-      const wEl = document.getElementById('ls-water');
-      const sEl = document.getElementById('ls-saved');
-      const lEl = document.getElementById('ls-leaks');
-      const dEl = document.getElementById('ls-devices');
-      if (wEl) wEl.innerHTML = fmt(waterTotal) + '<span class="u">L</span>';
-      if (sEl) sEl.innerHTML = fmt(savedTotal) + '<span class="u">L</span>';
-      if (lEl) lEl.innerHTML = fmt(leaksTotal) + '<span class="u">kaçak</span>';
-      if (dEl) dEl.innerHTML = fmt(devicesTotal) + '<span class="u">cihaz</span>';
-    })
-    .catch(() => { /* backend kapalı, simülasyon devam eder */ });
-}
-
-// Sayfa açılışında bir kez dene, sonra 30 sn'de bir güncelle
-fetchRealStats();
-setInterval(fetchRealStats, 30000);
-
-/* Su sayacı: her saniye tüm cihazlardan ~35-80 L */
-setInterval(() => {
-  const add = Math.floor(Math.random() * 45 + 35);
-  waterTotal += add;
-  savedTotal += Math.floor(add * 0.185);
-  const wEl = document.getElementById('ls-water');
-  const sEl = document.getElementById('ls-saved');
-  if (wEl) wEl.innerHTML = fmt(waterTotal) + '<span class="u">L</span>';
-  if (sEl) sEl.innerHTML = fmt(savedTotal) + '<span class="u">L</span>';
-}, 1000);
-
-/* Kaçak sayacı: 18-55 saniyede bir rastgele +1 */
-(function schedLeak() {
-  const delay = Math.floor(Math.random() * 37000 + 18000);
-  setTimeout(() => {
-    leaksTotal++;
-    const el = document.getElementById('ls-leaks');
-    if (el) { el.innerHTML = fmt(leaksTotal) + '<span class="u">kaçak</span>'; }
-    schedLeak();
-  }, delay);
-})();
-
-/* Cihaz sayacı: ~her 4 dakikada bir yeni cihaz */
-setInterval(() => {
-  if (Math.random() < 0.004) {
-    devicesTotal++;
-    const el = document.getElementById('ls-devices');
-    if (el) el.innerHTML = fmt(devicesTotal) + '<span class="u">cihaz</span>';
-  }
-}, 1000);
-
 /* Hero mockup - Anlık akış değeri dalgalanır */
-let heroToday = 187;
+let mockToday = 187;
+let mockMonth = 4.2;
 setInterval(() => {
   const flow = (1.8 + Math.random() * 2.2).toFixed(1).replace('.', ',');
-  heroToday += Math.floor(Math.random() * 4 + 1);
+  mockToday += Math.floor(Math.random() * 4 + 1);
   mockMonth = +(mockMonth + 0.001).toFixed(3);
   const fEl = document.getElementById('mock-flow');
   const tEl = document.getElementById('mock-today');
   const mEl = document.getElementById('mock-month');
   if (fEl) fEl.innerHTML = flow + ' <sub>L/dk</sub>';
-  if (tEl) tEl.innerHTML = heroToday + ' <sub>L</sub>';
+  if (tEl) tEl.innerHTML = mockToday + ' <sub>L</sub>';
   if (mEl) mEl.innerHTML = mockMonth.toFixed(1).replace('.', ',') + ' <sub>m&sup3;</sub>';
 }, 2500);
-
 </script>
 </body>
 </html>
