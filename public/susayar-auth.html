@@ -278,7 +278,7 @@
   </div>
 
   <script>
-    const API = 'http://localhost:3001';
+    const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
     // Daha önce giriş yapılmışsa dashboard'a yönlendir
     (function checkExistingSession() {

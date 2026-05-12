@@ -1738,7 +1738,8 @@
   if (!token) { location.replace('/susayar-auth.html'); return; }
 
   // Token'ı arka planda doğrula (geçersizse login'e at)
-  fetch('http://localhost:3001/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+  const _authBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  fetch(`${_authBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
     .then(r => { if (!r.ok) { localStorage.removeItem('susayar_token'); location.replace('/susayar-auth.html'); } })
     .catch(() => { /* Backend kapalı — token var, devam et */ });
 
@@ -2879,7 +2880,7 @@ function disconnectRealBackend() {
 function openCihazBaglaModal() {
   if (realModeActive) { disconnectRealBackend(); return; }
 
-  const API = localStorage.getItem('susayar_api_base') || 'http://localhost:3001';
+  const API = localStorage.getItem('susayar_api_base') || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
   const token = localStorage.getItem('susayar_token') || '';
 
   const modal = document.createElement('div');
