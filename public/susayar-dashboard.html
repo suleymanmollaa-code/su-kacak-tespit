@@ -811,10 +811,10 @@
 
   <div class="sidebar-footer">
     <div class="user-row">
-      <div class="avatar">AK</div>
+      <div class="avatar" id="sidebar-avatar">?</div>
       <div>
-        <div class="user-name">Ahmet K.</div>
-        <div class="user-plan">Pro Plan</div>
+        <div class="user-name" id="sidebar-user-name">Kullanici</div>
+        <div class="user-plan" id="sidebar-user-plan">Plan yok</div>
       </div>
     </div>
     <div style="margin-top:.85rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.2rem">
@@ -1312,7 +1312,7 @@
       localStorage.setItem('susayar_user', JSON.stringify(user));
       const el = document.getElementById('user-display-name');
       if (el && user.name) el.textContent = user.name;
-      updatePlanUI(user.plan || 'starter');
+      updatePlanUI(user.plan || 'starter', user.name);
     })
     .catch(() => {
       // Backend kapalı — localStorage'dan oku
@@ -1320,7 +1320,7 @@
         const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
         const el = document.getElementById('user-display-name');
         if (el && user.name) el.textContent = user.name;
-        updatePlanUI(user.plan || 'starter');
+        updatePlanUI(user.plan || 'starter', user.name);
       } catch {}
     });
 
@@ -2200,9 +2200,22 @@ const PLAN_BTNS = {
   corporate:  `<button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('corporate')">Sec</button>`,
 };
 
-function updatePlanUI(plan) {
+function updatePlanUI(plan, userName) {
   const label = document.getElementById('current-plan-label');
   if (label) label.textContent = PLAN_LABELS[plan] || PLAN_LABELS.starter;
+
+  // Sidebar
+  const sidebarPlan = document.getElementById('sidebar-user-plan');
+  if (sidebarPlan) {
+    const planNames = { starter: 'Plan Yok', individual: 'Bireysel', business: 'Isletme', corporate: 'Kurumsal' };
+    sidebarPlan.textContent = planNames[plan] || 'Plan Yok';
+  }
+  if (userName) {
+    const sidebarName = document.getElementById('sidebar-user-name');
+    if (sidebarName) sidebarName.textContent = userName;
+    const avatar = document.getElementById('sidebar-avatar');
+    if (avatar) avatar.textContent = userName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  }
 
   const activeBadge = '<div style="font-size:.75rem;text-align:center;color:var(--green);padding:.6rem;background:rgba(16,185,129,.1);border-radius:.5rem;border:1px solid rgba(16,185,129,.3)">Mevcut Planiniz</div>';
   ['individual', 'business', 'corporate'].forEach(p => {
