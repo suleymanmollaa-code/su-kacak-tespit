@@ -1134,7 +1134,7 @@
               <li>✓ 1 cihaz</li>
               <li>✓ 30 günlük geçmiş</li>
             </ul>
-            <div style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Mevcut Plan</div>
+            <div id="plan-action-starter" style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Mevcut Plan</div>
           </div>
           <div class="card" style="border:1px solid rgba(59,130,246,.4);padding:1.5rem;position:relative">
             <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;white-space:nowrap">EN POPÜLER</div>
@@ -1146,7 +1146,7 @@
               <li>✓ 1 yıllık veri geçmişi</li>
               <li>✓ Öncelikli bildirimler</li>
             </ul>
-            <button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('pro')">Pro'ya Geç</button>
+            <div id="plan-action-pro"><button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('pro')">Pro'ya Geç</button></div>
           </div>
           <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
             <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:.75rem">Aile</div>
@@ -1157,7 +1157,7 @@
               <li>✓ Sınırsız veri geçmişi</li>
               <li>✓ Öncelikli destek</li>
             </ul>
-            <button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('family')">Aile Planına Geç</button>
+            <div id="plan-action-family"><button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('family')">Aile Planına Geç</button></div>
           </div>
         </div>
       </div>
@@ -1284,18 +1284,36 @@
   const token = localStorage.getItem('susayar_token');
   if (!token) { location.replace('/susayar-auth.html'); return; }
 
-  // Token'ı arka planda doğrula (geçersizse login'e at)
+  // Token'ı arka planda doğrula, plan bilgisini çek
   const _authBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   fetch(`${_authBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-    .then(r => { if (!r.ok) { localStorage.removeItem('susayar_token'); location.replace('/susayar-auth.html'); } })
-    .catch(() => { /* Backend kapalı — token var, devam et */ });
+    .then(r => {
+      if (!r.ok) { localStorage.removeItem('susayar_token'); location.replace('/susayar-auth.html'); return null; }
+      return r.json();
+    })
+    .then(data => {
+      if (!data) return;
+      const user = data.user || {};
+      localStorage.setItem('susayar_user', JSON.stringify(user));
+      const el = document.getElementById('user-display-name');
+      if (el && user.name) el.textContent = user.name;
+      updatePlanUI(user.plan || 'starter');
+    })
+    .catch(() => {
+      // Backend kapalı — localStorage'dan oku
+      try {
+        const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
+        const el = document.getElementById('user-display-name');
+        if (el && user.name) el.textContent = user.name;
+        updatePlanUI(user.plan || 'starter');
+      } catch {}
+    });
 
-  // Kullanıcı adını topbar'a yaz
-  try {
-    const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
-    const el = document.getElementById('user-display-name');
-    if (el && user.name) el.textContent = user.name;
-  } catch {}
+  // Stripe ödeme sonrası yönlendirme
+  if (new URLSearchParams(location.search).get('upgraded') === '1') {
+    history.replaceState(null, '', location.pathname);
+    setTimeout(() => showToast('Aboneliginiz aktiflestirildi!'), 800);
+  }
 })();
 
 function doLogout() {
@@ -2153,7 +2171,32 @@ function renderSonOlcumler(readings) {
   if (timeEl && readings[0]?.ts) timeEl.textContent = new Date(readings[0].ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ── Abonelik / Stripe ────────────────────────────────────────
+// ── Abonelik / Plan UI ───────────────────────────────────────
+const PLAN_LABELS = { starter: 'Baslangic (Ucretsiz)', pro: 'Pro — 99 TL/ay', family: 'Aile — 199 TL/ay' };
+
+function updatePlanUI(plan) {
+  const label = document.getElementById('current-plan-label');
+  if (label) label.textContent = PLAN_LABELS[plan] || PLAN_LABELS.starter;
+
+  const activeBadge = '<div style="font-size:.75rem;text-align:center;color:var(--green);padding:.6rem;background:rgba(16,185,129,.1);border-radius:.5rem;border:1px solid rgba(16,185,129,.3)">Mevcut Planınız</div>';
+  const plans = ['starter', 'pro', 'family'];
+  plans.forEach(p => {
+    const el = document.getElementById(`plan-action-${p}`);
+    if (!el) return;
+    if (p === plan) {
+      el.innerHTML = activeBadge;
+    } else {
+      if (p === 'starter') {
+        el.innerHTML = '<div style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Temel Plan</div>';
+      } else if (p === 'pro') {
+        el.innerHTML = '<button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout(\'pro\')">Pro\'ya Gec</button>';
+      } else {
+        el.innerHTML = '<button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout(\'family\')">Aile Planina Gec</button>';
+      }
+    }
+  });
+}
+
 async function startCheckout(plan) {
   const token = localStorage.getItem('susayar_token');
   const API = localStorage.getItem('susayar_api_base') || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');

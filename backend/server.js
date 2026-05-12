@@ -28,6 +28,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-landing.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-admin.html')));
 
 // ── Middleware ────────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -83,7 +84,13 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.get('/api/auth/me', requireAuth, (req, res) => res.json({ ok: true, user: req.user }));
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  try {
+    const user = await db.queryOne(`SELECT id, name, email, plan FROM users WHERE id=$1`, [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    res.json({ ok: true, user });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
 
 // ── Cihaz Yönetimi ────────────────────────────────────────────
 
@@ -251,6 +258,73 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     }
   }
   res.sendStatus(200);
+});
+
+// ── Admin ─────────────────────────────────────────────────────
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'susayar-admin-2024';
+
+function requireAdmin(req, res, next) {
+  const secret = req.headers['x-admin-secret'];
+  if (!secret || secret !== ADMIN_SECRET) return res.status(403).json({ error: 'Yetkisiz' });
+  next();
+}
+
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const users = await db.queryAll(
+      `SELECT id, name, email, plan, created_at FROM users ORDER BY created_at DESC`
+    );
+    res.json(users);
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.get('/api/admin/devices', requireAdmin, async (req, res) => {
+  try {
+    const devs = await db.queryAll(
+      `SELECT d.id, d.name, d.device_id, d.api_key, d.last_seen, d.created_at,
+              u.name as user_name, u.email as user_email
+       FROM devices d JOIN users u ON d.user_id = u.id
+       ORDER BY d.created_at DESC`
+    );
+    res.json(devs);
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.post('/api/admin/devices', requireAdmin, async (req, res) => {
+  try {
+    const { user_id, name, device_id } = req.body;
+    if (!user_id || !name || !device_id) return res.status(400).json({ error: 'user_id, name ve device_id zorunludur' });
+    const exists = await db.queryOne(`SELECT id FROM devices WHERE device_id=$1`, [device_id.trim()]);
+    if (exists) return res.status(409).json({ error: 'Bu device_id zaten kayıtlı' });
+    const dev = {
+      id: randomUUID(), user_id, name: name.trim(),
+      device_id: device_id.trim(), api_key: randomUUID().replace(/-/g, ''),
+      created_at: new Date().toISOString(),
+    };
+    await db.queryRun(
+      `INSERT INTO devices (id,user_id,name,device_id,api_key,created_at) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [dev.id, dev.user_id, dev.name, dev.device_id, dev.api_key, dev.created_at]
+    );
+    console.log(`[ADMIN] Cihaz eklendi: ${dev.device_id} → ${user_id}`);
+    res.json({ ok: true, device: dev });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.delete('/api/admin/devices/:id', requireAdmin, async (req, res) => {
+  try {
+    await db.queryRun(`DELETE FROM devices WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    if (!['starter', 'pro', 'family'].includes(plan)) return res.status(400).json({ error: 'Geçersiz plan' });
+    await db.queryRun(`UPDATE users SET plan=$1 WHERE id=$2`, [plan, req.params.id]);
+    console.log(`[ADMIN] Plan güncellendi: ${req.params.id} → ${plan}`);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/health', (req, res) => res.json({

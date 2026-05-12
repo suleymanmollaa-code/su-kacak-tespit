@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuSayar Admin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --bg2: #161b27; --bg3: #1c2333;
+    --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12);
+    --text: #e8eaf0; --muted: #8892a4; --muted2: #6b7585;
+    --blue: #3b82f6; --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  }
+  .login-card {
+    background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px;
+    padding: 2.5rem 2rem; width: 100%; max-width: 380px;
+  }
+  .login-title { font-size: 1.3rem; font-weight: 800; margin-bottom: .25rem; }
+  .login-sub { font-size: .82rem; color: var(--muted); margin-bottom: 1.75rem; }
+
+  /* ADMIN LAYOUT */
+  #admin-screen { display: none; }
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-brand { font-size: 1rem; font-weight: 800; color: var(--blue); }
+  .topbar-right { display: flex; gap: .75rem; align-items: center; }
+  .main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+  /* TABS */
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+  .tab-btn {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: .5rem 1.1rem; font-size: .82rem; font-weight: 600; color: var(--muted);
+    cursor: pointer; transition: all .15s;
+  }
+  .tab-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .card-title { font-size: .95rem; font-weight: 700; margin-bottom: 1rem; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th { text-align: left; color: var(--muted); font-weight: 600; padding: .6rem .75rem; border-bottom: 1px solid var(--border); }
+  td { padding: .6rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-label { display: block; font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; }
+  .form-input, .form-select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: .55rem .85rem; font-size: .85rem;
+    color: var(--text); outline: none; font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--blue); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* BUTTONS */
+  .btn {
+    background: var(--blue); color: #fff; border: none; border-radius: 8px;
+    padding: .6rem 1.25rem; font-size: .83rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-red { background: var(--red); }
+  .btn-green { background: var(--green); }
+  .btn-ghost {
+    background: transparent; border: 1px solid var(--border2); color: var(--muted);
+    border-radius: 8px; padding: .5rem .9rem; font-size: .78rem; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* BADGE */
+  .badge {
+    display: inline-block; font-size: .68rem; font-weight: 700; padding: .15rem .55rem;
+    border-radius: 20px; text-transform: uppercase;
+  }
+  .badge-starter { background: rgba(139,148,158,.15); color: #8b949e; }
+  .badge-pro { background: rgba(59,130,246,.15); color: var(--blue); }
+  .badge-family { background: rgba(16,185,129,.15); color: var(--green); }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(60px);
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px;
+    padding: .65rem 1.25rem; font-size: .82rem; font-weight: 500;
+    transition: transform .25s; pointer-events: none; z-index: 9999;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* API KEY */
+  .api-key { font-family: monospace; font-size: .75rem; color: var(--muted2); }
+
+  /* Error */
+  .err { font-size: .78rem; color: var(--red); margin-top: .5rem; }
+  .ok  { font-size: .78rem; color: var(--green); margin-top: .5rem; }
+
+  /* Empty */
+  .empty { text-align: center; color: var(--muted); padding: 2rem; font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<!-- ── Giriş ──────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-title">SuSayar Admin</div>
+    <div class="login-sub">Yönetici girisi gerekli</div>
+    <div class="form-group">
+      <label class="form-label">Admin Sifresi</label>
+      <input type="password" class="form-input" id="admin-pass-input" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') doAdminLogin()">
+    </div>
+    <div id="login-err" class="err" style="display:none"></div>
+    <button class="btn" style="width:100%;margin-top:.5rem" onclick="doAdminLogin()">Giris Yap</button>
+  </div>
+</div>
+
+<!-- ── Admin ──────────────────────────────────────────────── -->
+<div id="admin-screen">
+  <div class="topbar">
+    <div class="topbar-brand">SuSayar Admin</div>
+    <div class="topbar-right">
+      <span style="font-size:.78rem;color:var(--muted)">Yonetici Paneli</span>
+      <button class="btn-ghost" onclick="doAdminLogout()">Cikis</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('users')">Kullanicilar</button>
+      <button class="tab-btn" onclick="switchTab('devices')">Cihazlar</button>
+      <button class="tab-btn" onclick="switchTab('add-device')">Cihaz Ekle</button>
+    </div>
+
+    <!-- TAB: KULLANICILAR -->
+    <div id="tab-users">
+      <div class="card">
+        <div class="card-title">Kayitli Kullanicilar</div>
+        <div id="users-table-wrap"><div class="empty">Yukleniyor...</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: CIHAZLAR -->
+    <div id="tab-devices" style="display:none">
+      <div class="card">
+        <div class="card-title">Tum Cihazlar</div>
+        <div id="devices-table-wrap"><div class="empty">Yukleniyor...</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: CİHAZ EKLE -->
+    <div id="tab-add-device" style="display:none">
+      <div class="card" style="max-width:520px">
+        <div class="card-title">Musteri Icin Cihaz Ekle</div>
+        <div class="form-group">
+          <label class="form-label">Kullanici</label>
+          <select class="form-select" id="add-user-select">
+            <option value="">-- Kullanici secin --</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Cihaz Adi</label>
+            <input type="text" class="form-input" id="add-device-name" placeholder="Örn: Mutfak Sayaci">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Device ID (ESP32)</label>
+            <input type="text" class="form-input" id="add-device-id" placeholder="susayar-001">
+          </div>
+        </div>
+        <div id="add-device-msg"></div>
+        <div style="margin-top:.5rem">
+          <button class="btn" onclick="doAddDevice()">Cihaz Ekle</button>
+        </div>
+        <div id="add-device-result" style="margin-top:1.25rem;display:none">
+          <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:1rem">
+            <div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.75rem">Cihaz basariyla eklendi</div>
+            <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.8rem">
+              <div><span style="color:var(--muted)">Device ID: </span><span class="api-key" id="result-device-id"></span></div>
+              <div><span style="color:var(--muted)">API Key: </span><span class="api-key" id="result-api-key" style="font-weight:700;color:var(--text)"></span></div>
+            </div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.75rem">
+              Bu API key'i ESP32 firmware'ine yukleyin. Tekrar gosterilmeyecek.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+let adminSecret = '';
+
+// ── Auth ─────────────────────────────────────────────────────
+function doAdminLogin() {
+  const pass = document.getElementById('admin-pass-input').value.trim();
+  if (!pass) return;
+  adminSecret = pass;
+  // Test: kullanicilari cek
+  fetch(`${API}/api/admin/users`, { headers: { 'x-admin-secret': adminSecret } })
+    .then(r => {
+      if (!r.ok) throw new Error('Yanlis sifre');
+      return r.json();
+    })
+    .then(() => {
+      sessionStorage.setItem('admin_secret', adminSecret);
+      showAdmin();
+    })
+    .catch(e => {
+      const el = document.getElementById('login-err');
+      el.textContent = e.message;
+      el.style.display = 'block';
+    });
+}
+
+function doAdminLogout() {
+  sessionStorage.removeItem('admin_secret');
+  adminSecret = '';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  loadUsers();
+  loadDevices();
+}
+
+// Oturum devam
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('admin_secret');
+  if (saved) { adminSecret = saved; showAdmin(); }
+});
+
+// ── Tabs ─────────────────────────────────────────────────────
+function switchTab(name) {
+  ['users','devices','add-device'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['users','devices','add-device'][i] === name);
+  });
+  if (name === 'add-device') populateUserSelect();
+}
+
+// ── Kullanicilar ─────────────────────────────────────────────
+let allUsers = [];
+
+async function loadUsers() {
+  const wrap = document.getElementById('users-table-wrap');
+  try {
+    const r = await fetch(`${API}/api/admin/users`, { headers: { 'x-admin-secret': adminSecret } });
+    allUsers = await r.json();
+    if (!allUsers.length) { wrap.innerHTML = '<div class="empty">Henuz kullanici yok</div>'; return; }
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>Ad</th><th>E-posta</th><th>Plan</th><th>Kayit Tarihi</th><th>Plan Degistir</th>
+      </tr></thead>
+      <tbody>
+        ${allUsers.map(u => `<tr>
+          <td style="font-weight:600">${esc(u.name)}</td>
+          <td style="color:var(--muted)">${esc(u.email)}</td>
+          <td><span class="badge badge-${u.plan || 'starter'}">${u.plan || 'starter'}</span></td>
+          <td style="color:var(--muted2);font-size:.75rem">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
+          <td>
+            <select class="form-select" style="width:auto;padding:.3rem .6rem;font-size:.75rem"
+              onchange="changePlan('${u.id}', this.value)">
+              <option value="">-- Degistir --</option>
+              <option value="starter" ${u.plan==='starter'?'selected':''}>Baslangic</option>
+              <option value="pro" ${u.plan==='pro'?'selected':''}>Pro</option>
+              <option value="family" ${u.plan==='family'?'selected':''}>Aile</option>
+            </select>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty" style="color:var(--red)">Hata: ${e.message}</div>`;
+  }
+}
+
+async function changePlan(userId, plan) {
+  if (!plan) return;
+  const r = await fetch(`${API}/api/admin/users/${userId}/plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+    body: JSON.stringify({ plan }),
+  });
+  if (r.ok) { toast('Plan guncellendi: ' + plan); loadUsers(); }
+  else toast('Hata olustu');
+}
+
+// ── Cihazlar ─────────────────────────────────────────────────
+async function loadDevices() {
+  const wrap = document.getElementById('devices-table-wrap');
+  try {
+    const r = await fetch(`${API}/api/admin/devices`, { headers: { 'x-admin-secret': adminSecret } });
+    const devs = await r.json();
+    if (!devs.length) { wrap.innerHTML = '<div class="empty">Henuz cihaz yok</div>'; return; }
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>Cihaz Adi</th><th>Device ID</th><th>API Key</th><th>Kullanici</th><th>Son Baglanti</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${devs.map(d => `<tr>
+          <td style="font-weight:600">${esc(d.name)}</td>
+          <td><span class="api-key">${esc(d.device_id)}</span></td>
+          <td><span class="api-key">${esc(d.api_key)}</span></td>
+          <td>
+            <div style="font-size:.8rem">${esc(d.user_name)}</div>
+            <div style="font-size:.72rem;color:var(--muted)">${esc(d.user_email)}</div>
+          </td>
+          <td style="font-size:.75rem;color:var(--muted2)">${d.last_seen ? new Date(d.last_seen).toLocaleDateString('tr-TR') : 'Hic'}</td>
+          <td>
+            <button class="btn-ghost btn-red" style="font-size:.72rem;padding:.3rem .6rem;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)"
+              onclick="deleteDevice('${d.id}')">Sil</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty" style="color:var(--red)">Hata: ${e.message}</div>`;
+  }
+}
+
+async function deleteDevice(id) {
+  if (!confirm('Bu cihazi silmek istediginizden emin misiniz?')) return;
+  const r = await fetch(`${API}/api/admin/devices/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-secret': adminSecret },
+  });
+  if (r.ok) { toast('Cihaz silindi'); loadDevices(); }
+  else toast('Hata olustu');
+}
+
+// ── Cihaz Ekle ───────────────────────────────────────────────
+function populateUserSelect() {
+  const sel = document.getElementById('add-user-select');
+  sel.innerHTML = '<option value="">-- Kullanici secin --</option>' +
+    allUsers.map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
+}
+
+async function doAddDevice() {
+  const user_id   = document.getElementById('add-user-select').value;
+  const name      = document.getElementById('add-device-name').value.trim();
+  const device_id = document.getElementById('add-device-id').value.trim();
+  const msgEl     = document.getElementById('add-device-msg');
+  const resEl     = document.getElementById('add-device-result');
+
+  if (!user_id || !name || !device_id) {
+    msgEl.innerHTML = '<div class="err">Tum alanlari doldurun</div>';
+    return;
+  }
+
+  msgEl.innerHTML = '';
+  resEl.style.display = 'none';
+
+  const r = await fetch(`${API}/api/admin/devices`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+    body: JSON.stringify({ user_id, name, device_id }),
+  });
+  const data = await r.json();
+
+  if (!r.ok) {
+    msgEl.innerHTML = `<div class="err">${esc(data.error || 'Hata olustu')}</div>`;
+    return;
+  }
+
+  document.getElementById('result-device-id').textContent = data.device.device_id;
+  document.getElementById('result-api-key').textContent   = data.device.api_key;
+  resEl.style.display = 'block';
+
+  // Formu temizle
+  document.getElementById('add-device-name').value = '';
+  document.getElementById('add-device-id').value   = '';
+
+  toast('Cihaz eklendi!');
+  loadDevices();
+}
+
+// ── Yardimcilar ──────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
