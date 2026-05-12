@@ -485,15 +485,18 @@ nav {
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Su<em>Sayar</em></div>
+  <a class="nav-logo" href="/" style="display:flex;align-items:center;gap:.45rem;text-decoration:none">
+    <img src="/logo.svg" alt="" width="26" height="26" style="display:block">
+    Su<em>Sayar</em>
+  </a>
   <div class="nav-links">
     <a href="#nasil-calisir">Nasıl Çalışır</a>
     <a href="#ozellikler">Özellikler</a>
     <a href="#fiyatlar">Fiyatlar</a>
   </div>
   <div class="nav-ctas">
-    <button class="btn btn-ghost" onclick="window.open('susayar-dashboard.html')">Demo</button>
-    <button class="btn btn-primary">Erken Erişim</button>
+    <a class="btn btn-ghost" href="/susayar-auth.html">Giriş Yap</a>
+    <a class="btn btn-primary" href="/susayar-auth.html">Kayıt Ol</a>
   </div>
 </nav>
 
@@ -514,9 +517,9 @@ nav {
       gerçek zamanlı izler. Sistem sizi tanıdığında yanlış alarm kalmaz.
     </p>
     <div class="hero-btns">
-      <button class="btn btn-primary btn-xl" onclick="window.open('susayar-dashboard.html')">
-        Canlı Demo &rarr;
-      </button>
+      <a class="btn btn-primary btn-xl" href="/susayar-auth.html">
+        Kayıt Ol &rarr;
+      </a>
       <button class="btn btn-ghost btn-lg">Nasıl Çalışır</button>
     </div>
     <div class="hero-proof">
@@ -802,7 +805,7 @@ nav {
       <span class="tag tag-blue">&#x1F9E0; 11 öğrenilebilir kural</span>
       <span class="tag tag-amber">&#x23F3; 7 günde kalibrasyon</span>
     </div>
-    <button class="btn btn-primary btn-lg" onclick="window.open('susayar-dashboard.html')">Öğrenme Sistemini Göster</button>
+    <a class="btn btn-primary btn-lg" href="/susayar-auth.html">Kayıt Ol &rarr;</a>
   </div>
   <div>
     <div class="learn-card">
@@ -962,10 +965,10 @@ nav {
 <div class="cta-section">
   <div class="cta-box">
     <h2>Sonraki su faturanizi siz kontrol edin</h2>
-    <p>Demo'yu iki dakikada test edin. Kaçak varsa, görmek için fatura beklemenize gerek yok.</p>
+    <p>Hesap oluşturun, cihazınızı bağlayın. Kaçak varsa, görmek için fatura beklemenize gerek yok.</p>
     <div class="cta-btns">
-      <button class="btn btn-white btn-xl" onclick="window.open('susayar-dashboard.html')">&#x1F4CA; Canlı Demo</button>
-      <button class="btn btn-outline-white btn-xl">Erken Erişim Listesi</button>
+      <a class="btn btn-white btn-xl" href="/susayar-auth.html">Kayıt Ol</a>
+      <a class="btn btn-outline-white btn-xl" href="/susayar-auth.html">Giriş Yap</a>
     </div>
     <div class="cta-note">Kurulum 30 dakika &nbsp;·&nbsp; Kredi kartı gerekmez &nbsp;·&nbsp; İptal istediğinizde</div>
   </div>
@@ -976,7 +979,7 @@ nav {
   <div class="footer-wrap">
     <div class="footer-logo">Su<em>Sayar</em></div>
     <div class="footer-links">
-      <a href="susayar-dashboard.html">Dashboard Demo</a>
+      <a href="/susayar-auth.html">Giriş / Kayıt</a>
       <a href="#nasil-calisir">Nasıl Çalışır</a>
       <a href="#fiyatlar">Fiyatlar</a>
     </div>
