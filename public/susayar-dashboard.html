@@ -839,7 +839,7 @@
       </div>
       <button class="btn-sm" id="btn-cihaz-bagla" onclick="openCihazBaglaModal()"
         style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;font-weight:600">
-        &#x1F50C; Cihaz Bağla
+        &#x1F4E1; Cihazlarım
       </button>
       <div style="display:flex;align-items:center;gap:.5rem;border-left:1px solid rgba(255,255,255,.08);padding-left:.875rem;margin-left:.125rem">
         <span style="font-size:.78rem;color:#94a3b8;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-display-name">Kullanıcı</span>
@@ -2271,67 +2271,21 @@ function openCihazBaglaModal() {
       <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
         <span style="font-size:1.5rem">📡</span>
         <div>
-          <div style="font-size:1rem;font-weight:700;color:#e2e8f0">Cihaz Yönetimi</div>
-          <div style="font-size:.75rem;color:#64748b;margin-top:.1rem">ESP32 cihazlarını kaydet ve API anahtarı al</div>
+          <div style="font-size:1rem;font-weight:700;color:#e2e8f0">Cihazlarım</div>
+          <div style="font-size:.75rem;color:#64748b;margin-top:.1rem">Hesabınıza kayıtlı cihazlar</div>
         </div>
         <button onclick="document.getElementById('cihaz-modal-overlay').remove()"
           style="margin-left:auto;background:transparent;border:none;color:#64748b;font-size:1.2rem;cursor:pointer">✕</button>
       </div>
 
-      <!-- Sunucu URL -->
-      <div style="margin-bottom:1.25rem">
-        <label style="font-size:.75rem;font-weight:600;color:#94a3b8;display:block;margin-bottom:.4rem">
-          Backend URL (Dashboard → WS bağlantısı için)
-        </label>
-        <div style="display:flex;gap:.5rem">
-          <input id="api-base-input" type="text"
-            value="${API}"
-            placeholder="http://localhost:3001"
-            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.15);
-                   border-radius:8px;padding:.6rem .85rem;color:#e2e8f0;font-size:.82rem;
-                   outline:none;font-family:monospace"
-          />
-          <button onclick="
-            const base = document.getElementById('api-base-input').value.trim().replace(/\\/$/,'');
-            localStorage.setItem('susayar_api_base', base);
-            const wsUrl = base.replace('https://','wss://').replace('http://','ws://') + '/ws';
-            localStorage.setItem('susayar_ws_url', wsUrl);
-            document.getElementById('cihaz-modal-overlay').remove();
-            connectRealBackend(wsUrl);
-          " style="background:#3b82f6;border:none;color:white;padding:.6rem 1rem;
-                   border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">
-            Bağlan
-          </button>
-        </div>
-        <div style="font-size:.72rem;color:#475569;margin-top:.35rem">
-          Cloud: <code style="color:#4ade80">https://susayar-backend.onrender.com</code> &nbsp;|&nbsp;
-          Yerel: <code style="color:#4ade80">http://localhost:3001</code>
-        </div>
-      </div>
-
-      <hr style="border:none;border-top:1px solid rgba(255,255,255,.07);margin:1.25rem 0">
-
-      <!-- Yeni cihaz ekle -->
-      <div style="margin-bottom:1rem">
-        <div style="font-size:.82rem;font-weight:600;color:#e2e8f0;margin-bottom:.75rem">+ Yeni ESP32 Cihazı Ekle</div>
-        <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
-          <input id="new-dev-name" type="text" placeholder="Cihaz adı (örn: Mutfak)"
-            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.12);border-radius:8px;
-                   padding:.55rem .8rem;color:#e2e8f0;font-size:.82rem;outline:none"/>
-          <input id="new-dev-id" type="text" placeholder="device_id (örn: susayar-001)"
-            style="flex:1;background:#0e1220;border:1px solid rgba(255,255,255,.12);border-radius:8px;
-                   padding:.55rem .8rem;color:#e2e8f0;font-size:.82rem;outline:none;font-family:monospace"/>
-          <button id="btn-add-device" onclick="addDeviceFromModal()"
-            style="background:#10b981;border:none;color:white;padding:.55rem .9rem;
-                   border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">
-            Ekle
-          </button>
-        </div>
-        <div id="dev-add-error" style="font-size:.75rem;color:#f87171;display:none"></div>
-      </div>
-
       <!-- Cihaz listesi -->
       <div id="device-list-area" style="font-size:.8rem;color:#64748b">Yükleniyor…</div>
+
+      <div style="margin-top:1.25rem;padding:.85rem 1rem;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:10px;font-size:.78rem;color:#94a3b8;line-height:1.6">
+        📍 Yeni cihaz kurulumu için bize ulaşın — ekibimiz gelir, kurar.<br>
+        <a href="mailto:destek@susayar.com" style="color:#60a5fa;text-decoration:none">destek@susayar.com</a>
+        &nbsp;·&nbsp; Şu an yalnızca <strong style="color:#e2e8f0">İstanbul</strong>'da hizmet veriyoruz.
+      </div>
     </div>
   `;
   document.body.appendChild(modal);
