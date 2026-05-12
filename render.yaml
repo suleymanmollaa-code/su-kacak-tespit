@@ -2,27 +2,27 @@ services:
   - type: web
     name: susayar-backend
     env: node
-    region: frankfurt  # Avrupa — TR'ye yakın
+    region: frankfurt
     plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /api/health
-
-    # Kalıcı disk — SQLite dosyası burada saklanır
-    disk:
-      name: susayar-data
-      mountPath: /var/data
-      sizeGB: 1
-
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-      - key: DB_PATH
-        value: /var/data/susayar.db
       - key: JWT_SECRET
-        generateValue: true   # Render otomatik güvenli değer üretir
+        generateValue: true
       - key: CORS_ORIGINS
-        value: "*"            # Domain aldıktan sonra değiştirin
+        value: "*"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: susayar-db
+          property: connectionString
+
+databases:
+  - name: susayar-db
+    plan: free
+    region: frankfurt
