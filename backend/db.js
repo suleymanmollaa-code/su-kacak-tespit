@@ -142,8 +142,10 @@ async function queryRun(sql, params = []) {
 async function initSchema() {
   if (isPg) {
     await _pool.query(SCHEMA_PG);
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'starter'`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
+    try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
   }
 }
 

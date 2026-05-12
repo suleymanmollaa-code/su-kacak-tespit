@@ -197,6 +197,62 @@ app.get('/api/stats', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Stripe ────────────────────────────────────────────────────
+const STRIPE_SK      = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WH      = process.env.STRIPE_WEBHOOK_SECRET;
+const STRIPE_SUCCESS = process.env.STRIPE_SUCCESS_URL || 'https://susayar.com/susayar-dashboard.html?upgraded=1';
+const STRIPE_CANCEL  = process.env.STRIPE_CANCEL_URL  || 'https://susayar.com/susayar-dashboard.html';
+
+const PLANS = {
+  pro:    { name: 'SuSayar Pro',   amount: 9900,  label: 'pro' },
+  family: { name: 'SuSayar Aile',  amount: 19900, label: 'family' },
+};
+
+app.post('/api/stripe/checkout', requireAuth, async (req, res) => {
+  if (!STRIPE_SK) return res.status(503).json({ error: 'Stripe henüz yapılandırılmamış' });
+  const stripe = require('stripe')(STRIPE_SK);
+  const { plan } = req.body;
+  if (!PLANS[plan]) return res.status(400).json({ error: 'Geçersiz plan' });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: req.user.email,
+      metadata: { user_id: req.user.id, plan },
+      line_items: [{
+        price_data: {
+          currency: 'try',
+          product_data: { name: PLANS[plan].name },
+          unit_amount: PLANS[plan].amount,
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }],
+      success_url: STRIPE_SUCCESS,
+      cancel_url:  STRIPE_CANCEL,
+    });
+    res.json({ url: session.url });
+  } catch (e) { console.error('[STRIPE]', e.message); res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!STRIPE_SK || !STRIPE_WH) return res.sendStatus(400);
+  const stripe = require('stripe')(STRIPE_SK);
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], STRIPE_WH);
+  } catch (e) { console.error('[STRIPE WEBHOOK]', e.message); return res.sendStatus(400); }
+
+  if (event.type === 'checkout.session.completed') {
+    const { user_id, plan } = event.data.object.metadata || {};
+    if (user_id && plan) {
+      await db.queryRun(`UPDATE users SET plan=$1 WHERE id=$2`, [plan, user_id]);
+      console.log(`[STRIPE] Plan güncellendi: ${user_id} → ${plan}`);
+    }
+  }
+  res.sendStatus(200);
+});
+
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', uptime_s: Math.floor(process.uptime()),
   clients: wss.clients.size, db: db.isPg ? 'postgresql' : 'sqlite',

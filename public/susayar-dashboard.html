@@ -796,25 +796,16 @@
     <span class="nav-icon">&#x1F4C8;</span><span class="nav-label">Aylık Analiz</span>
   </div>
 
-  <div class="nav-section">Uyarılar</div>
-  <div class="nav-item" data-page="anomaliler" data-title="Anomaliler">
-    <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Anomaliler</span><span class="nav-badge" id="anomali-badge">7</span>
-  </div>
-  <div class="nav-item" data-page="ogrenme" data-title="Sistem Öğreniyor">
-    <span class="nav-icon">&#x1F9E0;</span><span class="nav-label">Sistem Öğreniyor</span><span class="nav-badge" style="background:var(--blue)">YEN</span>
-  </div>
+  <div class="nav-section">Bildirimler</div>
   <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
     <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
   </div>
 
   <div class="nav-section">Ayarlar</div>
-  <div class="nav-item" data-page="kullanicilar" data-title="Kullanıcılar">
-    <span class="nav-icon">&#x1F465;</span><span class="nav-label">Kullanıcılar</span>
-  </div>
   <div class="nav-item" data-page="cihaz-ayarlari" data-title="Cihaz Ayarları">
     <span class="nav-icon">&#x2699;&#xFE0F;</span><span class="nav-label">Cihaz Ayarları</span>
   </div>
-  <div class="nav-item" data-page="coming-soon" data-title="Abonelik">
+  <div class="nav-item" data-page="abonelik" data-title="Abonelik">
     <span class="nav-icon">&#x1F4B3;</span><span class="nav-label">Abonelik</span>
   </div>
 
@@ -828,8 +819,6 @@
     </div>
     <div style="margin-top:.85rem;padding-top:.75rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.2rem">
       <a href="susayar-landing.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem">&#x2190; Ana Sayfa</a>
-      <a href="susayar-esp32.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem;text-decoration:none">&#x1F527; ESP32 Kurulum</a>
-      <a href="susayar-sema.html" class="nav-item" style="padding:.45rem .2rem;border-left:none;font-size:.76rem;text-decoration:none">&#x1F4CD; Bağlantı Şeması</a>
     </div>
   </div>
 </aside>
@@ -848,12 +837,10 @@
         <span class="status-dot" id="status-dot"></span>
         <span class="status-text" id="status-text">Cihaz Bağlı</span>
       </div>
-      <button class="btn-sm btn-ghost" id="btn-rapor">&#x1F4E4; Rapor İndir</button>
       <button class="btn-sm" id="btn-cihaz-bagla" onclick="openCihazBaglaModal()"
         style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;font-weight:600">
         &#x1F50C; Cihaz Bağla
       </button>
-      <button class="btn-sm btn-primary" id="btn-kullanici-ekle">+ Kullanıcı Ekle</button>
       <div style="display:flex;align-items:center;gap:.5rem;border-left:1px solid rgba(255,255,255,.08);padding-left:.875rem;margin-left:.125rem">
         <span style="font-size:.78rem;color:#94a3b8;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-display-name">Kullanıcı</span>
         <button class="btn-sm" onclick="doLogout()" title="Çıkış Yap"
@@ -881,17 +868,6 @@
           <button class="btn-sm" style="background:var(--green);color:#000;flex-shrink:0" onclick="deactivateTatilModu()">Eve Döndük</button>
         </div>
       </div>
-      <!-- KALİBRASYON BANNER -->
-      <div class="kalibrасyon-banner" id="kalib-banner">
-        <div style="font-size:1.6rem">&#x1F9E0;</div>
-        <div class="kalib-progress">
-          <div class="kalib-title">Sistem Hâlâ Öğreniyor — 3/7 Gün Tamamlandı</div>
-          <div class="kalib-sub">Anomalilere geri bildirim verdikçe sistem kullanım profilinizi öğrenir ve yanlış uyarıları azaltır.</div>
-          <div class="kalib-bar"><div class="kalib-bar-fill" id="kalib-fill"></div></div>
-        </div>
-        <button class="btn-sm btn-ghost" style="flex-shrink:0" onclick="document.getElementById('kalib-banner').style.display='none'">Kapat</button>
-      </div>
-
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-label">&#x1F4A7; Anlık Akış</div>
@@ -912,10 +888,10 @@
           <div class="kpi-bar"><div class="kpi-bar-fill" style="width:70%;background:var(--yellow)"></div></div>
         </div>
         <div class="kpi">
-          <div class="kpi-label">&#x1F6A8; Aktif Anomali</div>
-          <div class="kpi-value red" id="kpi-anomali">7</div>
-          <div class="kpi-change">Son: <span style="color:var(--red)">Gece akışı</span> tespit edildi</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:100%;background:var(--red)"></div></div>
+          <div class="kpi-label">&#x1F4E1; Bağlı Cihaz</div>
+          <div class="kpi-value" style="color:var(--cyan)" id="kpi-devices">—</div>
+          <div class="kpi-change" id="kpi-devices-sub">Cihaz yok</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-devices-bar" style="width:0%;background:var(--cyan)"></div></div>
         </div>
       </div>
 
@@ -1007,60 +983,13 @@
         <div class="card">
           <div class="card-head">
             <div>
-              <div class="card-title">Anomali Uyarıları</div>
-              <div class="card-sub">Tespit edilen anormal durumlar</div>
+              <div class="card-title">Son Ölçümler</div>
+              <div class="card-sub">Cihazdan gelen son veriler</div>
             </div>
-            <span class="chip chip-red" id="anomali-dash-badge">7 Aktif</span>
+            <span class="chip chip-blue" id="last-reading-time">—</span>
           </div>
-          <div class="anomali-list">
-            <div class="anomali-item red-bg">
-              <div class="anomali-icon">&#x1F319;</div>
-              <div style="flex:1">
-                <div class="anomali-title">Gece Akışı Tespit Edildi</div>
-                <div class="anomali-desc">02:14–02:47 arası 8,3 litre akış ölçüldü.</div>
-                <div class="anomali-time">Bu gece · 02:47</div>
-                <div class="anomali-feedback">
-                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                  <button class="fb-btn fb-no" onclick="fbNo(this, 'gece-akis', '02:00–03:00')">Normaldi, öğren</button>
-                </div>
-              </div>
-              <div style="flex-shrink:0">
-                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
-              </div>
-            </div>
-            <div class="anomali-item yellow-bg">
-              <div class="anomali-icon">&#x1F4C8;</div>
-              <div style="flex:1">
-                <div class="anomali-title">Normalin %40 Üzerinde Tüketim</div>
-                <div class="anomali-desc">Cumartesi günü 312 litre tüketildi.</div>
-                <div class="anomali-time">Dün · 23:59</div>
-                <div class="anomali-feedback">
-                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                  <button class="fb-btn fb-no" onclick="fbNo(this, 'yuksek-tuketim', 'Cumartesi yüksek tüketim')">Normaldi, öğren</button>
-                </div>
-              </div>
-              <div style="flex-shrink:0">
-                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
-              </div>
-            </div>
-            <div class="anomali-item blue-bg">
-              <div class="anomali-icon">&#x23F1;&#xFE0F;</div>
-              <div style="flex:1">
-                <div class="anomali-title">Uzun Süreli Kesintisiz Akış</div>
-                <div class="anomali-desc">Perşembe 47 dakika kesintisiz 1,8 L/dk akış.</div>
-                <div class="anomali-time">3 gün önce · 14:23</div>
-                <div class="anomali-feedback">
-                  <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                  <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                  <button class="fb-btn fb-no" onclick="fbNo(this, 'uzun-akis', '30+ dk akış normal')">Normaldi, öğren</button>
-                </div>
-              </div>
-              <div style="flex-shrink:0">
-                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="2">İncele</button>
-              </div>
-            </div>
+          <div id="son-olcumler-list" style="display:flex;flex-direction:column;gap:.5rem;padding:.25rem 0">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>
           </div>
         </div>
 
@@ -1089,7 +1018,6 @@
                 <div class="ml"><span class="chip chip-yellow">İzleyici</span></div>
               </div>
             </div>
-            <button class="add-btn" id="add-btn-inline">+ Kullanıcı Ekle</button>
           </div>
 
           <div class="card">
@@ -1188,416 +1116,55 @@
       </div>
     </div><!-- /page-anlik-akis -->
 
-    <!-- PAGE: ANOMALILER -->
-    <div class="page" id="page-anomaliler">
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <div class="card-title">Tüm Anomaliler</div>
-            <div class="card-sub">Simüle edilmiş senaryolar — gerçek veride böyle görünür</div>
-          </div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3);border-radius:4px;padding:.2rem .55rem;font-weight:700">SIMÜLASYON</span>
-            <span class="chip chip-red" id="anomali-page-badge">7 Aktif</span>
-          </div>
+    <!-- PAGE: ABONELİK -->
+    <div class="page" id="page-abonelik">
+      <div style="max-width:700px;margin:0 auto">
+        <div class="section-header" style="text-align:left;margin-bottom:2rem">
+          <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;color:var(--blue);text-transform:uppercase;margin-bottom:.5rem">Abonelik</div>
+          <h2 style="font-size:1.4rem;font-weight:800;color:var(--text)">Planınızı seçin</h2>
+          <p style="font-size:.85rem;color:var(--muted);margin-top:.4rem">Mevcut plan: <strong style="color:var(--text)" id="current-plan-label">Başlangıç (Ücretsiz)</strong></p>
         </div>
-        <div class="anomali-filter">
-          <button class="filter-btn active" data-filter="all">Tümü</button>
-          <button class="filter-btn" data-filter="red">Kritik</button>
-          <button class="filter-btn" data-filter="yellow">Uyarı</button>
-          <button class="filter-btn" data-filter="blue">Bilgi</button>
-          <button class="filter-btn" data-filter="resolved">Çözüldü</button>
-        </div>
-
-        <div id="anomali-full-list">
-
-          <!-- 1: GECE AKISI -->
-          <div class="anomali-rich red-bg" data-type="red" data-id="0">
-            <div class="ar-head">
-              <div class="ar-icon">&#x1F319;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Gece Akışı Tespit Edildi</span>
-                  <span class="ar-sev sev-red">KRİTİK</span>
-                </div>
-                <div class="ar-desc">Gece 02:14–02:47 arasında düşük ama sürekli bir akış ölçüldü. Ev sakinlerinin uyku saatinde su kullanımı anormal — gizli bir kaçak veya damlama söz konusu olabilir.</div>
-                <div class="ar-time">Bugün · 02:47 · Tetikleyen kural: <em>Gece Akışı (00:00–06:00)</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">8.3 L</div><div class="ar-metric-lbl">Toplam</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">33 dk</div><div class="ar-metric-lbl">Süre</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,25 L/dk</div><div class="ar-metric-lbl">Ort. Debi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--muted)">02:14</div><div class="ar-metric-lbl">Başlangıç</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div><div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div>
-              <div class="ar-spark-bar" style="height:20%;background:rgba(239,68,68,.5)"></div><div class="ar-spark-bar" style="height:25%;background:rgba(239,68,68,.6)"></div>
-              <div class="ar-spark-bar" style="height:22%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:24%;background:rgba(239,68,68,.6)"></div>
-              <div class="ar-spark-bar" style="height:23%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:25%;background:rgba(239,68,68,.6)"></div>
-              <div class="ar-spark-bar" style="height:22%;background:rgba(239,68,68,.6)"></div><div class="ar-spark-bar" style="height:24%;background:rgba(239,68,68,.6)"></div>
-              <div class="ar-spark-bar" style="height:20%;background:rgba(239,68,68,.5)"></div><div class="ar-spark-bar" style="height:5%;background:rgba(239,68,68,.3)"></div>
-            </div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-0">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'gece-akis')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem">
+          <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:.75rem">Başlangıç</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">Ücretsiz</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Sonsuza kadar</div>
+            <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
+              <li>✓ Gerçek zamanlı izleme</li>
+              <li>✓ 1 cihaz</li>
+              <li>✓ 30 günlük geçmiş</li>
+            </ul>
+            <div style="font-size:.75rem;text-align:center;color:var(--muted);padding:.6rem;background:rgba(255,255,255,.04);border-radius:.5rem">Mevcut Plan</div>
           </div>
-
-          <!-- 2: TEKRARLAYAN GECE AKISLARI -->
-          <div class="anomali-rich red-bg" data-type="red" data-id="3">
-            <div class="ar-head">
-              <div class="ar-icon">&#x1F504;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Tekrarlayan Gece Akışları — Sifon Kaçağı?</span>
-                  <span class="ar-sev sev-red">KRİTİK</span>
-                </div>
-                <div class="ar-desc">Gece 03:15, 03:42 ve 04:11'de 3 kez kısa süreli akış tespit edildi. Düzensiz aralıkta tekrarlayan kısa akışlar tuvalet sifon kaçağının klasik imzasıdır.</div>
-                <div class="ar-time">Dün gece · 3 tekrar · Tetikleyen kural: <em>Gece Akışı</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">2.1 L</div><div class="ar-metric-lbl">Toplam</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">3x</div><div class="ar-metric-lbl">Tekrar</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,7 L/dk</div><div class="ar-metric-lbl">Ort. Debi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--muted)">~27 dk</div><div class="ar-metric-lbl">Aralık</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:60%;background:rgba(239,68,68,.7)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:55%;background:rgba(239,68,68,.7)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:58%;background:rgba(239,68,68,.7)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(239,68,68,.2)"></div>
-            </div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-3">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'gece-akis')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
+          <div class="card" style="border:1px solid rgba(59,130,246,.4);padding:1.5rem;position:relative">
+            <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;white-space:nowrap">EN POPÜLER</div>
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--blue);text-transform:uppercase;margin-bottom:.75rem">Pro</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">99 <span style="font-size:.9rem">TL/ay</span></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Yıllık: 79 TL/ay</div>
+            <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
+              <li>✓ 5 cihaza kadar</li>
+              <li>✓ 1 yıllık veri geçmişi</li>
+              <li>✓ Öncelikli bildirimler</li>
+            </ul>
+            <button class="btn-sm btn-primary" style="width:100%;justify-content:center" onclick="startCheckout('pro')">Pro'ya Geç</button>
           </div>
-
-          <!-- 3: DAMLAMA -->
-          <div class="anomali-rich red-bg" data-type="red" data-id="4">
-            <div class="ar-head">
-              <div class="ar-icon">&#x1F4A7;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Süresiz Düşük Debi — Damlama Şüphesi</span>
-                  <span class="ar-sev sev-red">KRİTİK</span>
-                </div>
-                <div class="ar-desc">Bu sabah 06:00'dan beri kesintisiz 0,06 L/dk akış var. Bu değer çok düşük olduğu için musluk açık hissedilmez; ancak gün boyunca ciddi su kaybı oluşturur. Bir yerde damlayan musluk veya boru kaçağı olabilir.</div>
-                <div class="ar-time">Bugün · 06:00'dan beri · Tetikleyen kural: <em>Süresiz Düşük Debi</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)" id="damlama-toplam">32.4 L</div><div class="ar-metric-lbl">Kayıp (artıyor)</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)" id="damlama-sure">9 saat</div><div class="ar-metric-lbl">Süre</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">0,06 L/dk</div><div class="ar-metric-lbl">Sabit Debi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">~1,75 m³/ay</div><div class="ar-metric-lbl">Aylık Projeksiyon</div></div>
-            </div>
-            <div class="ar-spark">
-              <!-- Düz sabit çizgi — damlatma imzası -->
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:11%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-              <div class="ar-spark-bar" style="height:12%;background:rgba(239,68,68,.5)"></div>
-            </div>
-            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Düz çizgi = sabit düşük debi = damlama imzası</div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-4">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'damlatma')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" data-anomali="0">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
+          <div class="card" style="border:1px solid var(--border2);padding:1.5rem">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:.75rem">Aile</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:.25rem">199 <span style="font-size:.9rem">TL/ay</span></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.25rem">Yıllık: 159 TL/ay</div>
+            <ul style="list-style:none;font-size:.8rem;color:var(--muted2);display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem">
+              <li>✓ Sınırsız cihaz</li>
+              <li>✓ Sınırsız veri geçmişi</li>
+              <li>✓ Öncelikli destek</li>
+            </ul>
+            <button class="btn-sm" style="width:100%;justify-content:center;background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)" onclick="startCheckout('family')">Aile Planına Geç</button>
           </div>
-
-          <!-- 4: ANİ ARTI -->
-          <div class="anomali-rich yellow-bg" data-type="yellow" data-id="5">
-            <div class="ar-head">
-              <div class="ar-icon">&#x26A1;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Ani Yüksek Debi Artışı</span>
-                  <span class="ar-sev sev-yellow">UYARI</span>
-                </div>
-                <div class="ar-desc">Bugün 14:35'te debi aniden 0'dan 4,8 L/dk'ya çıktı ve 2 dakika boyunca o seviyede kaldı. Bu tür ani artışlar boru patlaması, musluğun tam açılması veya basınç değişikliklerine işaret edebilir.</div>
-                <div class="ar-time">Bugün · 14:35 · Tetikleyen kural: <em>Ani Debi Artışı (4 L/dk üzeri)</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">4,8 L/dk</div><div class="ar-metric-lbl">Maks. Debi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">2 dk</div><div class="ar-metric-lbl">Süre</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">9,6 L</div><div class="ar-metric-lbl">Toplam</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--green)">Normal</div><div class="ar-metric-lbl">Öncesi/Sonrası</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:35%;background:rgba(245,158,11,.5)"></div>
-              <div class="ar-spark-bar" style="height:100%;background:rgba(245,158,11,.9)"></div>
-              <div class="ar-spark-bar" style="height:98%;background:rgba(245,158,11,.9)"></div>
-              <div class="ar-spark-bar" style="height:30%;background:rgba(245,158,11,.5)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(245,158,11,.3)"></div>
-            </div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-5">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'ani-artis')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5: YÜKSEK TÜKETİM -->
-          <div class="anomali-rich yellow-bg" data-type="yellow" data-id="1">
-            <div class="ar-head">
-              <div class="ar-icon">&#x1F4C8;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Normalin %40 Üzerinde Günlük Tüketim</span>
-                  <span class="ar-sev sev-yellow">UYARI</span>
-                </div>
-                <div class="ar-desc">Cumartesi günü toplam 312 litre tüketildi. Bu değer 7 günlük ortalama olan 213 L/gün'ün %46 üzerinde. Misafir, ev temizliği veya bahçe sulama olabilir; kaçak ihtimali düşük.</div>
-                <div class="ar-time">Dün · 23:59 · Tetikleyen kural: <em>Yüksek Günlük Tüketim (%40 eşiği)</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">312 L</div><div class="ar-metric-lbl">Cumartesi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--blue-lt)">213 L</div><div class="ar-metric-lbl">7-Gün Ort.</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">+46%</div><div class="ar-metric-lbl">Sapma</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">+99 L</div><div class="ar-metric-lbl">Fazla</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.4)"></div>
-              <div class="ar-spark-bar" style="height:72%;background:rgba(59,130,246,.4)"></div>
-              <div class="ar-spark-bar" style="height:48%;background:rgba(59,130,246,.4)"></div>
-              <div class="ar-spark-bar" style="height:88%;background:rgba(59,130,246,.4)"></div>
-              <div class="ar-spark-bar" style="height:65%;background:rgba(59,130,246,.4)"></div>
-              <div class="ar-spark-bar" style="height:100%;background:rgba(245,158,11,.8)"></div>
-              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
-              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
-              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
-              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
-              <div class="ar-spark-bar" style="height:0;background:transparent"></div>
-            </div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-1">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'yuksek-tuketim')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(245,158,11,.2);color:var(--yellow)" data-anomali="1">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6: UZUN AKIS -->
-          <div class="anomali-rich blue-bg" data-type="blue" data-id="2">
-            <div class="ar-head">
-              <div class="ar-icon">&#x23F1;&#xFE0F;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Uzun Süreli Kesintisiz Akış</span>
-                  <span class="ar-sev sev-blue">BİLGİ</span>
-                </div>
-                <div class="ar-desc">Perşembe 14:23–15:10 arasında 47 dakika boyunca kesintisiz 1,8 L/dk akış ölçüldü. Gündüz saatlerinde olduğu için kritik değil; ancak açık unutulan bir musluk veya bahçe hortumuyla giderilmiş olabilir.</div>
-                <div class="ar-time">3 gün önce · 14:23–15:10 · Tetikleyen kural: <em>Uzun Süreli Akış (30 dk eşiği)</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--blue-lt)">84.6 L</div><div class="ar-metric-lbl">Toplam</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--cyan)">47 dk</div><div class="ar-metric-lbl">Süre</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">1,8 L/dk</div><div class="ar-metric-lbl">Sabit Debi</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--green)">Gündüz</div><div class="ar-metric-lbl">Saat Aralığı</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:4%;background:rgba(59,130,246,.3)"></div>
-              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:61%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:61%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:60%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:62%;background:rgba(59,130,246,.7)"></div>
-              <div class="ar-spark-bar" style="height:30%;background:rgba(59,130,246,.5)"></div>
-              <div class="ar-spark-bar" style="height:4%;background:rgba(59,130,246,.3)"></div>
-            </div>
-            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Düz uzun çizgi = kesintisiz akış</div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-2">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'uzun-akis')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="2">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 7: AYLIK EĞİLİM -->
-          <div class="anomali-rich blue-bg" data-type="blue" data-id="6">
-            <div class="ar-head">
-              <div class="ar-icon">&#x1F4CA;</div>
-              <div class="ar-main">
-                <div class="ar-top">
-                  <span class="ar-title">Aylık Tüketim Eğilimi Yükseliyor</span>
-                  <span class="ar-sev sev-blue">BİLGİ</span>
-                </div>
-                <div class="ar-desc">Son 3 ayın verisi incelendiğinde tüketimde kademeli bir artış eğilimi görülmektedir. Bu tür yükselmeler çok küçük kaçakların birikmesiyle veya yeni bir kullanım alışkanlığıyla açıklanabilir. Ani bir olay değil, uzun vadeli trend.</div>
-                <div class="ar-time">Bu ay · Üç aylık trend analizi · Tetikleyen kural: <em>Yüksek Tüketim</em></div>
-              </div>
-            </div>
-            <div class="ar-metrics">
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">4.2 m³</div><div class="ar-metric-lbl">Bu Ay</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">3,5 m³</div><div class="ar-metric-lbl">Geçen Ay</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--text)">3,1 m³</div><div class="ar-metric-lbl">İki Ay Önce</div></div>
-              <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">+35%</div><div class="ar-metric-lbl">3 Aylık Artış</div></div>
-            </div>
-            <div class="ar-spark">
-              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
-              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
-              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
-              <div class="ar-spark-bar" style="height:55%;background:rgba(59,130,246,.5)"></div>
-              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
-              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
-              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
-              <div class="ar-spark-bar" style="height:66%;background:rgba(59,130,246,.6)"></div>
-              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
-              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
-              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
-              <div class="ar-spark-bar" style="height:80%;background:rgba(245,158,11,.7)"></div>
-            </div>
-            <div style="font-size:.7rem;color:var(--muted);font-style:italic">↑ Kademeli yükseliş = trend anomalisi</div>
-            <div class="ar-footer">
-              <div class="anomali-feedback" id="fb-6">
-                <span class="feedback-q">Bu gerçekten bir anomali miydi?</span>
-                <button class="fb-btn fb-yes" onclick="fbYes(this)">Evet, anomaliydi</button>
-                <button class="fb-btn fb-no" onclick="fbNo(this,'yuksek-tuketim')">Normaldi, öğren</button>
-              </div>
-              <div class="ar-actions">
-                <button class="incele-btn" style="background:rgba(59,130,246,.2);color:var(--blue-lt)" data-anomali="0">İncele</button>
-                <button class="incele-btn" style="background:rgba(16,185,129,.15);color:var(--green);font-size:.65rem" onclick="resolveAnomali(this)">Çözüldü</button>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /anomali-full-list -->
-
-        <!-- ÇÖZÜLMÜŞ -->
-        <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)" id="resolved-section">
-          <div style="font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Çözülmüş</div>
-          <div class="anomali-rich resolved">
-            <div class="ar-head">
-              <div class="ar-icon">&#x2705;</div>
-              <div class="ar-main">
-                <div class="ar-top"><span class="ar-title" style="text-decoration:line-through">Uzun Süreli Düşük Debi — Önceki Hafta</span></div>
-                <div class="ar-desc">Salı sabahı 4 saat boyunca 0,1 L/dk akış vardı. Mutfak musluğunun damlattığı tespit edilip tamir edildi.</div>
-                <div class="ar-time">8 gün önce · Kullanıcı tarafından çözüldü</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div><!-- /page-anomaliler -->
-
-    <!-- PAGE: KULLANICILAR -->
-    <div class="page" id="page-kullanicilar">
-      <div class="card">
-        <div class="user-full-header">
-          <div>
-            <div class="card-title" style="font-size:1rem">Kullanıcı Yönetimi</div>
-            <div class="card-sub">Bu hesaba erişim yetkisi olan kişiler</div>
-          </div>
-          <button class="btn-sm btn-primary" id="btn-kullanici-ekle-2">+ Kullanıcı Ekle</button>
-        </div>
-        <div class="user-list" id="user-list-full">
-          <div class="user-item" style="padding:1rem">
-            <div class="av" style="background:var(--blue);width:38px;height:38px;font-size:.85rem">AK</div>
-            <div style="flex:1">
-              <div class="un">Ahmet Kaya</div>
-              <div class="ur">ahmet@ornek.com · Hesap Sahibi</div>
-            </div>
-            <span class="chip chip-blue">Admin</span>
-          </div>
-          <div class="user-item" style="padding:1rem">
-            <div class="av" style="background:#8b5cf6;width:38px;height:38px;font-size:.85rem">ZK</div>
-            <div style="flex:1">
-              <div class="un">Zeynep Kaya</div>
-              <div class="ur">zeynep@ornek.com · Eş — Tam Erişim</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span class="chip chip-green">Aktif</span>
-              <button class="btn-sm btn-ghost" style="font-size:.68rem;padding:.25rem .55rem">Düzenle</button>
-            </div>
-          </div>
-          <div class="user-item" style="padding:1rem">
-            <div class="av" style="background:#ec4899;width:38px;height:38px;font-size:.85rem">FH</div>
-            <div style="flex:1">
-              <div class="un">Fatma Hanım (Anne)</div>
-              <div class="ur">fatma@ornek.com · Sadece Görüntüleme</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span class="chip chip-yellow">İzleyici</span>
-              <button class="btn-sm btn-ghost" style="font-size:.68rem;padding:.25rem .55rem">Düzenle</button>
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:1.5rem;padding:1rem;background:rgba(59,130,246,.05);border-radius:8px;border:1px dashed rgba(59,130,246,.2)">
-          <div style="font-size:.78rem;color:var(--muted)">&#x2139;&#xFE0F; Pro Plan ile en fazla <strong style="color:var(--text)">5 kullanıcı</strong> ekleyebilirsiniz. Şu an 3/5 kullanıyorsunuz.</div>
         </div>
       </div>
-    </div><!-- /page-kullanicilar -->
+    </div><!-- /page-abonelik -->
+
+
+
 
     <!-- PAGE: BİLDİRİMLER -->
     <div class="page" id="page-bildirimler">
@@ -1679,27 +1246,6 @@
       </div>
     </div><!-- /page-cihaz-ayarlari -->
 
-    <!-- PAGE: SİSTEM ÖĞRENİYOR -->
-    <div class="page" id="page-ogrenme">
-
-      <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--muted);line-height:1.6">
-        &#x1F9E0; <strong style="color:var(--text)">Her hane farklıdır.</strong>
-        Aşağıdaki anomali tiplerini kendinize göre ayarlayın — sistem bunlara göre uyarı gönderir ya da göndermez.
-        Anomali kartlarındaki geri bildirimler de bu toggle'ları otomatik günceller.
-      </div>
-
-      <div class="card" style="margin-bottom:1.5rem">
-        <div class="card-head">
-          <div>
-            <div class="card-title">Anomali Tipleri</div>
-            <div class="card-sub">Hangi durumlar sizin için anomali sayılsın?</div>
-          </div>
-        </div>
-
-        <div id="toggle-list"></div>
-      </div>
-
-    </div><!-- /page-ogrenme -->
 
     <!-- PAGE: COMING SOON -->
     <div class="page" id="page-coming-soon">
@@ -1991,62 +1537,6 @@ const anomaliTypes = [
   },
 ];
 
-function renderToggles() {
-  const list = document.getElementById('toggle-list');
-  if (!list) return;
-  list.innerHTML = '';
-  anomaliTypes.forEach(t => {
-    let thresholdHtml = '';
-    if (t.threshold.type === 'range') {
-      thresholdHtml = `<div class="toggle-threshold">
-        <label>${t.threshold.label}:</label>
-        <input type="time" value="${t.threshold.value}" onchange="updateThreshold('${t.key}','value',this.value)">
-        <span>—</span>
-        <input type="time" value="${t.threshold.value2}" onchange="updateThreshold('${t.key}','value2',this.value)">
-      </div>`;
-    } else if (t.threshold.type === 'single') {
-      thresholdHtml = `<div class="toggle-threshold">
-        <label>${t.threshold.label}:</label>
-        <input type="number" value="${t.threshold.value}" onchange="updateThreshold('${t.key}','value',this.value)">
-        <span>${t.threshold.unit}</span>
-      </div>`;
-    } else if (t.threshold.type === 'none') {
-      thresholdHtml = `<div class="toggle-threshold">
-        <span style="font-size:.7rem;color:var(--yellow);font-style:italic">&#x26A0;&#xFE0F; ${t.threshold.unit}</span>
-      </div>`;
-    }
-    const pausedInfo = t.pausedUntil
-      ? `<div class="paused-countdown" id="countdown-${t.key}">&#x23F0; Kalan süre hesaplanıyor...</div>` : '';
-
-    const row = document.createElement('div');
-    row.className = 'toggle-row' + (t.active ? '' : ' paused');
-    row.id = 'trow-' + t.key;
-    row.innerHTML = `
-      <div class="toggle-icon">${t.icon}</div>
-      <div class="toggle-info">
-        <div class="toggle-title">
-          ${t.title}
-          ${!t.active ? '<span class="paused-badge">ASKIDA</span>' : ''}
-        </div>
-        <div class="toggle-desc">${t.desc}</div>
-        ${thresholdHtml}
-        ${pausedInfo}
-      </div>
-      <div class="toggle-wrap">
-        <span class="state-badge ${t.active ? 'state-on' : 'state-off'}">${t.active ? '&#x1F6E1; Aktif' : '&#x23F8; Askıda'}</span>
-        ${t.key === 'tatil-modu'
-          ? t.active
-            ? `<button class="cfg-btn" style="border-color:rgba(16,185,129,.4);color:var(--green)" onclick="deactivateTatilModu()">Eve Döndük</button>`
-            : `<button class="cfg-btn" style="border-color:rgba(239,68,68,.4);color:var(--red)" onclick="openTatilModuModal()">Tatile Çık</button>`
-          : t.active
-            ? `<button class="cfg-btn" onclick="openPauseModal('${t.key}')">Askıya Al</button>`
-            : `<button class="cfg-btn re-enable" onclick="reEnable('${t.key}')">Tekrar Etkinleştir</button>`
-        }
-      </div>`;
-    list.appendChild(row);
-  });
-  updateCountdowns();
-}
 
 // Askıya alma — 3 adımlı akış
 let pauseTarget = null;
@@ -2219,17 +1709,7 @@ setInterval(() => {
   if (sEl) sEl.textContent = damlaSaat + ' saat';
 }, 5000);
 
-function updateThreshold(key, field, val) {
-  const t = anomaliTypes.find(x => x.key === key);
-  if (t) t.threshold[field] = val;
-}
 
-function updateKalibFill() {
-  const fill = document.getElementById('kalib-fill');
-  if (!fill) return;
-  const cur = parseFloat(fill.style.width) || 43;
-  fill.style.width = Math.min(cur + 7, 100) + '%';
-}
 
 // ============================
 // TATİL MODU
@@ -2303,77 +1783,6 @@ function confirmTatilModu() {
   tatilSimTimer = setTimeout(() => simulateTatilAkis(yetkili), 6000);
 }
 
-function simulateTatilAkis(yetkili) {
-  // Sayaclari artir
-  const kpiEl   = document.getElementById('kpi-anomali');
-  const badgeEl = document.getElementById('anomali-badge');
-  const pageEl  = document.getElementById('anomali-page-badge');
-  const dashEl  = document.getElementById('anomali-dash-badge');
-  const cur = parseInt(kpiEl.textContent) || 0;
-  const n = cur + 1;
-  [kpiEl, badgeEl].forEach(el => { if (el) el.textContent = n; });
-  if (pageEl) pageEl.textContent = n + ' Aktif';
-  if (dashEl) dashEl.textContent = n + ' Aktif';
-
-  // KPI karti salla
-  const kpiCard = kpiEl ? kpiEl.closest('.kpi') : null;
-  if (kpiCard) { kpiCard.style.animation = 'alertShake .4s ease'; setTimeout(() => kpiCard.style.animation = '', 500); }
-
-  // Anomaliler listesine canli kart ekle
-  const list = document.getElementById('anomali-full-list');
-  if (list) {
-    const saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-    const kart = document.createElement('div');
-    kart.className = 'anomali-rich red-bg';
-    kart.setAttribute('data-type', 'red');
-    kart.style.animation = 'alertShake .5s ease, fadeIn .3s ease';
-    kart.style.borderWidth = '2px';
-    kart.innerHTML = `
-      <div class="ar-head">
-        <div class="ar-icon" style="animation:pulse .8s infinite">&#x1F6A8;</div>
-        <div class="ar-main">
-          <div class="ar-top">
-            <span class="ar-title" style="color:var(--red)">TATİL MODUNDA AKIŞ TESPİT EDİLDİ</span>
-            <span class="ar-sev sev-red" style="animation:pulse 1s infinite">CANLI</span>
-          </div>
-          <div class="ar-desc">Siz evden uzaktayken <strong style="color:var(--text)">1,4 L/dk</strong> akış başladı.
-          ${yetkili ? ' &nbsp;<span style="color:var(--yellow)">Yetkili kişi: ' + yetkili + ' mi?</span>' : ' Yetkisiz giriş veya boru kaçağı olabilir.'}</div>
-          <div class="ar-time">&#x1F534; CANLI · ${saat} · Tetikleyen: <em>Tatil Modu</em></div>
-        </div>
-      </div>
-      <div class="ar-metrics">
-        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)" id="tatil-litre">0,0 L</div><div class="ar-metric-lbl">Toplam (artıyor)</div></div>
-        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--yellow)">1,4 L/dk</div><div class="ar-metric-lbl">Anlık Debi</div></div>
-        <div class="ar-metric"><div class="ar-metric-val" style="color:var(--red)">&#x1F534; Aktif</div><div class="ar-metric-lbl">Durum</div></div>
-      </div>
-      <div class="ar-footer">
-        <div id="tatil-fb-row" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-          <span style="font-size:.72rem;color:var(--muted)">Bu akış kim?</span>
-          ${yetkili ? `<button class="fb-btn fb-no" onclick="tatilYetkiliOnayla(this)">&#x2705; ${yetkili}</button>` : ''}
-          <button class="fb-btn fb-yes" onclick="tatilAlarmGonder(this)" style="font-weight:700">&#x1F6A8; Alarm Ver!</button>
-          <button class="fb-btn" style="background:rgba(255,255,255,.08);color:var(--muted);border-color:var(--border)" onclick="tatilYanlisOnayla(this)">Hata, normal</button>
-        </div>
-        <div class="ar-actions">
-          <button class="incele-btn" style="background:rgba(239,68,68,.2);color:var(--red)" onclick="resolveAnomali(this)">Çözüldü</button>
-        </div>
-      </div>`;
-    list.insertBefore(kart, list.firstChild);
-  }
-
-  // Canlı litre sayaci
-  let litre = 0;
-  const litreTimer = setInterval(() => {
-    litre = parseFloat((litre + 1.4 * (2/60)).toFixed(2));
-    const el = document.getElementById('tatil-litre');
-    if (el) el.textContent = litre + ' L';
-    else clearInterval(litreTimer);
-  }, 2000);
-
-  showToast('&#x1F6A8;&#x1F6A8; TATİL MODUNDA AKIŞ! — ' + new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}));
-
-  // Dashboard'a otomatik gel
-  document.querySelectorAll('.nav-item[data-page="anomaliler"]').forEach(n => n.click());
-}
 
 function tatilYetkiliOnayla(btn) {
   document.getElementById('tatil-fb-row').innerHTML =
@@ -2405,19 +1814,7 @@ function deactivateTatilModu() {
 }
 
 // Feedback butonlari — askiya alma akisini tetikler
-function fbYes(btn) {
-  btn.closest('.anomali-feedback').innerHTML = '<span class="fb-done">&#x2705; Onaylandı — sistem bu tip için uyarmaya devam edecek</span>';
-  showToast('&#x1F6A8; Anomali onaylandi.');
-}
 
-function fbNo(btn, ruleKey) {
-  btn.closest('.anomali-feedback').innerHTML = '<span class="fb-done">&#x1F9E0; "Sistem Öğreniyor" sayfasından ayarlayabilirsiniz</span>';
-  // Sayfaya yonlendir
-  document.querySelectorAll('.nav-item').forEach(item => {
-    if (item.dataset.page === 'ogrenme') item.click();
-  });
-  setTimeout(() => openPauseModal(ruleKey), 400);
-}
 
 renderToggles();
 
@@ -2608,59 +2005,12 @@ function addUser() {
 // ============================
 // RESOLVE ANOMALI
 // ============================
-function resolveAnomali(btn) {
-  const item = btn.closest('.anomali-item');
-  item.style.opacity = '0.4';
-  item.style.transition = '.4s';
-  const title = item.querySelector('.anomali-title');
-  if (title) title.style.textDecoration = 'line-through';
-  btn.closest('[style*="flex-direction"]').innerHTML = '<span style="font-size:.75rem;color:var(--green)">&#x2705; Çözüldü</span>';
 
-  let count = parseInt(document.getElementById('kpi-anomali').textContent) || 0;
-  if (count > 0) count--;
-  document.getElementById('kpi-anomali').textContent = count;
-  document.getElementById('anomali-badge').textContent = count;
-  document.getElementById('anomali-page-badge').textContent = count + ' Aktif';
-  const dash = document.getElementById('anomali-dash-badge');
-  if (dash) dash.textContent = count + ' Aktif';
-  showToast('&#x2705; Anomali çözüldü olarak işaretlendi');
-}
-
-// ============================
-// ANOMALI FILTERS
-// ============================
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const filter = btn.dataset.filter;
-    document.querySelectorAll('#anomali-full-list .anomali-item').forEach(item => {
-      if (filter === 'all') {
-        item.style.display = 'flex';
-      } else if (filter === 'resolved') {
-        item.style.display = item.style.opacity === '0.4' ? 'flex' : 'none';
       } else {
         item.style.display = item.dataset.type === filter ? 'flex' : 'none';
       }
     });
   });
-});
-
-// ============================
-// RAPOR INDIR
-// ============================
-document.getElementById('btn-rapor').addEventListener('click', () => {
-  const btn = document.getElementById('btn-rapor');
-  btn.textContent = '&#x23F3; Hazırlanıyor...';
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.textContent = '&#x2705; İndirildi!';
-    showToast('&#x1F4C4; Haftalık rapor indirildi (PDF)');
-    setTimeout(() => {
-      btn.textContent = '&#x1F4E4; Rapor İndir';
-      btn.disabled = false;
-    }, 2000);
-  }, 1500);
 });
 
 // ============================
@@ -2796,6 +2146,40 @@ function setCihazBtn(state) {
   }
 }
 
+// ── Son Ölçümler ─────────────────────────────────────────────
+function renderSonOlcumler(readings) {
+  const el = document.getElementById('son-olcumler-list');
+  if (!el || !readings.length) return;
+  el.innerHTML = readings.map(r => {
+    const t = r.ts ? new Date(r.ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '—';
+    const flow = typeof r.flow_lpm === 'number' ? r.flow_lpm.toFixed(2) : '—';
+    const color = r.flow_lpm > 0 ? 'var(--blue)' : 'var(--muted)';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg3);border-radius:.5rem;font-size:.78rem">
+      <span style="color:var(--muted)">${t}</span>
+      <span style="color:${color};font-weight:700">${flow} <span style="font-weight:400;color:var(--muted)">L/dk</span></span>
+      <span style="color:var(--muted2)">${r.total_liters ? r.total_liters.toFixed(1) + ' L toplam' : ''}</span>
+    </div>`;
+  }).join('');
+  const timeEl = document.getElementById('last-reading-time');
+  if (timeEl && readings[0]?.ts) timeEl.textContent = new Date(readings[0].ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Abonelik / Stripe ────────────────────────────────────────
+async function startCheckout(plan) {
+  const token = localStorage.getItem('susayar_token');
+  const API = localStorage.getItem('susayar_api_base') || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
+  try {
+    const res = await fetch(`${API}/api/stripe/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ plan }),
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else showToast('Ödeme sayfası açılamadı: ' + (data.error || 'Bilinmeyen hata'));
+  } catch (e) { showToast('Bağlantı hatası: ' + e.message); }
+}
+
 // ── WebSocket bağlantısı ─────────────────────────────────────
 function connectRealBackend(wsUrl) {
   if (realWs) { realWs.close(); realWs = null; }
@@ -2834,12 +2218,10 @@ function connectRealBackend(wsUrl) {
       const msg = JSON.parse(e.data);
       if (msg.type === 'sensor_update') {
         applyRealReading(msg.payload);
+        renderSonOlcumler([msg.payload]);
       } else if (msg.type === 'init') {
-        // Başlangıç verisi
         if (msg.payload.latest) applyRealReading(msg.payload.latest);
-      } else if (msg.type === 'anomaly') {
-        const a = msg.payload;
-        showToast('🚨 Yeni anomali: ' + a.detail);
+        if (msg.payload.history) renderSonOlcumler(msg.payload.history.slice(-5).reverse());
       }
     } catch { /* ignore */ }
   };

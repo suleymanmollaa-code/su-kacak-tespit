@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 591 591" width="591" height="591">
+
+  <!-- White background -->
+  <rect width="591" height="591" fill="#FFFFFF"/>
+
+  <!-- Drop shape — daha simetrik, sivri uç yukarıda -->
+  <path d="M295 70
+    C295 70 205 185 205 255
+    C205 310 247 355 295 355
+    C343 355 385 310 385 255
+    C385 185 295 70 295 70 Z"
+    fill="#3B82F6"/>
+
+  <!-- Smile — damlanın ortasında -->
+  <path d="M252 280 Q295 322 338 280"
+    stroke="white" stroke-width="10" stroke-linecap="round" fill="none"/>
+
+  <!-- Brand name: Su Sayar — tek satır, ortalı -->
+  <text x="295" y="470"
+    text-anchor="middle"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="106"
+    font-weight="800">
+    <tspan fill="#1E3A8A">Su</tspan><tspan fill="#1E3A8A" dx="20"> </tspan><tspan fill="#3B82F6">Sayar</tspan>
+  </text>
+
+</svg>
