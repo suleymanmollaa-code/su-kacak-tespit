@@ -15,7 +15,11 @@ if (isPg) {
   });
   console.log('[DB] PostgreSQL modu');
 } else {
-  const Database = require('better-sqlite3');
+  let Database;
+  try { Database = require('better-sqlite3'); } catch {
+    console.error('[DB] better-sqlite3 yüklenemedi. DATABASE_URL ortam değişkenini ayarlayın.');
+    process.exit(1);
+  }
   const path = require('path');
   const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'susayar.db');
   _db = new Database(DB_PATH);
