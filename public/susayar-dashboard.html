@@ -997,31 +997,6 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:1.5rem">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="card-title">Kullanıcılar</div>
-                <div class="card-sub">Bu hesaba erişim yetkisi</div>
-              </div>
-            </div>
-            <div class="user-list" id="user-list-dashboard">
-              <div class="user-item">
-                <div class="av" style="background:var(--blue)">AK</div>
-                <div><div class="un">Ahmet Kaya</div><div class="ur">Hesap Sahibi</div></div>
-                <div class="ml"><span class="chip chip-blue">Admin</span></div>
-              </div>
-              <div class="user-item">
-                <div class="av" style="background:#8b5cf6">ZK</div>
-                <div><div class="un">Zeynep Kaya</div><div class="ur">Eş — Tam Erişim</div></div>
-                <div class="ml"><span class="chip chip-green">Aktif</span></div>
-              </div>
-              <div class="user-item">
-                <div class="av" style="background:#ec4899">FH</div>
-                <div><div class="un">Anne (Fatma H.)</div><div class="ur">Sadece Görüntüleme</div></div>
-                <div class="ml"><span class="chip chip-yellow">İzleyici</span></div>
-              </div>
-            </div>
-          </div>
 
           <div class="card">
             <div class="card-head">
@@ -1334,6 +1309,16 @@
 (function() {
   const token = localStorage.getItem('susayar_token');
   if (!token) { location.replace('/susayar-auth.html'); return; }
+
+  // localStorage'dan hemen göster (API yanıtı beklenmeden)
+  try {
+    const cached = JSON.parse(localStorage.getItem('susayar_user') || '{}');
+    if (cached.name) {
+      const el = document.getElementById('user-display-name');
+      if (el) el.textContent = cached.name;
+      updatePlanUI(cached.plan || 'starter', cached.name);
+    }
+  } catch {}
 
   // Token'ı arka planda doğrula, plan bilgisini çek
   const _authBase = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
@@ -2205,10 +2190,17 @@ function setCihazBtn(state) {
 }
 
 // ── Son Ölçümler ─────────────────────────────────────────────
-function renderSonOlcumler(readings) {
+let _sonOlcumlerBuf = [];
+
+function renderSonOlcumler(readings, prepend = false) {
   const el = document.getElementById('son-olcumler-list');
   if (!el || !readings.length) return;
-  el.innerHTML = readings.map(r => {
+  if (prepend) {
+    _sonOlcumlerBuf = [...readings, ..._sonOlcumlerBuf].slice(0, 5);
+  } else {
+    _sonOlcumlerBuf = readings.slice(0, 5);
+  }
+  el.innerHTML = _sonOlcumlerBuf.map(r => {
     const t = r.ts ? new Date(r.ts).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '—';
     const flow = typeof r.flow_lpm === 'number' ? r.flow_lpm.toFixed(2) : '—';
     const color = r.flow_lpm > 0 ? 'var(--blue)' : 'var(--muted)';
@@ -2367,7 +2359,7 @@ function connectRealBackend(wsUrl) {
       const msg = JSON.parse(e.data);
       if (msg.type === 'sensor_update') {
         applyRealReading(msg.payload);
-        renderSonOlcumler([msg.payload]);
+        renderSonOlcumler([msg.payload], true);
       } else if (msg.type === 'init') {
         if (msg.payload.latest) applyRealReading(msg.payload.latest);
         if (msg.payload.history) renderSonOlcumler(msg.payload.history.slice(-5).reverse());
@@ -2410,8 +2402,6 @@ function disconnectRealBackend() {
 
 // ── Cihaz Bağla Modal ────────────────────────────────────────
 function openCihazBaglaModal() {
-  if (realModeActive) { disconnectRealBackend(); return; }
-
   const API = localStorage.getItem('susayar_api_base') || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
   const token = localStorage.getItem('susayar_token') || '';
 
