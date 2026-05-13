@@ -145,11 +145,19 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'starter'`).catch(() => {});
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp_expires TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
     try { _db.exec(`ALTER TABLE users ADD COLUMN reset_token TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE users ADD COLUMN reset_token_expires TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN phone TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN phone_verified INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp_expires TEXT`); } catch {}
   }
 }
 

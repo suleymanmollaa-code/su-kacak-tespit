@@ -12,7 +12,34 @@ const path              = require('path');
 const bcrypt            = require('bcryptjs');
 const jwt               = require('jsonwebtoken');
 const { randomUUID }    = require('crypto');
+const nodemailer        = require('nodemailer');
 const db                = require('./db');
+
+// ── E-posta ───────────────────────────────────────────────────
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_FROM = process.env.SMTP_FROM || `SuSayar <${SMTP_USER}>`;
+
+function getMailer() {
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
+  return nodemailer.createTransport({
+    host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+}
+
+async function sendMail({ to, subject, html }) {
+  const mailer = getMailer();
+  if (!mailer) {
+    console.log(`[MAIL] Servis ayarlı değil. Alıcı: ${to} | Konu: ${subject}`);
+    return false;
+  }
+  await mailer.sendMail({ from: SMTP_FROM, to, subject, html });
+  console.log(`[MAIL] Gönderildi → ${to}`);
+  return true;
+}
 
 // ── Konfigürasyon ─────────────────────────────────────────────
 const PORT         = parseInt(process.env.PORT)                  || 3001;
@@ -56,18 +83,79 @@ function broadcastToUser(userId, msg) {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Ad, e-posta ve şifre zorunludur' });
+    if (!phone) return res.status(400).json({ error: 'Telefon numarası zorunludur' });
     if (password.length < 6) return res.status(400).json({ error: 'Şifre en az 6 karakter olmalıdır' });
     const exists = await db.queryOne(`SELECT id FROM users WHERE email = $1`, [email.toLowerCase().trim()]);
     if (exists) return res.status(409).json({ error: 'Bu e-posta zaten kayıtlı' });
     const hash = await bcrypt.hash(password, 10);
-    const user = { id: randomUUID(), name: name.trim(), email: email.toLowerCase().trim(), password: hash, created_at: new Date().toISOString() };
-    await db.queryRun(`INSERT INTO users (id,name,email,password,created_at) VALUES ($1,$2,$3,$4,$5)`,
-      [user.id, user.name, user.email, user.password, user.created_at]);
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 dk
+    const user = { id: randomUUID(), name: name.trim(), email: email.toLowerCase().trim(), password: hash, phone: phone.trim(), created_at: new Date().toISOString() };
+    await db.queryRun(
+      `INSERT INTO users (id,name,email,password,phone,email_otp,email_otp_expires,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [user.id, user.name, user.email, user.password, user.phone, otp, otpExpires, user.created_at]
+    );
+    // OTP e-postası gönder
+    const sent = await sendMail({
+      to: user.email,
+      subject: 'SuSayar — E-posta Doğrulama Kodunuz',
+      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
+        <h2 style="color:#3b82f6">SuSayar</h2>
+        <p>Merhaba <strong>${user.name}</strong>,</p>
+        <p>Kaydınızı tamamlamak için doğrulama kodunuz:</p>
+        <div style="font-size:2.5rem;font-weight:800;letter-spacing:.5rem;text-align:center;padding:1.5rem;background:#f1f5f9;border-radius:12px;margin:1.5rem 0">${otp}</div>
+        <p style="color:#64748b;font-size:.85rem">Bu kod 10 dakika geçerlidir. Eğer kayıt olmadıysanız bu e-postayı görmezden gelin.</p>
+      </div>`,
+    });
+    if (!sent) console.log(`[AUTH] OTP (${user.email}): ${otp}`);
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
     console.log(`[AUTH] Kayıt: ${user.email}`);
-    res.json({ ok: true, token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ ok: true, token, user: { id: user.id, name: user.name, email: user.email, phone_verified: 0 }, needsVerification: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// OTP doğrula
+app.post('/api/auth/verify-otp', requireAuth, async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) return res.status(400).json({ error: 'Kod zorunludur' });
+    const user = await db.queryOne(
+      `SELECT id, email_otp, email_otp_expires, phone_verified FROM users WHERE id=$1`, [req.user.id]
+    );
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    if (user.phone_verified === 1 || user.phone_verified === true) return res.json({ ok: true, already: true });
+    if (!user.email_otp || user.email_otp !== otp.trim())
+      return res.status(400).json({ error: 'Kod hatalı' });
+    if (new Date(user.email_otp_expires) < new Date())
+      return res.status(400).json({ error: 'Kodun süresi dolmuş' });
+    await db.queryRun(`UPDATE users SET phone_verified=1, email_otp=NULL, email_otp_expires=NULL WHERE id=$1`, [req.user.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// OTP yeniden gönder
+app.post('/api/auth/resend-otp', requireAuth, async (req, res) => {
+  try {
+    const user = await db.queryOne(`SELECT name, email, phone_verified FROM users WHERE id=$1`, [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    if (user.phone_verified === 1 || user.phone_verified === true) return res.json({ ok: true, already: true });
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    await db.queryRun(`UPDATE users SET email_otp=$1, email_otp_expires=$2 WHERE id=$3`, [otp, otpExpires, req.user.id]);
+    const sent = await sendMail({
+      to: user.email,
+      subject: 'SuSayar — Yeni Doğrulama Kodunuz',
+      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
+        <h2 style="color:#3b82f6">SuSayar</h2>
+        <p>Merhaba <strong>${user.name}</strong>, yeni doğrulama kodunuz:</p>
+        <div style="font-size:2.5rem;font-weight:800;letter-spacing:.5rem;text-align:center;padding:1.5rem;background:#f1f5f9;border-radius:12px;margin:1.5rem 0">${otp}</div>
+        <p style="color:#64748b;font-size:.85rem">Bu kod 10 dakika geçerlidir.</p>
+      </div>`,
+    });
+    if (!sent) console.log(`[AUTH] OTP yeniden (${user.email}): ${otp}`);
+    res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
@@ -95,9 +183,23 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       const token = randomUUID().replace(/-/g, '');
       const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 saat
       await db.queryRun(`UPDATE users SET reset_token=$1, reset_token_expires=$2 WHERE id=$3`, [token, expires, user.id]);
-      const resetUrl = `${process.env.APP_URL || 'https://su-kacak-tespit.onrender.com'}/susayar-auth.html?reset_token=${token}`;
-      console.log(`[RESET] Şifre sıfırlama linki: ${resetUrl}`);
-      // E-posta servisi varsa burada gönderilir (şimdilik console log)
+      const appUrl = process.env.APP_URL || 'https://su-kacak-tespit.onrender.com';
+      const resetUrl = `${appUrl}/susayar-auth.html?reset_token=${token}`;
+      const u = await db.queryOne(`SELECT name FROM users WHERE id=$1`, [user.id]);
+      const sent = await sendMail({
+        to: email,
+        subject: 'SuSayar — Şifre Sıfırlama',
+        html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
+          <h2 style="color:#3b82f6">SuSayar</h2>
+          <p>Merhaba${u ? ' <strong>' + u.name + '</strong>' : ''},</p>
+          <p>Şifrenizi sıfırlamak için aşağıdaki butona tıklayın. Link 1 saat geçerlidir.</p>
+          <div style="text-align:center;margin:1.5rem 0">
+            <a href="${resetUrl}" style="background:#3b82f6;color:white;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600">Şifremi Sıfırla</a>
+          </div>
+          <p style="color:#64748b;font-size:.85rem">Bu isteği siz yapmadıysanız görmezden gelin.</p>
+        </div>`,
+      });
+      if (!sent) console.log(`[RESET] Şifre sıfırlama linki: ${resetUrl}`);
     }
     res.json({ ok: true, message: 'Eğer bu e-posta kayıtlıysa sıfırlama linki gönderildi.' });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -143,7 +245,7 @@ app.put('/api/auth/profile', requireAuth, async (req, res) => {
 
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   try {
-    const user = await db.queryOne(`SELECT id, name, email, plan FROM users WHERE id=$1`, [req.user.id]);
+    const user = await db.queryOne(`SELECT id, name, email, plan, phone, phone_verified FROM users WHERE id=$1`, [req.user.id]);
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
     res.json({ ok: true, user });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -337,10 +439,35 @@ function requireAdmin(req, res, next) {
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const users = await db.queryAll(
-      `SELECT id, name, email, plan, created_at FROM users ORDER BY created_at DESC`
+      `SELECT id, name, email, plan, phone, phone_verified, created_at FROM users ORDER BY created_at DESC`
     );
     res.json(users);
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.post('/api/admin/users/:id/reset-link', requireAdmin, async (req, res) => {
+  try {
+    const user = await db.queryOne(`SELECT id, name, email FROM users WHERE id=$1`, [req.params.id]);
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    const token = randomUUID().replace(/-/g, '');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await db.queryRun(`UPDATE users SET reset_token=$1, reset_token_expires=$2 WHERE id=$3`, [token, expires, user.id]);
+    const appUrl = process.env.APP_URL || 'https://su-kacak-tespit.onrender.com';
+    const resetUrl = `${appUrl}/susayar-auth.html?reset_token=${token}`;
+    await sendMail({
+      to: user.email,
+      subject: 'SuSayar — Şifre Sıfırlama (Admin)',
+      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
+        <h2 style="color:#3b82f6">SuSayar</h2>
+        <p>Merhaba <strong>${user.name}</strong>,</p>
+        <p>Hesabınızın şifresini sıfırlamak için aşağıdaki butona tıklayın. Link 24 saat geçerlidir.</p>
+        <div style="text-align:center;margin:1.5rem 0">
+          <a href="${resetUrl}" style="background:#3b82f6;color:white;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600">Şifremi Sıfırla</a>
+        </div>
+      </div>`,
+    });
+    res.json({ ok: true, resetUrl });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.get('/api/admin/devices', requireAdmin, async (req, res) => {

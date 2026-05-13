@@ -304,9 +304,28 @@
           <button class="pw-eye" onclick="togglePw('reg-pw2', this)" tabindex="-1">👁</button>
         </div>
       </div>
+      <div class="field">
+        <label>Telefon Numarası</label>
+        <input id="reg-phone" type="tel" placeholder="05XX XXX XX XX" autocomplete="tel" />
+      </div>
       <button class="btn-primary" id="btn-register" onclick="doRegister()">Kayıt Ol</button>
       <div class="hint">
         Zaten hesabın var mı? <a onclick="switchTab('login')">Giriş yap</a>
+      </div>
+    </div>
+
+    <!-- E-POSTA DOĞRULAMA -->
+    <div id="panel-verify" class="form-panel">
+      <div id="verify-error" class="error-box"></div>
+      <div id="verify-success" class="success-box"></div>
+      <p style="font-size:.85rem;color:#94a3b8;margin-bottom:1.25rem">E-posta adresinize 6 haneli bir doğrulama kodu gönderdik. Lütfen girin.</p>
+      <div class="field">
+        <label>Doğrulama Kodu</label>
+        <input id="verify-otp" type="text" placeholder="123456" maxlength="6" style="letter-spacing:.3rem;font-size:1.2rem;text-align:center" />
+      </div>
+      <button class="btn-primary" id="btn-verify" onclick="doVerifyOtp()">Doğrula</button>
+      <div class="hint">
+        Kod gelmedi mi? <a onclick="doResendOtp()">Tekrar gönder</a>
       </div>
     </div>
 
@@ -335,7 +354,7 @@
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (tab === 'login') ? i === 0 : i === 1));
-      ['login','register','forgot','reset'].forEach(p => {
+      ['login','register','forgot','reset','verify'].forEach(p => {
         const el = document.getElementById('panel-' + p);
         if (el) el.classList.toggle('active', p === tab);
       });
@@ -343,7 +362,7 @@
     }
 
     function clearErrors() {
-      ['login-error', 'reg-error', 'reg-success', 'forgot-error', 'forgot-success', 'reset-error', 'reset-success'].forEach(id => {
+      ['login-error', 'reg-error', 'reg-success', 'forgot-error', 'forgot-success', 'reset-error', 'reset-success', 'verify-error', 'verify-success'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.textContent = ''; el.classList.remove('show'); }
       });
@@ -398,23 +417,25 @@
 
     async function doRegister() {
       clearErrors();
-      const name     = document.getElementById('reg-name').value.trim();
-      const email    = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-pw').value;
+      const name      = document.getElementById('reg-name').value.trim();
+      const email     = document.getElementById('reg-email').value.trim();
+      const password  = document.getElementById('reg-pw').value;
       const password2 = document.getElementById('reg-pw2').value;
+      const phone     = document.getElementById('reg-phone').value.trim();
 
       if (!name)     return showError('reg-error', 'Ad Soyad boş olamaz');
       if (!email)    return showError('reg-error', 'E-posta boş olamaz');
       if (!password) return showError('reg-error', 'Şifre boş olamaz');
       if (password.length < 6) return showError('reg-error', 'Şifre en az 6 karakter olmalıdır');
       if (password !== password2) return showError('reg-error', 'Şifreler eşleşmiyor');
+      if (!phone)    return showError('reg-error', 'Telefon numarası zorunludur');
 
       setLoading('btn-register', true);
       try {
         const res = await fetch(`${API}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, email, password, phone }),
           signal: AbortSignal.timeout(8000),
         });
         const data = await res.json();
@@ -422,12 +443,51 @@
 
         localStorage.setItem('susayar_token', data.token);
         localStorage.setItem('susayar_user', JSON.stringify(data.user));
-        location.replace('/susayar-dashboard.html');
+        if (data.needsVerification) {
+          switchTab('verify');
+        } else {
+          location.replace('/susayar-dashboard.html');
+        }
       } catch (err) {
         showError('reg-error', err.name === 'TimeoutError' ? 'Sunucuya bağlanılamadı. Backend çalışıyor mu?' : 'Bağlantı hatası: ' + err.message);
       } finally {
         setLoading('btn-register', false);
       }
+    }
+
+    async function doVerifyOtp() {
+      clearErrors();
+      const otp   = document.getElementById('verify-otp').value.trim();
+      const token = localStorage.getItem('susayar_token');
+      if (!otp) return showError('verify-error', 'Kod boş olamaz');
+      const btn = document.getElementById('btn-verify');
+      btn.disabled = true; btn.textContent = 'Doğrulanıyor…';
+      try {
+        const res = await fetch(`${API}/api/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ otp }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError('verify-error', data.error || 'Kod hatalı'); return; }
+        const s = document.getElementById('verify-success');
+        s.textContent = 'E-posta doğrulandı! Yönlendiriliyorsunuz…';
+        s.classList.add('show');
+        setTimeout(() => location.replace('/susayar-dashboard.html'), 1200);
+      } catch { showError('verify-error', 'Bağlantı hatası'); }
+      finally { btn.disabled = false; btn.textContent = 'Doğrula'; }
+    }
+
+    async function doResendOtp() {
+      const token = localStorage.getItem('susayar_token');
+      try {
+        await fetch(`${API}/api/auth/resend-otp`, {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` },
+        });
+        const s = document.getElementById('verify-success');
+        s.textContent = 'Yeni kod gönderildi.';
+        s.classList.add('show');
+      } catch { showError('verify-error', 'Bağlantı hatası'); }
     }
 
     async function doForgotPassword() {

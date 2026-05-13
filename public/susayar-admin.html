@@ -278,12 +278,13 @@ async function loadUsers() {
     if (!allUsers.length) { wrap.innerHTML = '<div class="empty">Henuz kullanici yok</div>'; return; }
     wrap.innerHTML = `<table>
       <thead><tr>
-        <th>Ad</th><th>E-posta</th><th>Plan</th><th>Kayit Tarihi</th><th>Plan Degistir</th>
+        <th>Ad</th><th>E-posta</th><th>Telefon</th><th>Plan</th><th>Kayit</th><th>Plan Degistir</th><th>Islemler</th>
       </tr></thead>
       <tbody>
         ${allUsers.map(u => `<tr>
           <td style="font-weight:600">${esc(u.name)}</td>
           <td style="color:var(--muted)">${esc(u.email)}</td>
+          <td style="color:var(--muted)">${esc(u.phone || '—')}</td>
           <td><span class="badge badge-${u.plan || 'starter'}">${u.plan || 'starter'}</span></td>
           <td style="color:var(--muted2);font-size:.75rem">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
           <td>
@@ -296,12 +297,29 @@ async function loadUsers() {
               <option value="corporate" ${u.plan==='corporate'?'selected':''}>Kurumsal (599 TL)</option>
             </select>
           </td>
+          <td>
+            <button class="btn-ghost" style="font-size:.72rem;padding:.3rem .6rem" onclick="sendResetLink('${u.id}', '${esc(u.email)}')">Sifre Sifirla</button>
+          </td>
         </tr>`).join('')}
       </tbody>
     </table>`;
   } catch (e) {
     wrap.innerHTML = `<div class="empty" style="color:var(--red)">Hata: ${e.message}</div>`;
   }
+}
+
+async function sendResetLink(userId, email) {
+  if (!confirm(`${email} adresine sifre sifirlama linki gonderilsin mi?`)) return;
+  const r = await fetch(`${API}/api/admin/users/${userId}/reset-link`, {
+    method: 'POST', headers: { 'x-admin-secret': adminSecret },
+  });
+  const data = await r.json();
+  if (r.ok) {
+    toast('Link gonderildi: ' + email);
+    if (data.resetUrl) {
+      prompt('E-posta servisi yoksa bu linki kullaniciya iletin:', data.resetUrl);
+    }
+  } else toast('Hata: ' + (data.error || 'Bilinmeyen hata'));
 }
 
 async function changePlan(userId, plan) {
