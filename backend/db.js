@@ -143,9 +143,13 @@ async function initSchema() {
   if (isPg) {
     await _pool.query(SCHEMA_PG);
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'starter'`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN reset_token TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE users ADD COLUMN reset_token_expires TEXT`); } catch {}
   }
 }
 

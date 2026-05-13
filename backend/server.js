@@ -84,6 +84,63 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// Şifremi unuttum
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'E-posta zorunludur' });
+    const user = await db.queryOne(`SELECT id FROM users WHERE email=$1`, [email.toLowerCase().trim()]);
+    // Güvenlik: kullanıcı yoksa da aynı mesajı ver
+    if (user) {
+      const token = randomUUID().replace(/-/g, '');
+      const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 saat
+      await db.queryRun(`UPDATE users SET reset_token=$1, reset_token_expires=$2 WHERE id=$3`, [token, expires, user.id]);
+      const resetUrl = `${process.env.APP_URL || 'https://su-kacak-tespit.onrender.com'}/susayar-auth.html?reset_token=${token}`;
+      console.log(`[RESET] Şifre sıfırlama linki: ${resetUrl}`);
+      // E-posta servisi varsa burada gönderilir (şimdilik console log)
+    }
+    res.json({ ok: true, message: 'Eğer bu e-posta kayıtlıysa sıfırlama linki gönderildi.' });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Şifre sıfırla
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token ve şifre zorunludur' });
+    if (password.length < 6) return res.status(400).json({ error: 'Şifre en az 6 karakter olmalıdır' });
+    const user = await db.queryOne(
+      `SELECT id FROM users WHERE reset_token=$1 AND reset_token_expires>$2`,
+      [token, new Date().toISOString()]
+    );
+    if (!user) return res.status(400).json({ error: 'Link geçersiz veya süresi dolmuş' });
+    const hash = await bcrypt.hash(password, 10);
+    await db.queryRun(`UPDATE users SET password=$1, reset_token=NULL, reset_token_expires=NULL WHERE id=$2`, [hash, user.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Profil güncelle
+app.put('/api/auth/profile', requireAuth, async (req, res) => {
+  try {
+    const { name, current_password, new_password } = req.body;
+    const user = await db.queryOne(`SELECT * FROM users WHERE id=$1`, [req.user.id]);
+    if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    if (name && name.trim().length < 2) return res.status(400).json({ error: 'Ad en az 2 karakter olmalıdır' });
+    if (new_password) {
+      if (!current_password) return res.status(400).json({ error: 'Mevcut şifre gerekli' });
+      if (!(await bcrypt.compare(current_password, user.password))) return res.status(401).json({ error: 'Mevcut şifre hatalı' });
+      if (new_password.length < 6) return res.status(400).json({ error: 'Yeni şifre en az 6 karakter olmalıdır' });
+      const hash = await bcrypt.hash(new_password, 10);
+      await db.queryRun(`UPDATE users SET password=$1 WHERE id=$2`, [hash, req.user.id]);
+    }
+    if (name && name.trim() !== user.name) {
+      await db.queryRun(`UPDATE users SET name=$1 WHERE id=$2`, [name.trim(), req.user.id]);
+    }
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   try {
     const user = await db.queryOne(`SELECT id, name, email, plan FROM users WHERE id=$1`, [req.user.id]);
@@ -104,10 +161,17 @@ app.get('/api/devices', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+const PLAN_LIMITS = { starter: 0, individual: 1, business: 3, corporate: 10 };
+
 app.post('/api/devices', requireAuth, async (req, res) => {
   try {
     const { name, device_id } = req.body;
     if (!name || !device_id) return res.status(400).json({ error: 'name ve device_id zorunludur' });
+    // Plan limiti kontrolü
+    const user = await db.queryOne(`SELECT plan FROM users WHERE id=$1`, [req.user.id]);
+    const limit = PLAN_LIMITS[user?.plan || 'starter'] ?? 0;
+    const count = await db.queryOne(`SELECT COUNT(*) as n FROM devices WHERE user_id=$1`, [req.user.id]);
+    if (parseInt(count?.n || 0) >= limit) return res.status(403).json({ error: `Plan limitine ulaştınız (maks ${limit} cihaz)` });
     const exists = await db.queryOne(`SELECT id FROM devices WHERE device_id = $1`, [device_id.trim()]);
     if (exists) return res.status(409).json({ error: 'Bu device_id zaten kayıtlı' });
     const dev = {

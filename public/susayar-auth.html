@@ -237,8 +237,45 @@
       </div>
       <button class="btn-primary" id="btn-login" onclick="doLogin()">Giriş Yap</button>
       <div class="hint">
+        <a onclick="switchTab('forgot')" style="color:#64748b">Şifremi unuttum</a>
+        &nbsp;·&nbsp;
         Hesabın yok mu? <a onclick="switchTab('register')">Kayıt ol</a>
       </div>
+    </div>
+
+    <!-- ŞİFREMİ UNUTTUM -->
+    <div id="panel-forgot" class="form-panel">
+      <div id="forgot-error" class="error-box"></div>
+      <div id="forgot-success" class="success-box"></div>
+      <p style="font-size:.85rem;color:#94a3b8;margin-bottom:1.25rem">E-posta adresini gir, sıfırlama linki gönderelim.</p>
+      <div class="field">
+        <label>E-posta</label>
+        <input id="forgot-email" type="email" placeholder="ornek@email.com" />
+      </div>
+      <button class="btn-primary" id="btn-forgot" onclick="doForgotPassword()">Sıfırlama Linki Gönder</button>
+      <div class="hint"><a onclick="switchTab('login')">← Girişe dön</a></div>
+    </div>
+
+    <!-- ŞİFRE SIFIRLA -->
+    <div id="panel-reset" class="form-panel">
+      <div id="reset-error" class="error-box"></div>
+      <div id="reset-success" class="success-box"></div>
+      <p style="font-size:.85rem;color:#94a3b8;margin-bottom:1.25rem">Yeni şifreni belirle.</p>
+      <div class="field">
+        <label>Yeni Şifre</label>
+        <div class="pw-wrap">
+          <input id="reset-pw" type="password" placeholder="••••••" />
+          <button class="pw-eye" onclick="togglePw('reset-pw', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Yeni Şifre Tekrar</label>
+        <div class="pw-wrap">
+          <input id="reset-pw2" type="password" placeholder="••••••" />
+          <button class="pw-eye" onclick="togglePw('reset-pw2', this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-reset" onclick="doResetPassword()">Şifreyi Güncelle</button>
     </div>
 
     <!-- KAYIT FORMU -->
@@ -279,10 +316,11 @@
   <script>
     const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
-    // URL'deki tab parametresine göre sekme aç (?tab=register)
+    // URL'deki tab parametresine göre sekme aç
     (function initTab() {
-      const tab = new URLSearchParams(location.search).get('tab');
-      if (tab === 'register') switchTab('register');
+      const p = new URLSearchParams(location.search);
+      if (p.get('tab') === 'register') switchTab('register');
+      if (p.get('reset_token')) switchTab('reset');
     })();
 
     // Daha önce giriş yapılmışsa dashboard'a yönlendir
@@ -297,13 +335,15 @@
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (tab === 'login') ? i === 0 : i === 1));
-      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
-      document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+      ['login','register','forgot','reset'].forEach(p => {
+        const el = document.getElementById('panel-' + p);
+        if (el) el.classList.toggle('active', p === tab);
+      });
       clearErrors();
     }
 
     function clearErrors() {
-      ['login-error', 'reg-error', 'reg-success'].forEach(id => {
+      ['login-error', 'reg-error', 'reg-success', 'forgot-error', 'forgot-success', 'reset-error', 'reset-success'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.textContent = ''; el.classList.remove('show'); }
       });
@@ -390,12 +430,56 @@
       }
     }
 
+    async function doForgotPassword() {
+      clearErrors();
+      const email = document.getElementById('forgot-email').value.trim();
+      if (!email) return showError('forgot-error', 'E-posta boş olamaz');
+      const btn = document.getElementById('btn-forgot');
+      btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+      try {
+        await fetch(`${API}/api/auth/forgot-password`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const s = document.getElementById('forgot-success');
+        s.textContent = 'Eğer bu e-posta kayıtlıysa sıfırlama linki gönderildi.';
+        s.classList.add('show');
+      } catch { showError('forgot-error', 'Bağlantı hatası'); }
+      finally { btn.disabled = false; btn.textContent = 'Sıfırlama Linki Gönder'; }
+    }
+
+    async function doResetPassword() {
+      clearErrors();
+      const token = new URLSearchParams(location.search).get('reset_token');
+      const password  = document.getElementById('reset-pw').value;
+      const password2 = document.getElementById('reset-pw2').value;
+      if (!password) return showError('reset-error', 'Şifre boş olamaz');
+      if (password.length < 6) return showError('reset-error', 'Şifre en az 6 karakter olmalıdır');
+      if (password !== password2) return showError('reset-error', 'Şifreler eşleşmiyor');
+      const btn = document.getElementById('btn-reset');
+      btn.disabled = true; btn.textContent = 'Güncelleniyor…';
+      try {
+        const res = await fetch(`${API}/api/auth/reset-password`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) return showError('reset-error', data.error || 'Hata oluştu');
+        const s = document.getElementById('reset-success');
+        s.textContent = 'Şifre güncellendi! Şimdi giriş yapabilirsiniz.';
+        s.classList.add('show');
+        setTimeout(() => switchTab('login'), 2000);
+      } catch { showError('reset-error', 'Bağlantı hatası'); }
+      finally { btn.disabled = false; btn.textContent = 'Şifreyi Güncelle'; }
+    }
+
     // Enter tuşu desteği
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
-      const loginActive = document.getElementById('panel-login').classList.contains('active');
-      if (loginActive) doLogin();
-      else doRegister();
+      if (document.getElementById('panel-login').classList.contains('active')) doLogin();
+      else if (document.getElementById('panel-register').classList.contains('active')) doRegister();
+      else if (document.getElementById('panel-forgot').classList.contains('active')) doForgotPassword();
+      else if (document.getElementById('panel-reset').classList.contains('active')) doResetPassword();
     });
   </script>
 </body>
