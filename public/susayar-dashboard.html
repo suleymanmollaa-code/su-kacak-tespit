@@ -2446,7 +2446,7 @@ function openCihazBaglaModal() {
 async function loadDeviceList() {
   const area = document.getElementById('device-list-area');
   if (!area) return;
-  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const API   = localStorage.getItem('susayar_api_base') || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
   const token = localStorage.getItem('susayar_token') || '';
   try {
     const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
