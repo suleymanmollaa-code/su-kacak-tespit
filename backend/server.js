@@ -378,6 +378,67 @@ app.get('/api/stats', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Günlük Rapor (saatlik tüketim) ───────────────────────────
+app.get('/api/reports/daily', requireAuth, async (req, res) => {
+  try {
+    const uid  = req.user.id;
+    const date = req.query.date || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const dayStart = date + 'T00:00:00.000Z';
+    const dayEnd   = date + 'T23:59:59.999Z';
+
+    let rows;
+    if (db.isPg) {
+      rows = await db.queryAll(
+        `SELECT to_char(ts::timestamp AT TIME ZONE 'Europe/Istanbul', 'HH24') AS hour,
+                SUM((flow_lpm / 60.0) * 2.5) AS liters,
+                AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
+         GROUP BY hour ORDER BY hour`, [uid, dayStart, dayEnd]);
+    } else {
+      rows = await db.queryAll(
+        `SELECT strftime('%H', datetime(ts, '+3 hours')) AS hour,
+                SUM((flow_lpm / 60.0) * 2.5) AS liters,
+                AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
+         GROUP BY hour ORDER BY hour`, [uid, dayStart, dayEnd]);
+    }
+
+    const total = rows.reduce((s, r) => s + parseFloat(r.liters || 0), 0);
+    res.json({ date, total_liters: Math.round(total * 10) / 10, hours: rows });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// ── Aylık Rapor (günlük tüketim) ──────────────────────────────
+app.get('/api/reports/monthly', requireAuth, async (req, res) => {
+  try {
+    const uid   = req.user.id;
+    const month = req.query.month || new Date().toISOString().slice(0, 7); // YYYY-MM
+    const monthStart = month + '-01T00:00:00.000Z';
+    const monthEnd   = month + '-31T23:59:59.999Z';
+
+    let rows;
+    if (db.isPg) {
+      rows = await db.queryAll(
+        `SELECT to_char(ts::timestamp AT TIME ZONE 'Europe/Istanbul', 'DD') AS day,
+                SUM((flow_lpm / 60.0) * 2.5) AS liters,
+                AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
+         GROUP BY day ORDER BY day`, [uid, monthStart, monthEnd]);
+    } else {
+      rows = await db.queryAll(
+        `SELECT strftime('%d', datetime(ts, '+3 hours')) AS day,
+                SUM((flow_lpm / 60.0) * 2.5) AS liters,
+                AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
+         GROUP BY day ORDER BY day`, [uid, monthStart, monthEnd]);
+    }
+
+    const total = rows.reduce((s, r) => s + parseFloat(r.liters || 0), 0);
+    const avg   = rows.length ? total / rows.length : 0;
+    res.json({ month, total_liters: Math.round(total * 10) / 10, avg_daily: Math.round(avg * 10) / 10, days: rows });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // ── Stripe ────────────────────────────────────────────────────
 const STRIPE_SK      = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WH      = process.env.STRIPE_WEBHOOK_SECRET;

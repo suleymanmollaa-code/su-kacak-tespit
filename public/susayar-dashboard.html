@@ -789,10 +789,10 @@
   <div class="nav-item" data-page="anlik-akis" data-title="Anlık Akış">
     <span class="nav-icon">&#x1F4A7;</span><span class="nav-label">Anlık Akış</span>
   </div>
-  <div class="nav-item" data-page="coming-soon" data-title="Günlük Rapor">
+  <div class="nav-item" data-page="gunluk-rapor" data-title="Günlük Rapor">
     <span class="nav-icon">&#x1F4C5;</span><span class="nav-label">Günlük Rapor</span>
   </div>
-  <div class="nav-item" data-page="coming-soon" data-title="Aylık Analiz">
+  <div class="nav-item" data-page="aylik-analiz" data-title="Aylık Analiz">
     <span class="nav-icon">&#x1F4C8;</span><span class="nav-label">Aylık Analiz</span>
   </div>
 
@@ -1276,6 +1276,126 @@
     </div><!-- /page-cihaz-ayarlari -->
 
 
+    <!-- PAGE: GÜNLÜK RAPOR -->
+    <div class="page" id="page-gunluk-rapor">
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Tarih seçici -->
+        <div class="card" style="padding:1.25rem 1.5rem">
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+            <div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Tarih</div>
+              <input type="date" id="daily-date-input" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer" onchange="loadDailyReport()">
+            </div>
+            <button onclick="loadDailyReport()" style="margin-top:1.3rem;padding:.45rem 1rem;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:600;cursor:pointer">Yükle</button>
+          </div>
+        </div>
+
+        <!-- Özet kartları -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Toplam Tüketim</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--cyan)" id="daily-total">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">litre</div>
+          </div>
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">En Yoğun Saat</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--blue-lt)" id="daily-peak-hour">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem" id="daily-peak-liters">—</div>
+          </div>
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Ort. Akış</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--green)" id="daily-avg-lpm">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">L/dk</div>
+          </div>
+        </div>
+
+        <!-- Saatlik grafik -->
+        <div class="card" style="padding:1.5rem">
+          <div class="card-head" style="margin-bottom:1.25rem">
+            <div>
+              <div class="card-title">Saatlik Tüketim</div>
+              <div class="card-sub">Seçilen güne ait saat bazlı su kullanımı</div>
+            </div>
+          </div>
+          <div id="daily-chart" style="display:flex;align-items:flex-end;gap:3px;height:160px;padding:0 .25rem">
+            <div style="width:100%;text-align:center;color:var(--muted);font-size:.82rem;align-self:center">Tarih seçip Yükle butonuna basın</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:.5rem;font-size:.65rem;color:var(--muted);padding:0 .25rem">
+            <span>00</span><span>03</span><span>06</span><span>09</span><span>12</span><span>15</span><span>18</span><span>21</span><span>23</span>
+          </div>
+        </div>
+
+        <!-- Saat tablosu -->
+        <div class="card" style="padding:1.5rem">
+          <div class="card-title" style="margin-bottom:1rem">Saatlik Detay</div>
+          <div id="daily-table" style="overflow-x:auto">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAGE: AYLIK ANALİZ -->
+    <div class="page" id="page-aylik-analiz">
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Ay seçici -->
+        <div class="card" style="padding:1.25rem 1.5rem">
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+            <div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Ay</div>
+              <input type="month" id="monthly-month-input" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer" onchange="loadMonthlyReport()">
+            </div>
+            <button onclick="loadMonthlyReport()" style="margin-top:1.3rem;padding:.45rem 1rem;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:600;cursor:pointer">Yükle</button>
+          </div>
+        </div>
+
+        <!-- Özet kartları -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Aylık Toplam</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--cyan)" id="monthly-total">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">litre</div>
+          </div>
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Günlük Ortalama</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--blue-lt)" id="monthly-avg">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">litre/gün</div>
+          </div>
+          <div class="card" style="padding:1.25rem 1.5rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">En Yüksek Gün</div>
+            <div style="font-size:1.75rem;font-weight:800;color:var(--yellow)" id="monthly-peak-day">—</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem" id="monthly-peak-val">—</div>
+          </div>
+        </div>
+
+        <!-- Günlük grafik -->
+        <div class="card" style="padding:1.5rem">
+          <div class="card-head" style="margin-bottom:1.25rem">
+            <div>
+              <div class="card-title">Günlük Tüketim</div>
+              <div class="card-sub">Seçilen aya ait gün bazlı su kullanımı</div>
+            </div>
+          </div>
+          <div id="monthly-chart" style="display:flex;align-items:flex-end;gap:4px;height:160px;padding:0 .25rem">
+            <div style="width:100%;text-align:center;color:var(--muted);font-size:.82rem;align-self:center">Ay seçip Yükle butonuna basın</div>
+          </div>
+          <div id="monthly-chart-labels" style="display:flex;justify-content:space-between;margin-top:.5rem;font-size:.65rem;color:var(--muted);padding:0 .25rem"></div>
+        </div>
+
+        <!-- Gün tablosu -->
+        <div class="card" style="padding:1.5rem">
+          <div class="card-title" style="margin-bottom:1rem">Günlük Detay</div>
+          <div id="monthly-table" style="overflow-x:auto">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- PAGE: COMING SOON -->
     <div class="page" id="page-coming-soon">
       <div class="coming-soon-box">
@@ -1387,6 +1507,9 @@ navItems.forEach(item => {
     }
 
     topbarTitle.textContent = title;
+
+    if (pageId === 'gunluk-rapor') loadDailyReport();
+    if (pageId === 'aylik-analiz') loadMonthlyReport();
   });
 });
 
@@ -2530,6 +2653,147 @@ async function deleteDevice(id) {
   await fetch(`${API}/api/devices/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
   showToast('Cihaz silindi.');
   loadDeviceList();
+}
+
+// ============================================================
+// GÜNLÜK RAPOR
+// ============================================================
+(function initDailyDate() {
+  const el = document.getElementById('daily-date-input');
+  if (el) el.value = new Date().toISOString().slice(0, 10);
+})();
+
+async function loadDailyReport() {
+  const date = document.getElementById('daily-date-input')?.value || new Date().toISOString().slice(0, 10);
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  try {
+    const r = await fetch(`${API}/api/reports/daily?date=${date}`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await r.json();
+    if (!r.ok) { showToast('Rapor yüklenemedi: ' + (data.error || '')); return; }
+
+    document.getElementById('daily-total').textContent = data.total_liters.toFixed(1);
+
+    const hours = data.hours || [];
+    // Peak hour
+    const peak = hours.reduce((a, b) => parseFloat(b.liters || 0) > parseFloat(a.liters || 0) ? b : a, { liters: 0, hour: '--' });
+    document.getElementById('daily-peak-hour').textContent = peak.hour !== undefined ? peak.hour + ':00' : '--';
+    document.getElementById('daily-peak-liters').textContent = peak.liters ? parseFloat(peak.liters).toFixed(1) + ' L' : '—';
+
+    const totalAvgLpm = hours.length ? hours.reduce((s, h) => s + parseFloat(h.avg_lpm || 0), 0) / hours.length : 0;
+    document.getElementById('daily-avg-lpm').textContent = totalAvgLpm.toFixed(2);
+
+    // Grafik: 24 saat
+    const chartEl = document.getElementById('daily-chart');
+    if (hours.length === 0) {
+      chartEl.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);font-size:.82rem;align-self:center">Bu tarihte veri yok</div>';
+    } else {
+      const hourMap = {};
+      hours.forEach(h => { hourMap[parseInt(h.hour)] = parseFloat(h.liters || 0); });
+      const maxL = Math.max(...Object.values(hourMap), 0.1);
+      let bars = '';
+      for (let i = 0; i < 24; i++) {
+        const l = hourMap[i] || 0;
+        const pct = Math.max((l / maxL) * 100, l > 0 ? 4 : 0);
+        const color = l === 0 ? 'rgba(255,255,255,.06)' : l > maxL * 0.7 ? 'var(--red)' : 'var(--cyan)';
+        bars += `<div title="${i}:00 — ${l.toFixed(1)} L" style="flex:1;height:${pct}%;background:${color};border-radius:3px 3px 0 0;min-height:2px;cursor:default;transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"></div>`;
+      }
+      chartEl.innerHTML = bars;
+    }
+
+    // Tablo
+    const tableEl = document.getElementById('daily-table');
+    if (hours.length === 0) {
+      tableEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Bu tarihte veri yok</div>';
+    } else {
+      tableEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:600">Saat</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Tüketim (L)</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Ort. Akış (L/dk)</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Maks. Akış</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Ölçüm</th>
+        </tr></thead><tbody>
+        ${hours.map(h => `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.5rem .75rem;font-weight:600">${h.hour}:00</td>
+          <td style="padding:.5rem .75rem;text-align:right;color:var(--cyan)">${parseFloat(h.liters).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right">${parseFloat(h.avg_lpm).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right">${parseFloat(h.max_lpm).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right;color:var(--muted)">${h.n}</td>
+        </tr>`).join('')}
+        </tbody></table>`;
+    }
+  } catch (e) { showToast('Bağlantı hatası: ' + e.message); }
+}
+
+// ============================================================
+// AYLIK ANALİZ
+// ============================================================
+(function initMonthlyMonth() {
+  const el = document.getElementById('monthly-month-input');
+  if (el) el.value = new Date().toISOString().slice(0, 7);
+})();
+
+async function loadMonthlyReport() {
+  const month = document.getElementById('monthly-month-input')?.value || new Date().toISOString().slice(0, 7);
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  try {
+    const r = await fetch(`${API}/api/reports/monthly?month=${month}`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await r.json();
+    if (!r.ok) { showToast('Rapor yüklenemedi: ' + (data.error || '')); return; }
+
+    document.getElementById('monthly-total').textContent = data.total_liters.toFixed(1);
+    document.getElementById('monthly-avg').textContent = data.avg_daily.toFixed(1);
+
+    const days = data.days || [];
+    const peak = days.reduce((a, b) => parseFloat(b.liters || 0) > parseFloat(a.liters || 0) ? b : a, { liters: 0, day: '--' });
+    document.getElementById('monthly-peak-day').textContent = peak.day !== undefined ? peak.day + '. gün' : '--';
+    document.getElementById('monthly-peak-val').textContent = peak.liters ? parseFloat(peak.liters).toFixed(1) + ' L' : '—';
+
+    // Grafik
+    const chartEl = document.getElementById('monthly-chart');
+    const labelsEl = document.getElementById('monthly-chart-labels');
+    if (days.length === 0) {
+      chartEl.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);font-size:.82rem;align-self:center">Bu ayda veri yok</div>';
+      labelsEl.innerHTML = '';
+    } else {
+      const maxL = Math.max(...days.map(d => parseFloat(d.liters || 0)), 0.1);
+      const bars = days.map(d => {
+        const l = parseFloat(d.liters || 0);
+        const pct = Math.max((l / maxL) * 100, 4);
+        const color = l > maxL * 0.8 ? 'var(--red)' : l > maxL * 0.5 ? 'var(--yellow)' : 'var(--cyan)';
+        return `<div title="${parseInt(d.day)}. gün — ${l.toFixed(1)} L" style="flex:1;height:${pct}%;background:${color};border-radius:3px 3px 0 0;min-height:2px;cursor:default;transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"></div>`;
+      }).join('');
+      chartEl.innerHTML = bars;
+
+      const labelDays = days.filter((_, i) => i % Math.ceil(days.length / 8) === 0).map(d => `<span>${parseInt(d.day)}</span>`).join('');
+      labelsEl.innerHTML = labelDays;
+    }
+
+    // Tablo
+    const tableEl = document.getElementById('monthly-table');
+    if (days.length === 0) {
+      tableEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Bu ayda veri yok</div>';
+    } else {
+      tableEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:600">Gün</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Tüketim (L)</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Ort. Akış (L/dk)</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Maks. Akış</th>
+          <th style="text-align:right;padding:.5rem .75rem;color:var(--muted);font-weight:600">Ölçüm</th>
+        </tr></thead><tbody>
+        ${days.map(d => `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.5rem .75rem;font-weight:600">${parseInt(d.day)}. gün</td>
+          <td style="padding:.5rem .75rem;text-align:right;color:var(--cyan)">${parseFloat(d.liters).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right">${parseFloat(d.avg_lpm).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right">${parseFloat(d.max_lpm).toFixed(2)}</td>
+          <td style="padding:.5rem .75rem;text-align:right;color:var(--muted)">${d.n}</td>
+        </tr>`).join('')}
+        </tbody></table>`;
+    }
+  } catch (e) { showToast('Bağlantı hatası: ' + e.message); }
 }
 
 // Sayfa açıldığında backend WebSocket'e otomatik bağlan
