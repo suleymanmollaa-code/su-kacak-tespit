@@ -2889,6 +2889,44 @@ async function resolveAnomaly(id) {
 // Sayfa yüklenince gerçek veri çek
 setTimeout(loadDashboardData, 500);
 
+// ── WebSocket bağlantısı ─────────────────────────────────────
+function connectRealBackend(url) {
+  if (window._ws && window._ws.readyState < 2) return; // zaten bağlı/bağlanıyor
+  const token = localStorage.getItem('susayar_token');
+  if (!token) return;
+  const fullUrl = url + '?token=' + encodeURIComponent(token);
+  const ws = new WebSocket(fullUrl);
+  window._ws = ws;
+
+  ws.onopen = function() {
+    console.log('[WS] Bağlandı');
+    const statusEl = document.getElementById('ws-status-text');
+    if (statusEl) { statusEl.textContent = 'Bağlı'; statusEl.style.color = 'var(--green)'; }
+    setCihazBtn('connected');
+  };
+
+  ws.onmessage = function(e) {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'sensor_update' && msg.payload) {
+        applyRealReading(msg.payload);
+        renderSonOlcumler([msg.payload], true);
+      } else if (msg.type === 'anomaly' && msg.payload) {
+        loadAnomalies();
+      }
+    } catch {}
+  };
+
+  ws.onclose = function() {
+    console.log('[WS] Kapandı, 5sn sonra yeniden bağlanılacak');
+    window._ws = null;
+    setCihazBtn('disconnected');
+    setTimeout(autoConnectBackend, 5000);
+  };
+
+  ws.onerror = function() { ws.close(); };
+}
+
 // Sayfa açıldığında backend WebSocket'e otomatik bağlan
 function autoConnectBackend() {
   const token = localStorage.getItem('susayar_token');
