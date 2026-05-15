@@ -320,6 +320,28 @@ app.delete('/api/devices/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Anomaliler ────────────────────────────────────────────────
+app.get('/api/anomalies', requireAuth, async (req, res) => {
+  try {
+    const rows = await db.queryAll(
+      `SELECT * FROM anomalies WHERE user_id=$1 ORDER BY id DESC LIMIT 50`,
+      [req.user.id]
+    );
+    res.json(rows.map(db.normalizeAnomaly));
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
+  try {
+    const n = await db.queryRun(
+      `UPDATE anomalies SET resolved=1 WHERE id=$1 AND user_id=$2`,
+      [req.params.id, req.user.id]
+    );
+    if (!n) return res.status(404).json({ error: 'Bulunamadı' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // ── Readings temizle ──────────────────────────────────────────
 app.delete('/api/readings', requireAuth, async (req, res) => {
   try {
@@ -354,6 +376,37 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       [reading.ts, reading.rssi_dbm, reading.device_id, reading.user_id]
     );
     broadcastToUser(reading.user_id, { type: 'sensor_update', payload: reading });
+
+    // ── Anomali tespiti ─────────────────────────────────────
+    const hour = new Date().getUTCHours() + 3; // TR saati (UTC+3)
+    const trHour = ((hour % 24) + 24) % 24;
+    const anomalies = [];
+
+    // Gece akışı (00:00–05:00 arası flow > 0.1 L/dk)
+    if (trHour >= 0 && trHour < 5 && reading.flow_lpm > 0.1) {
+      anomalies.push({ type: 'gece-akis', detail: `${trHour}:00 saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
+    }
+    // Çok yüksek akış (>8 L/dk)
+    if (reading.flow_lpm > 8) {
+      anomalies.push({ type: 'yuksek-akis', detail: `Anlık akış ${reading.flow_lpm.toFixed(1)} L/dk — anormal yüksek` });
+    }
+
+    for (const a of anomalies) {
+      // Aynı tipte son 30 dk içinde anomali varsa tekrar ekleme
+      const cutoff30 = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const existing = await db.queryOne(
+        `SELECT id FROM anomalies WHERE user_id=$1 AND type=$2 AND ts>=$3`,
+        [reading.user_id, a.type, cutoff30]
+      );
+      if (!existing) {
+        const anomId = Date.now();
+        await db.queryRun(
+          `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          [anomId, reading.user_id, a.type, reading.device_id, a.detail, reading.ts, 0]
+        );
+        broadcastToUser(reading.user_id, { type: 'anomaly', payload: { id: anomId, ...a, device: reading.device_id, ts: reading.ts, resolved: false } });
+      }
+    }
 
     console.log(`[${reading.ts}] ${reading.device_id} | ${data.flow_lpm} L/dk | ${data.total_liters} L`);
     res.json({ ok: true, ts: reading.ts });
