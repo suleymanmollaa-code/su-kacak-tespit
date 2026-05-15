@@ -874,21 +874,21 @@
       <div class="kpi-grid">
         <div class="kpi">
           <div class="kpi-label">&#x1F4A7; Anlık Akış</div>
-          <div class="kpi-value blue" id="kpi-flow">2.4 <span style="font-size:1rem">L/dk</span></div>
-          <div class="kpi-change" id="kpi-flow-sub">Mutfak musluğu açık</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-flow-bar" style="width:24%;background:var(--blue)"></div></div>
+          <div class="kpi-value blue" id="kpi-flow">0.0 <span style="font-size:1rem">L/dk</span></div>
+          <div class="kpi-change" id="kpi-flow-sub">Cihaz bekleniyor</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-flow-bar" style="width:0%;background:var(--blue)"></div></div>
         </div>
         <div class="kpi">
           <div class="kpi-label">&#x1F4C5; Bugünkü Tüketim</div>
-          <div class="kpi-value green" id="kpi-daily">187 <span style="font-size:1rem">L</span></div>
-          <div class="kpi-change"><span class="down">&#x2193; %12</span> dünden az</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-daily-bar" style="width:62%;background:var(--green)"></div></div>
+          <div class="kpi-value green" id="kpi-daily">— <span style="font-size:1rem">L</span></div>
+          <div class="kpi-change" id="kpi-daily-sub">Yükleniyor...</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-daily-bar" style="width:0%;background:var(--green)"></div></div>
         </div>
         <div class="kpi">
           <div class="kpi-label">&#x1F4C6; Bu Ay</div>
-          <div class="kpi-value yellow">4.2 <span style="font-size:1rem">m&#xB3;</span></div>
-          <div class="kpi-change"><span class="up">&#x2191; %8</span> geçen aydan fazla</div>
-          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:70%;background:var(--yellow)"></div></div>
+          <div class="kpi-value yellow" id="kpi-monthly">— <span style="font-size:1rem">L</span></div>
+          <div class="kpi-change" id="kpi-monthly-sub">Yükleniyor...</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-monthly-bar" style="width:0%;background:var(--yellow)"></div></div>
         </div>
         <div class="kpi">
           <div class="kpi-label">&#x1F4E1; Bağlı Cihaz</div>
@@ -907,53 +907,12 @@
             </div>
             <span class="chip chip-blue">Bu Hafta</span>
           </div>
-          <div class="bar-chart">
-            <div class="bar-wrap">
-              <div class="bar" style="height:55%;background:rgba(59,130,246,.5)">
-                <div class="bar-tooltip">Pzt: 198 L</div>
-              </div>
-              <div class="bar-lbl">Pzt</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:72%;background:rgba(59,130,246,.5)">
-                <div class="bar-tooltip">Sal: 224 L</div>
-              </div>
-              <div class="bar-lbl">Sal</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:48%;background:rgba(59,130,246,.5)">
-                <div class="bar-tooltip">Car: 181 L</div>
-              </div>
-              <div class="bar-lbl">Car</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:88%;background:rgba(59,130,246,.5)">
-                <div class="bar-tooltip">Per: 267 L</div>
-              </div>
-              <div class="bar-lbl">Per</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:65%;background:rgba(59,130,246,.5)">
-                <div class="bar-tooltip">Cum: 210 L</div>
-              </div>
-              <div class="bar-lbl">Cum</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:95%;background:rgba(239,68,68,.6)">
-                <div class="bar-tooltip">Cmt: 312 L</div>
-              </div>
-              <div class="bar-lbl" style="color:var(--red)">Cmt</div>
-            </div>
-            <div class="bar-wrap">
-              <div class="bar" style="height:62%;background:var(--blue)">
-                <div class="bar-tooltip">Paz: 187 L</div>
-              </div>
-              <div class="bar-lbl" style="color:var(--blue-lt)">Paz</div>
-            </div>
+          <div class="bar-chart" id="weekly-chart-bars" style="align-items:flex-end">
+            <div style="width:100%;text-align:center;color:var(--muted);font-size:.82rem;align-self:center">Yükleniyor...</div>
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:1rem;font-size:.72rem;color:var(--muted)">
-            <span>Ortalama: <strong style="color:var(--text)">213 L/gün</strong></span>
-            <span>En yüksek: <strong style="color:var(--red)">Cumartesi 312 L</strong></span>
+            <span>Ortalama: <strong style="color:var(--text)" id="weekly-avg-text">—</strong></span>
+            <span>En yüksek: <strong style="color:var(--red)" id="weekly-peak-text">—</strong></span>
           </div>
         </div>
 
@@ -968,7 +927,7 @@
           <div class="flow-display">
             <div class="flow-ring" id="flow-ring">
               <div class="flow-ring-inner">
-                <div class="flow-num" id="flow-num">2.4</div>
+                <div class="flow-num" id="flow-num">0.0</div>
                 <div style="font-size:.7rem;color:var(--muted)">L/dk</div>
               </div>
             </div>
@@ -1003,18 +962,11 @@
 
           <div class="card">
             <div class="card-head">
-              <div class="card-title">Günlük Özet</div>
+              <div class="card-title">Son 7 Gün</div>
             </div>
-            <table class="week-table">
-              <tr><th>Gün</th><th>Tüketim</th><th>Fark</th></tr>
-              <tr><td>Pazartesi</td><td>198 L</td><td><span class="trend down">&#x2193; %4</span></td></tr>
-              <tr><td>Salı</td><td>224 L</td><td><span class="trend up">&#x2191; %13</span></td></tr>
-              <tr><td>Çarşamba</td><td>181 L</td><td><span class="trend down">&#x2193; %19</span></td></tr>
-              <tr><td>Perşembe</td><td>267 L</td><td><span class="trend up">&#x2191; %47</span></td></tr>
-              <tr><td>Cuma</td><td>210 L</td><td><span class="trend down">&#x2193; %21</span></td></tr>
-              <tr><td style="color:var(--red)">Cumartesi</td><td style="color:var(--red)">312 L</td><td><span class="trend up">&#x2191; %48</span></td></tr>
-              <tr><td style="color:var(--blue-lt)">Bugün</td><td style="color:var(--blue-lt)" id="today-val">187 L</td><td><span class="trend down">&#x2193; %40</span></td></tr>
-            </table>
+            <div id="weekly-table-body">
+              <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1032,14 +984,14 @@
           </div>
           <div class="flow-big-ring" id="flow-big-ring" style="width:200px;height:200px;border-radius:50%;margin:0 auto 1.5rem">
             <div class="flow-big-inner">
-              <div class="flow-big-num" id="flow-big-num">2.4</div>
+              <div class="flow-big-num" id="flow-big-num">0.0</div>
               <div style="font-size:.82rem;color:var(--muted)">L/dakika</div>
             </div>
           </div>
           <div style="display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem">
-            <div><div style="font-size:1.3rem;font-weight:700;color:var(--yellow)" id="session-vol">14.2 L</div><div style="font-size:.7rem;color:var(--muted)">Bugün Toplam</div></div>
+            <div><div style="font-size:1.3rem;font-weight:700;color:var(--yellow)" id="session-vol">0.0 L</div><div style="font-size:.7rem;color:var(--muted)">Bugün Toplam</div></div>
           </div>
-          <div style="font-size:.72rem;color:var(--muted)">Son güncelleme: <span id="last-update">az önce</span></div>
+          <div style="font-size:.72rem;color:var(--muted)">Son güncelleme: <span id="last-update">—</span></div>
         </div>
 
         <div class="card">
@@ -1053,19 +1005,19 @@
             <table style="width:100%;border-collapse:collapse;font-size:.78rem">
               <tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:.5rem;color:var(--muted)">Ort. Debi (5 dk)</td>
-                <td style="padding:.5rem;font-weight:600;color:var(--cyan)" id="avg-flow">2.1 L/dk</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--cyan)" id="avg-flow">— L/dk</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:.5rem;color:var(--muted)">Maks. Debi (bugün)</td>
-                <td style="padding:.5rem;font-weight:600;color:var(--blue-lt)">4.7 L/dk</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--blue-lt)" id="max-flow">— L/dk</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:.5rem;color:var(--muted)">Cihaz Durumu</td>
-                <td style="padding:.5rem;font-weight:600;color:var(--green)">Bağlı</td>
+                <td style="padding:.5rem;font-weight:600;color:var(--muted)" id="device-status-text">Bağlı Değil</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:.5rem;color:var(--muted)">WiFi Sinyal</td>
-                <td style="padding:.5rem;font-weight:600;color:var(--green)">-62 dBm (iyi)</td>
+                <td style="padding:.5rem;font-weight:600" id="rssi-text">—</td>
               </tr>
               <tr>
                 <td style="padding:.5rem;color:var(--muted)">Basınç Sensörü</td>
@@ -1514,114 +1466,173 @@ navItems.forEach(item => {
 });
 
 // ============================
-// LIVE FLOW SIMULATION
+// FLOW HISTORY (boş başlar)
 // ============================
-const flowSequence = [2.4, 2.7, 3.1, 2.9, 2.4, 1.8, 1.2, 0.6, 0.0, 0.0, 0.3, 1.4, 2.2, 2.8, 3.0, 2.5, 2.1, 1.7, 2.4, 2.6];
-let flowIdx = 0;
-let sessionLiters = 14.2;
-const flowHistory = [];
-
-// Init flow history bars
 const flowHistEl = document.getElementById('flow-history');
+const flowHistory = [];
 for (let i = 0; i < 30; i++) {
   const b = document.createElement('div');
   b.className = 'fh-bar';
-  b.style.height = Math.random() * 60 + 5 + '%';
+  b.style.height = '3%';
+  b.style.background = 'rgba(255,255,255,.06)';
   flowHistEl.appendChild(b);
-  flowHistory.push(parseFloat((Math.random() * 3).toFixed(1)));
+  flowHistory.push(0);
 }
 
-function updateFlow() {
-  flowIdx = (flowIdx + 1) % flowSequence.length;
-  const val = (flowSequence[flowIdx] + (Math.random() * 0.4 - 0.2)).toFixed(1);
-  const numVal = Math.max(0, parseFloat(val));
-  const displayVal = numVal.toFixed(1);
-
-  // Update dashboard ring
-  document.getElementById('flow-num').textContent = displayVal;
-  document.getElementById('kpi-flow').innerHTML = displayVal + ' <span style="font-size:1rem">L/dk</span>';
-
-  // Update ring gradient
-  const pct = Math.min(numVal / 5, 1);
-  const deg = Math.round(pct * 360);
-  const color = numVal === 0 ? 'var(--border)' : numVal > 4 ? 'var(--red)' : numVal > 2.5 ? 'var(--yellow)' : 'var(--cyan)';
-  document.getElementById('flow-ring').style.background =
-    'conic-gradient(' + color + ' 0deg ' + deg + 'deg, var(--border) ' + deg + 'deg 360deg)';
-
-  // Update anlik page
-  document.getElementById('flow-big-num').textContent = displayVal;
-  document.getElementById('flow-big-ring').style.background =
-    'conic-gradient(' + color + ' 0deg ' + deg + 'deg, var(--border) ' + deg + 'deg 360deg)';
-
-  // KPI flow sub-text
-  if (numVal === 0) {
-    document.getElementById('kpi-flow-sub').textContent = 'Akış yok';
-  } else if (numVal < 0.5) {
-    document.getElementById('kpi-flow-sub').textContent = 'Düşük debi — damlatma?';
-  } else {
-    document.getElementById('kpi-flow-sub').textContent = 'Akış aktif';
-  }
-  document.getElementById('kpi-flow-bar').style.width = (pct * 100) + '%';
-
-  // Session / daily total — 2.5 sn aralikta numVal L/dk * (2.5/60) dk = gercekci birikim
-  sessionLiters = parseFloat((parseFloat(sessionLiters) + numVal * (2.5 / 60)).toFixed(1));
-  const sesEl = document.getElementById('session-vol');
-  if (sesEl) sesEl.textContent = sessionLiters + ' L';
-
-  // Last update
-  const lu = document.getElementById('last-update');
-  if (lu) lu.textContent = 'az önce';
-
-  // Update avg flow
-  const avgEl = document.getElementById('avg-flow');
-  if (avgEl) avgEl.textContent = (numVal * 0.9 + 0.2).toFixed(1) + ' L/dk';
-
-  // Sync session to all total display elements
-  ['session-mini'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = sessionLiters + ' L';
-  });
-
-  // Daily table bugün satiri
-  const todayEl = document.getElementById('today-val');
-  if (todayEl) todayEl.textContent = Math.round(sessionLiters) + ' L';
-
-  // Flow history mini chart
-  flowHistory.push(numVal);
+function updateFlowHistory(lpm) {
+  flowHistory.push(lpm);
   if (flowHistory.length > 30) flowHistory.shift();
   const bars = flowHistEl.querySelectorAll('.fh-bar');
   const maxH = Math.max(...flowHistory, 0.1);
   bars.forEach((b, i) => {
     const h = Math.max((flowHistory[i] / maxH) * 100, 3);
     b.style.height = h + '%';
-    b.style.background = flowHistory[i] === 0 ? 'rgba(6,182,212,.15)' :
+    b.style.background = flowHistory[i] === 0 ? 'rgba(255,255,255,.06)' :
       flowHistory[i] > 4 ? 'rgba(239,68,68,.6)' : 'rgba(6,182,212,.4)';
   });
-
 }
 
-window._demoIntervalId = setInterval(updateFlow, 2500);
-updateFlow();
+// ============================
+// DASHBOARD VERİ YÜKLEME
+// ============================
+let _todayMaxLpm = 0;
 
-// ============================
-// STATUS BAR
-// ============================
-const statusMessages = [
-  { text: 'Cihaz Bağlı', color: 'var(--green)' },
-  { text: 'Veri Alınıyor...', color: 'var(--cyan)' },
-  { text: 'Cihaz Bağlı', color: 'var(--green)' },
-  { text: 'Cihaz Bağlı', color: 'var(--green)' },
-  { text: 'Senkronize Ediliyor', color: 'var(--yellow)' },
-  { text: 'Cihaz Bağlı', color: 'var(--green)' },
-];
-let statusIdx = 0;
-setInterval(() => {
-  statusIdx = (statusIdx + 1) % statusMessages.length;
-  const s = statusMessages[statusIdx];
-  document.getElementById('status-text').textContent = s.text;
-  document.getElementById('status-text').style.color = s.color;
-  document.getElementById('status-dot').style.background = s.color;
-}, 4000);
+async function loadDashboardData() {
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const today = new Date().toISOString().slice(0, 10);
+  const month = new Date().toISOString().slice(0, 7);
+
+  try {
+    const [latestRes, dailyRes, monthlyRes] = await Promise.all([
+      fetch(`${API}/api/latest`,                        { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/reports/daily?date=${today}`,   { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/reports/monthly?month=${month}`,{ headers: { Authorization: `Bearer ${token}` } }),
+    ]);
+
+    // Anlık
+    if (latestRes.ok) {
+      const latest = await latestRes.json();
+      if (latest.ts) {
+        applyRealReading(latest);
+        const luEl = document.getElementById('last-update');
+        if (luEl) luEl.textContent = new Date(latest.ts).toLocaleTimeString('tr-TR');
+      }
+    }
+
+    // Bugünkü tüketim KPI
+    if (dailyRes.ok) {
+      const daily = await dailyRes.json();
+      const todayL = daily.total_liters || 0;
+      const kpiDailyEl = document.getElementById('kpi-daily');
+      if (kpiDailyEl) kpiDailyEl.innerHTML = todayL.toFixed(1) + ' <span style="font-size:1rem">L</span>';
+      const subEl = document.getElementById('kpi-daily-sub');
+      if (subEl) subEl.textContent = todayL > 0 ? 'Gerçek veri' : 'Bugün henüz veri yok';
+      const barEl = document.getElementById('kpi-daily-bar');
+      if (barEl) barEl.style.width = Math.min((todayL / 500) * 100, 100) + '%';
+
+      // Avg/max flow hesapla
+      const hours = daily.hours || [];
+      if (hours.length > 0) {
+        const avgLpm = hours.reduce((s, h) => s + parseFloat(h.avg_lpm || 0), 0) / hours.length;
+        const maxLpm = Math.max(...hours.map(h => parseFloat(h.max_lpm || 0)));
+        const avgEl = document.getElementById('avg-flow');
+        if (avgEl) avgEl.textContent = avgLpm.toFixed(2) + ' L/dk';
+        const maxEl = document.getElementById('max-flow');
+        if (maxEl) maxEl.textContent = maxLpm.toFixed(2) + ' L/dk';
+        _todayMaxLpm = maxLpm;
+      }
+
+      // Haftalık tablo — son 7 gün
+      renderWeeklyFromMonthly(daily);
+    }
+
+    // Bu Ay KPI
+    if (monthlyRes.ok) {
+      const monthly = await monthlyRes.json();
+      const monthL = monthly.total_liters || 0;
+      const kpiMonEl = document.getElementById('kpi-monthly');
+      if (kpiMonEl) kpiMonEl.innerHTML = monthL >= 1000
+        ? (monthL / 1000).toFixed(2) + ' <span style="font-size:1rem">m³</span>'
+        : monthL.toFixed(1) + ' <span style="font-size:1rem">L</span>';
+      const monSubEl = document.getElementById('kpi-monthly-sub');
+      if (monSubEl) monSubEl.textContent = monthly.avg_daily > 0 ? 'Ort: ' + monthly.avg_daily + ' L/gün' : 'Bu ay veri yok';
+      const monBarEl = document.getElementById('kpi-monthly-bar');
+      if (monBarEl) monBarEl.style.width = Math.min((monthL / 15000) * 100, 100) + '%';
+
+      renderWeeklyChart(monthly.days || []);
+    }
+  } catch (e) { console.warn('Dashboard veri yüklenemedi:', e.message); }
+}
+
+const _DAY_NAMES = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+function renderWeeklyChart(monthDays) {
+  const chartEl = document.getElementById('weekly-chart-bars');
+  const avgTextEl = document.getElementById('weekly-avg-text');
+  const peakTextEl = document.getElementById('weekly-peak-text');
+  if (!chartEl) return;
+
+  // Son 7 gün
+  const today = new Date();
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dayNum = String(d.getDate()).padStart(2, '0');
+    const match = monthDays.find(r => String(parseInt(r.day)).padStart(2,'0') === dayNum);
+    last7.push({ label: _DAY_NAMES[d.getDay()], liters: match ? parseFloat(match.liters) : 0, isToday: i === 0 });
+  }
+
+  const maxL = Math.max(...last7.map(d => d.liters), 0.1);
+  const avgL = last7.filter(d => d.liters > 0).reduce((s, d) => s + d.liters, 0) / (last7.filter(d => d.liters > 0).length || 1);
+  const peak = last7.reduce((a, b) => b.liters > a.liters ? b : a);
+
+  chartEl.innerHTML = last7.map(d => {
+    const pct = Math.max((d.liters / maxL) * 100, d.liters > 0 ? 4 : 2);
+    const color = d.isToday ? 'var(--blue)' : d.liters > maxL * 0.9 ? 'rgba(239,68,68,.6)' : 'rgba(59,130,246,.5)';
+    return `<div class="bar-wrap">
+      <div class="bar" style="height:${pct}%;background:${color}">
+        <div class="bar-tooltip">${d.label}: ${d.liters.toFixed(1)} L</div>
+      </div>
+      <div class="bar-lbl" style="${d.isToday ? 'color:var(--blue-lt)' : ''}">${d.label}</div>
+    </div>`;
+  }).join('');
+
+  if (avgTextEl) avgTextEl.textContent = avgL > 0 ? Math.round(avgL) + ' L/gün' : '—';
+  if (peakTextEl && peak.liters > 0) peakTextEl.textContent = peak.label + ' ' + peak.liters.toFixed(1) + ' L';
+  else if (peakTextEl) peakTextEl.textContent = '—';
+}
+
+function renderWeeklyFromMonthly() {
+  // weekly table — son 7 gün özet tablosu
+  const tableEl = document.getElementById('weekly-table-body');
+  if (!tableEl) return;
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const month = new Date().toISOString().slice(0, 7);
+  fetch(`${API}/api/reports/monthly?month=${month}`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(r => r.json()).then(data => {
+      const today = new Date();
+      const rows = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dayNum = String(d.getDate()).padStart(2, '0');
+        const match = (data.days || []).find(r => String(parseInt(r.day)).padStart(2,'0') === dayNum);
+        rows.push({ label: _DAY_NAMES[d.getDay()], date: d.getDate(), liters: match ? parseFloat(match.liters) : 0, isToday: i === 0 });
+      }
+      if (rows.every(r => r.liters === 0)) {
+        tableEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>';
+        return;
+      }
+      tableEl.innerHTML = '<table class="week-table"><tr><th>Gün</th><th>Tüketim</th></tr>' +
+        rows.map(r => `<tr>
+          <td style="${r.isToday ? 'color:var(--blue-lt)' : ''}">${r.label} ${r.date}</td>
+          <td style="${r.isToday ? 'color:var(--blue-lt)' : ''}">${r.liters > 0 ? r.liters.toFixed(1) + ' L' : '—'}</td>
+        </tr>`).join('') + '</table>';
+    }).catch(() => {});
+}
 
 // ============================
 // TOGGLE — ÖĞRENME SİSTEMİ
@@ -2223,18 +2234,8 @@ let demoIntervalId  = null;
 let reconnectTimer  = null;
 let savedWsUrl      = localStorage.getItem('susayar_ws_url') || '';
 
-function stopDemo() {
-  if (window._demoIntervalId) {
-    clearInterval(window._demoIntervalId);
-    window._demoIntervalId = null;
-  }
-}
-
-function startDemo() {
-  if (!window._demoIntervalId) {
-    window._demoIntervalId = setInterval(updateFlow, 2500);
-  }
-}
+function stopDemo() { /* simülasyon kaldırıldı */ }
+function startDemo() { /* simülasyon kaldırıldı */ }
 
 // ── Gerçek veri → dashboard DOM ─────────────────────────────
 function applyRealReading(data) {
@@ -2266,19 +2267,41 @@ function applyRealReading(data) {
   const subEl = document.getElementById('kpi-flow-sub');
   if (subEl) subEl.textContent = lpm === 0 ? 'Akış yok' : lpm < 0.5 ? 'Düşük debi — damlatma?' : 'Akış aktif';
 
-  // Bugün toplamı
-  const todayEl = document.getElementById('today-val');
-  if (todayEl) todayEl.textContent = Math.round(totalL) + ' L';
+  // Toplam
   const sesEl = document.getElementById('session-vol');
   if (sesEl) sesEl.textContent = totalL.toFixed(1) + ' L';
+  const miniEl = document.getElementById('session-mini');
+  if (miniEl) miniEl.textContent = totalL.toFixed(1) + ' L';
 
   // Son güncelleme
   const luEl = document.getElementById('last-update');
   if (luEl) luEl.textContent = 'az önce';
 
-  // Ortalama
-  const avgEl = document.getElementById('avg-flow');
-  if (avgEl) avgEl.textContent = (lpm * 0.9 + 0.1).toFixed(1) + ' L/dk';
+  // Max debi takip
+  if (lpm > _todayMaxLpm) {
+    _todayMaxLpm = lpm;
+    const maxEl = document.getElementById('max-flow');
+    if (maxEl) maxEl.textContent = lpm.toFixed(2) + ' L/dk';
+  }
+
+  // RSSI
+  if (data.rssi_dbm) {
+    const rssiEl = document.getElementById('rssi-text');
+    if (rssiEl) {
+      const r = parseInt(data.rssi_dbm);
+      const q = r > -60 ? 'iyi' : r > -75 ? 'orta' : 'zayıf';
+      const c = r > -60 ? 'var(--green)' : r > -75 ? 'var(--yellow)' : 'var(--red)';
+      rssiEl.textContent = r + ' dBm (' + q + ')';
+      rssiEl.style.color = c;
+    }
+  }
+
+  // Cihaz durumu
+  const devStatusEl = document.getElementById('device-status-text');
+  if (devStatusEl) { devStatusEl.textContent = 'Bağlı'; devStatusEl.style.color = 'var(--green)'; }
+
+  // Flow history mini chart
+  updateFlowHistory(lpm);
 }
 
 // ── Bağlantı butonu durumu ───────────────────────────────────
@@ -2311,7 +2334,9 @@ async function clearReadings() {
   if (r.ok) {
     _sonOlcumlerBuf = [];
     document.getElementById('son-olcumler-list').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>';
+    _todayMaxLpm = 0;
     showToast('Geçmiş temizlendi.');
+    loadDashboardData();
   } else {
     showToast('Silinemedi.');
   }
@@ -2795,6 +2820,9 @@ async function loadMonthlyReport() {
     }
   } catch (e) { showToast('Bağlantı hatası: ' + e.message); }
 }
+
+// Sayfa yüklenince gerçek veri çek
+setTimeout(loadDashboardData, 500);
 
 // Sayfa açıldığında backend WebSocket'e otomatik bağlan
 function autoConnectBackend() {
