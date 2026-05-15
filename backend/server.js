@@ -158,7 +158,7 @@ app.post('/api/auth/verify-otp', requireAuth, async (req, res) => {
 });
 
 // OTP yeniden gönder
-app.post('/api/auth/resend-otp', requireAuth, async (req, res) => {
+app.post('/api/auth/resend-otp', authLimiter, requireAuth, async (req, res) => {
   try {
     const user = await db.queryOne(`SELECT name, email, phone_verified FROM users WHERE id=$1`, [req.user.id]);
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
@@ -457,7 +457,8 @@ app.get('/api/stats', requireAuth, async (req, res) => {
 app.get('/api/reports/daily', requireAuth, async (req, res) => {
   try {
     const uid  = req.user.id;
-    const date = req.query.date || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
     const dayStart = date + 'T00:00:00.000Z';
     const dayEnd   = date + 'T23:59:59.999Z';
 
@@ -487,7 +488,8 @@ app.get('/api/reports/daily', requireAuth, async (req, res) => {
 app.get('/api/reports/monthly', requireAuth, async (req, res) => {
   try {
     const uid   = req.user.id;
-    const month = req.query.month || new Date().toISOString().slice(0, 7); // YYYY-MM
+    const month = req.query.month || new Date().toISOString().slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ error: 'Geçersiz ay formatı (YYYY-MM)' });
     const monthStart = month + '-01T00:00:00.000Z';
     const monthEnd   = month + '-31T23:59:59.999Z';
 
@@ -550,7 +552,7 @@ app.post('/api/stripe/checkout', requireAuth, async (req, res) => {
       cancel_url:  STRIPE_CANCEL,
     });
     res.json({ url: session.url });
-  } catch (e) { console.error('[STRIPE]', e.message); res.status(500).json({ error: e.message }); }
+  } catch (e) { console.error('[STRIPE]', e.message); res.status(500).json({ error: 'Ödeme sistemi hatası' }); }
 });
 
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -572,7 +574,18 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 });
 
 // ── Admin ─────────────────────────────────────────────────────
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'susayar-admin-2024';
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
+if (!ADMIN_SECRET) {
+  console.error('[HATA] ADMIN_SECRET ortam değişkeni ayarlanmamış! Render > Environment > ADMIN_SECRET ekleyin.');
+  process.exit(1);
+}
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { error: 'Çok fazla admin isteği.' },
+  standardHeaders: true, legacyHeaders: false,
+});
 
 function requireAdmin(req, res, next) {
   const secret = req.headers['x-admin-secret'];
@@ -580,7 +593,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-app.get('/api/admin/users', requireAdmin, async (req, res) => {
+app.get('/api/admin/users', adminLimiter, requireAdmin, async (req, res) => {
   try {
     const users = await db.queryAll(
       `SELECT id, name, email, plan, phone, phone_verified, created_at FROM users ORDER BY created_at DESC`
@@ -589,14 +602,14 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.post('/api/admin/users/:id/reset-link', requireAdmin, async (req, res) => {
+app.post('/api/admin/users/:id/reset-link', adminLimiter, requireAdmin, async (req, res) => {
   try {
     const user = await db.queryOne(`SELECT id, name, email FROM users WHERE id=$1`, [req.params.id]);
     if (!user) return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
     const token = randomUUID().replace(/-/g, '');
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await db.queryRun(`UPDATE users SET reset_token=$1, reset_token_expires=$2 WHERE id=$3`, [token, expires, user.id]);
-    const appUrl = process.env.APP_URL || 'https://su-kacak-tespit.onrender.com';
+    const appUrl = process.env.APP_URL || 'https://www.susayar.com';
     const resetUrl = `${appUrl}/susayar-auth.html?reset_token=${token}`;
     await sendMail({
       to: user.email,
@@ -610,11 +623,11 @@ app.post('/api/admin/users/:id/reset-link', requireAdmin, async (req, res) => {
         </div>
       </div>`,
     });
-    res.json({ ok: true, resetUrl });
+    res.json({ ok: true }); // resetUrl response'a eklenmez
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.get('/api/admin/devices', requireAdmin, async (req, res) => {
+app.get('/api/admin/devices', adminLimiter, requireAdmin, async (req, res) => {
   try {
     const devs = await db.queryAll(
       `SELECT d.id, d.name, d.device_id, d.api_key, d.last_seen, d.created_at,
@@ -626,7 +639,7 @@ app.get('/api/admin/devices', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.post('/api/admin/devices', requireAdmin, async (req, res) => {
+app.post('/api/admin/devices', adminLimiter, requireAdmin, async (req, res) => {
   try {
     const { user_id, name, device_id } = req.body;
     if (!user_id || !name || !device_id) return res.status(400).json({ error: 'user_id, name ve device_id zorunludur' });
@@ -646,7 +659,7 @@ app.post('/api/admin/devices', requireAdmin, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.delete('/api/admin/devices/:id', requireAdmin, async (req, res) => {
+app.delete('/api/admin/devices/:id', adminLimiter, requireAdmin, async (req, res) => {
   try {
     await db.queryRun(`DELETE FROM devices WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
