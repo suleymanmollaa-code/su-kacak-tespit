@@ -2527,10 +2527,14 @@ async function deleteDevice(id) {
   loadDeviceList();
 }
 
-// Sayfa açıldığında kaydedilmiş URL varsa otomatik bağlan
-if (savedWsUrl) {
-  setTimeout(() => connectRealBackend(savedWsUrl), 1500);
+// Sayfa açıldığında backend WebSocket'e otomatik bağlan
+function autoConnectBackend() {
+  const token = localStorage.getItem('susayar_token');
+  if (!token) return;
+  const wsBase = window.location.hostname === 'localhost' ? 'ws://localhost:3001' : 'wss://www.susayar.com';
+  connectRealBackend(wsBase + '/ws');
 }
+setTimeout(autoConnectBackend, 1500);
 </script>
 </body>
 </html>
