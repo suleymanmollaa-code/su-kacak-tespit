@@ -989,7 +989,10 @@
               <div class="card-title">Son Ölçümler</div>
               <div class="card-sub">Cihazdan gelen son veriler</div>
             </div>
-            <span class="chip chip-blue" id="last-reading-time">—</span>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <span class="chip chip-blue" id="last-reading-time">—</span>
+              <button onclick="clearReadings()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);border-radius:6px;cursor:pointer">Temizle</button>
+            </div>
           </div>
           <div id="son-olcumler-list" style="display:flex;flex-direction:column;gap:.5rem;padding:.25rem 0">
             <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>
@@ -2174,6 +2177,20 @@ function setCihazBtn(state) {
     btn.style.borderColor = 'rgba(16,185,129,.3)';
     btn.style.color = '#10b981';
     btn.innerHTML = '🔌 Cihaz Bağla';
+  }
+}
+
+async function clearReadings() {
+  if (!confirm('Tüm geçmiş ölçümler silinecek. Emin misiniz?')) return;
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const r = await fetch(`${API}/api/readings`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  if (r.ok) {
+    _sonOlcumlerBuf = [];
+    document.getElementById('son-olcumler-list').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>';
+    showToast('Geçmiş temizlendi.');
+  } else {
+    showToast('Silinemedi.');
   }
 }
 
