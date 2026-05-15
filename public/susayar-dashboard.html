@@ -1474,7 +1474,7 @@ function updateFlow() {
 
 }
 
-setInterval(updateFlow, 2500);
+window._demoIntervalId = setInterval(updateFlow, 2500);
 updateFlow();
 
 // ============================
@@ -2097,30 +2097,18 @@ let demoIntervalId  = null;
 let reconnectTimer  = null;
 let savedWsUrl      = localStorage.getItem('susayar_ws_url') || '';
 
-// Demo simülasyon interval'ını yakala (updateFlow setInterval'ı)
-// updateFlow zaten 2500ms interval'la çalışıyor — gerçek modda onu durdururuz
-const _origUpdateFlow = updateFlow;
-let demoRunning = true;
-
 function stopDemo() {
-  if (!demoRunning) return;
-  demoRunning = false;
-  // setInterval id'sini tespit edemediğimiz için updateFlow'u no-op yap
-  window._demoSuspended = true;
+  if (window._demoIntervalId) {
+    clearInterval(window._demoIntervalId);
+    window._demoIntervalId = null;
+  }
 }
 
 function startDemo() {
-  if (demoRunning) return;
-  demoRunning = true;
-  window._demoSuspended = false;
+  if (!window._demoIntervalId) {
+    window._demoIntervalId = setInterval(updateFlow, 2500);
+  }
 }
-
-// updateFlow'u gerçek modda bypass et
-const __updateFlowOrig = window.updateFlow;
-window.updateFlow = function() {
-  if (window._demoSuspended) return;
-  __updateFlowOrig && __updateFlowOrig();
-};
 
 // ── Gerçek veri → dashboard DOM ─────────────────────────────
 function applyRealReading(data) {
