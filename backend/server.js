@@ -465,13 +465,14 @@ app.get('/api/reports/daily', requireAuth, async (req, res) => {
     const uid  = req.user.id;
     const date = req.query.date || new Date().toISOString().slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
-    const dayStart = date + 'T00:00:00.000Z';
-    const dayEnd   = date + 'T23:59:59.999Z';
+    // TR saat dilimine göre gün başı/sonu (UTC+3)
+    const dayStart = date + 'T00:00:00.000+03:00';
+    const dayEnd   = date + 'T23:59:59.999+03:00';
 
     let rows;
     if (db.isPg) {
       rows = await db.queryAll(
-        `SELECT to_char(ts::timestamp AT TIME ZONE 'Europe/Istanbul', 'HH24') AS hour,
+        `SELECT to_char(ts::timestamptz AT TIME ZONE 'Europe/Istanbul', 'HH24') AS hour,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
          FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
@@ -496,13 +497,13 @@ app.get('/api/reports/monthly', requireAuth, async (req, res) => {
     const uid   = req.user.id;
     const month = req.query.month || new Date().toISOString().slice(0, 7);
     if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ error: 'Geçersiz ay formatı (YYYY-MM)' });
-    const monthStart = month + '-01T00:00:00.000Z';
-    const monthEnd   = month + '-31T23:59:59.999Z';
+    const monthStart = month + '-01T00:00:00.000+03:00';
+    const monthEnd   = month + '-31T23:59:59.999+03:00';
 
     let rows;
     if (db.isPg) {
       rows = await db.queryAll(
-        `SELECT to_char(ts::timestamp AT TIME ZONE 'Europe/Istanbul', 'DD') AS day,
+        `SELECT to_char(ts::timestamptz AT TIME ZONE 'Europe/Istanbul', 'DD') AS day,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
          FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
