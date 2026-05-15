@@ -1540,14 +1540,15 @@ function renderTodayFlowChart(hours) {
     el.innerHTML = '<div style="width:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem">Bugün henüz veri yok</div>';
     return;
   }
-  const maxL = Math.max(...hours.map(h => parseFloat(h.total_liters || 0)), 1);
+  const maxLpm = Math.max(...hours.map(h => parseFloat(h.avg_lpm || 0)), 1);
   const nowH = new Date().getHours();
   el.innerHTML = hours.map(h => {
     const hNum = parseInt(h.hour);
+    const lpm = parseFloat(h.avg_lpm || 0);
     const liters = parseFloat(h.total_liters || 0);
-    const pct = Math.max((liters / maxL) * 100, 2);
+    const pct = Math.max((lpm / maxLpm) * 100, lpm > 0 ? 4 : 2);
     const isCurrent = hNum === nowH;
-    const bg = isCurrent ? 'var(--cyan)' : liters > 0 ? 'rgba(6,182,212,.4)' : 'rgba(255,255,255,.07)';
+    const bg = isCurrent ? 'var(--cyan)' : lpm > 0 ? 'rgba(6,182,212,.4)' : 'rgba(255,255,255,.07)';
     const lbl = isCurrent ? 'Şim' : String(hNum).padStart(2, '0');
     const lblColor = isCurrent ? 'color:var(--cyan)' : '';
     return `<div class="bar-wrap"><div class="bar" style="height:${pct}%;background:${bg}"><div class="bar-tooltip">${String(hNum).padStart(2,'0')}:00 — ${liters.toFixed(1)} L</div></div><div class="bar-lbl" style="${lblColor}">${lbl}</div></div>`;
