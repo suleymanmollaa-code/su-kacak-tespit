@@ -108,7 +108,11 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const { name, email, password, phone } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Ad, e-posta ve şifre zorunludur' });
     if (!phone) return res.status(400).json({ error: 'Telefon numarası zorunludur' });
-    if (password.length < 6) return res.status(400).json({ error: 'Şifre en az 6 karakter olmalıdır' });
+    if (name.trim().length > 100) return res.status(400).json({ error: 'Ad en fazla 100 karakter olabilir' });
+    if (email.length > 254) return res.status(400).json({ error: 'Geçersiz e-posta' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Geçersiz e-posta formatı' });
+    if (password.length < 8) return res.status(400).json({ error: 'Şifre en az 8 karakter olmalıdır' });
+    if (password.length > 128) return res.status(400).json({ error: 'Şifre en fazla 128 karakter olabilir' });
     const exists = await db.queryOne(`SELECT id FROM users WHERE email = $1`, [email.toLowerCase().trim()]);
     if (exists) return res.status(409).json({ error: 'Bu e-posta zaten kayıtlı' });
     const hash = await bcrypt.hash(password, 10);
@@ -291,6 +295,8 @@ app.post('/api/devices', requireAuth, async (req, res) => {
   try {
     const { name, device_id } = req.body;
     if (!name || !device_id) return res.status(400).json({ error: 'name ve device_id zorunludur' });
+    if (name.trim().length > 64) return res.status(400).json({ error: 'Cihaz adı en fazla 64 karakter olabilir' });
+    if (device_id.trim().length > 64) return res.status(400).json({ error: 'Device ID en fazla 64 karakter olabilir' });
     // Plan limiti kontrolü
     const user = await db.queryOne(`SELECT plan FROM users WHERE id=$1`, [req.user.id]);
     const limit = PLAN_LIMITS[user?.plan || 'starter'] ?? 0;

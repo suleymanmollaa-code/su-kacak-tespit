@@ -2209,9 +2209,13 @@ function closeModal() {
 // TOAST
 // ============================
 let toastTimer;
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.innerHTML = msg;
+  t.innerHTML = msg; // sadece iç sabit stringler için — dış veri esc() ile geçmeli
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
@@ -2516,8 +2520,8 @@ function connectRealBackend(wsUrl) {
         if (msg.payload.latest) applyRealReading(msg.payload.latest);
         if (msg.payload.history) renderSonOlcumler(msg.payload.history.slice(-5).reverse());
       } else if (msg.type === 'anomaly') {
-        const cfg = _ANOMALY_ICONS[msg.payload.type] || { icon: '🔔', label: msg.payload.type };
-        showToast(cfg.icon + ' ' + cfg.label + ': ' + msg.payload.detail);
+        const cfg = _ANOMALY_ICONS[msg.payload.type] || { icon: '🔔', label: 'Uyarı' };
+        showToast(cfg.icon + ' ' + esc(cfg.label) + ': ' + esc(msg.payload.detail));
         // Bildirimler sayfası açıksa yenile
         if (document.getElementById('page-bildirimler')?.classList.contains('active')) loadAnomalies();
       }
@@ -2617,8 +2621,8 @@ async function loadDeviceList() {
                   padding:.85rem 1rem;margin-bottom:.6rem">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div style="color:#e2e8f0;font-weight:600">${d.name}</div>
-            <div style="color:#64748b;font-family:monospace;font-size:.75rem">${d.device_id}</div>
+            <div style="color:#e2e8f0;font-weight:600">${esc(d.name)}</div>
+            <div style="color:#64748b;font-family:monospace;font-size:.75rem">${esc(d.device_id)}</div>
           </div>
         </div>
         <div style="margin-top:.6rem;background:#161c2e;border-radius:6px;padding:.5rem .7rem;
@@ -2878,8 +2882,8 @@ async function loadAnomalies() {
         <div style="font-size:1.1rem;margin-top:.1rem">${cfg.icon}</div>
         <div style="flex:1">
           <div style="font-size:.83rem;font-weight:700;margin-bottom:.2rem;color:var(--text)">${cfg.label}</div>
-          <div style="font-size:.76rem;color:var(--muted2);margin-bottom:.3rem">${a.detail}</div>
-          <div style="font-size:.68rem;color:var(--muted)">${ts} · ${a.device || '—'}</div>
+          <div style="font-size:.76rem;color:var(--muted2);margin-bottom:.3rem">${esc(a.detail)}</div>
+          <div style="font-size:.68rem;color:var(--muted)">${ts} · ${esc(a.device || '—')}</div>
         </div>
         ${!a.resolved ? `<button onclick="resolveAnomaly(${a.id})" style="font-size:.7rem;padding:.2rem .5rem;background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">Çözüldü</button>` : '<span style="font-size:.68rem;color:var(--green)">✓ Çözüldü</span>'}
       </div>`;
