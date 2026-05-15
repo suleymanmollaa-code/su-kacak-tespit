@@ -948,10 +948,7 @@
               <div class="card-title">Son Ölçümler</div>
               <div class="card-sub">Cihazdan gelen son veriler</div>
             </div>
-            <div style="display:flex;gap:.5rem;align-items:center">
-              <span class="chip chip-blue" id="last-reading-time">—</span>
-              <button onclick="clearReadings()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);border-radius:6px;cursor:pointer">Temizle</button>
-            </div>
+            <span class="chip chip-blue" id="last-reading-time">—</span>
           </div>
           <div id="son-olcumler-list" style="display:flex;flex-direction:column;gap:.5rem;padding:.25rem 0">
             <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz veri yok</div>
@@ -2622,8 +2619,13 @@ async function loadDeviceList() {
         </div>
         <div style="margin-top:.6rem;background:#161c2e;border-radius:6px;padding:.5rem .7rem;
                     display:flex;align-items:center;gap:.5rem">
-          <code style="color:#4ade80;font-size:.72rem;flex:1;word-break:break-all">${d.api_key}</code>
-          <button onclick="navigator.clipboard.writeText('${d.api_key}');showToast('API anahtarı kopyalandı!')"
+          <code id="apikey-${d.id}" data-key="${d.api_key}" style="color:#4ade80;font-size:.72rem;flex:1;word-break:break-all">${d.api_key.slice(0,4)}${'•'.repeat(24)}${d.api_key.slice(-4)}</code>
+          <button onclick="toggleApiKey('${d.id}')"
+            style="background:rgba(100,116,139,.15);border:1px solid rgba(100,116,139,.3);color:#94a3b8;
+                   padding:.25rem .5rem;border-radius:5px;font-size:.7rem;cursor:pointer;white-space:nowrap" id="apibtn-${d.id}">
+            Göster
+          </button>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('apikey-${d.id}').dataset.key);showToast('API anahtarı kopyalandı!')"
             style="background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.3);color:#60a5fa;
                    padding:.25rem .5rem;border-radius:5px;font-size:.7rem;cursor:pointer;white-space:nowrap">
             Kopyala
@@ -2668,6 +2670,20 @@ async function addDeviceFromModal() {
     errEl.textContent = 'Bağlantı hatası'; errEl.style.display = 'block';
   } finally {
     btn.disabled = false; btn.textContent = 'Ekle';
+  }
+}
+
+function toggleApiKey(id) {
+  const el = document.getElementById('apikey-' + id);
+  const btn = document.getElementById('apibtn-' + id);
+  if (!el || !btn) return;
+  const key = el.dataset.key;
+  if (btn.textContent === 'Göster') {
+    el.textContent = key;
+    btn.textContent = 'Gizle';
+  } else {
+    el.textContent = key.slice(0,4) + '•'.repeat(24) + key.slice(-4);
+    btn.textContent = 'Göster';
   }
 }
 

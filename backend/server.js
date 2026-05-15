@@ -8,6 +8,8 @@ const express           = require('express');
 const http              = require('http');
 const { WebSocketServer } = require('ws');
 const cors              = require('cors');
+const helmet            = require('helmet');
+const rateLimit         = require('express-rate-limit');
 const path              = require('path');
 const bcrypt            = require('bcryptjs');
 const jwt               = require('jsonwebtoken');
@@ -42,17 +44,37 @@ async function sendMail({ to, subject, html }) {
 }
 
 // ── Konfigürasyon ─────────────────────────────────────────────
-const PORT         = parseInt(process.env.PORT)                  || 3001;
-const JWT_SECRET   = process.env.JWT_SECRET                      || 'susayar-gizli-anahtar-degistirin';
-const CORS_ORIGINS = process.env.CORS_ORIGINS                    || '*';
+const PORT       = parseInt(process.env.PORT) || 3001;
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('[HATA] JWT_SECRET ortam değişkeni ayarlanmamış! Render > Environment > JWT_SECRET ekleyin.');
+  process.exit(1);
+}
+const CORS_ORIGINS = process.env.CORS_ORIGINS || 'https://www.susayar.com,https://susayar.com';
+
+// ── Rate Limiter'lar ──────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 20,
+  message: { error: 'Çok fazla istek gönderildi. 15 dakika sonra tekrar deneyin.' },
+  standardHeaders: true, legacyHeaders: false,
+});
+
+const sensorLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 dakika
+  max: 60,             // ESP32 her 5 sn'de bir gönderir = 12/dk, 60 limit yeterli
+  message: { error: 'Sensör hız limiti aşıldı.' },
+  standardHeaders: true, legacyHeaders: false,
+});
 
 // ── Express ───────────────────────────────────────────────────
 const app = express();
+app.use(helmet({ contentSecurityPolicy: false })); // güvenlik headerları
 app.use(cors({
-  origin : CORS_ORIGINS === '*' ? '*' : CORS_ORIGINS.split(',').map(s => s.trim()),
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  origin: CORS_ORIGINS.split(',').map(s => s.trim()),
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // body boyutu sınırı
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-landing.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-admin.html')));
@@ -81,7 +103,7 @@ function broadcastToUser(userId, msg) {
 
 // ── Auth ──────────────────────────────────────────────────────
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Ad, e-posta ve şifre zorunludur' });
@@ -159,7 +181,7 @@ app.post('/api/auth/resend-otp', requireAuth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'E-posta ve şifre zorunludur' });
@@ -173,7 +195,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Şifremi unuttum
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'E-posta zorunludur' });
@@ -183,7 +205,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       const token = randomUUID().replace(/-/g, '');
       const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 saat
       await db.queryRun(`UPDATE users SET reset_token=$1, reset_token_expires=$2 WHERE id=$3`, [token, expires, user.id]);
-      const appUrl = process.env.APP_URL || 'https://su-kacak-tespit.onrender.com';
+      const appUrl = process.env.APP_URL || 'https://www.susayar.com';
       const resetUrl = `${appUrl}/susayar-auth.html?reset_token=${token}`;
       const u = await db.queryOne(`SELECT name FROM users WHERE id=$1`, [user.id]);
       const sent = await sendMail({
@@ -308,7 +330,7 @@ app.delete('/api/readings', requireAuth, async (req, res) => {
 
 // ── Sensör ────────────────────────────────────────────────────
 
-app.post('/api/sensor', requireDeviceKey, async (req, res) => {
+app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
   try {
     const data = req.body;
     if (typeof data.flow_lpm !== 'number' || typeof data.total_liters !== 'number')
