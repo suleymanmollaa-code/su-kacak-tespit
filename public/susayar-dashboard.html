@@ -1030,18 +1030,8 @@
           <div class="card-title">Bugünün Akış Geçmişi</div>
           <span class="chip chip-blue">Saat Bazlı</span>
         </div>
-        <div class="bar-chart" style="height:100px">
-          <div class="bar-wrap"><div class="bar" style="height:30%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">06:00 — 45 L</div></div><div class="bar-lbl">06</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:65%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">07:00 — 98 L</div></div><div class="bar-lbl">07</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:45%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">08:00 — 67 L</div></div><div class="bar-lbl">08</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:10%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">09:00 — 12 L</div></div><div class="bar-lbl">09</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:8%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">10:00 — 8 L</div></div><div class="bar-lbl">10</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:5%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">11:00 — 5 L</div></div><div class="bar-lbl">11</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:20%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">12:00 — 28 L</div></div><div class="bar-lbl">12</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:15%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">13:00 — 19 L</div></div><div class="bar-lbl">13</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:55%;background:rgba(6,182,212,.7)"><div class="bar-tooltip">14:00 — 82 L</div></div><div class="bar-lbl">14</div></div>
-          <div class="bar-wrap"><div class="bar" style="height:25%;background:rgba(6,182,212,.4)"><div class="bar-tooltip">15:00 — 35 L</div></div><div class="bar-lbl">15</div></div>
-          <div class="bar-wrap" id="current-hour-bar"><div class="bar" style="height:40%;background:var(--cyan)"><div class="bar-tooltip">Şimdi</div></div><div class="bar-lbl" style="color:var(--cyan)">Şim</div></div>
+        <div class="bar-chart" id="today-flow-chart" style="height:100px">
+          <div style="width:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem">Veri bekleniyor...</div>
         </div>
       </div>
     </div><!-- /page-anlik-akis -->
@@ -1124,7 +1114,7 @@
         <div class="card-head">
           <div class="card-title">Bildirimler & Anomaliler</div>
           <div style="display:flex;gap:.5rem;align-items:center">
-            <span class="chip chip-blue" id="anomaly-count-chip">—</span>
+            <span class="chip" id="anomaly-count-chip" style="display:none"></span>
             <button onclick="loadAnomalies()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,130,246,.1);color:var(--blue-lt);border:1px solid rgba(59,130,246,.25);border-radius:6px;cursor:pointer">Yenile</button>
           </div>
         </div>
@@ -1516,6 +1506,9 @@ async function loadDashboardData() {
         _todayMaxLpm = maxLpm;
       }
 
+      // Bugünün saatlik akış geçmişi grafiği
+      renderTodayFlowChart(hours);
+
       // Haftalık tablo — son 7 gün
       renderWeeklyFromMonthly(daily);
     }
@@ -1539,6 +1532,27 @@ async function loadDashboardData() {
 }
 
 const _DAY_NAMES = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+function renderTodayFlowChart(hours) {
+  const el = document.getElementById('today-flow-chart');
+  if (!el) return;
+  if (!hours || hours.length === 0) {
+    el.innerHTML = '<div style="width:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem">Bugün henüz veri yok</div>';
+    return;
+  }
+  const maxL = Math.max(...hours.map(h => parseFloat(h.total_liters || 0)), 1);
+  const nowH = new Date().getHours();
+  el.innerHTML = hours.map(h => {
+    const hNum = parseInt(h.hour);
+    const liters = parseFloat(h.total_liters || 0);
+    const pct = Math.max((liters / maxL) * 100, 2);
+    const isCurrent = hNum === nowH;
+    const bg = isCurrent ? 'var(--cyan)' : liters > 0 ? 'rgba(6,182,212,.4)' : 'rgba(255,255,255,.07)';
+    const lbl = isCurrent ? 'Şim' : String(hNum).padStart(2, '0');
+    const lblColor = isCurrent ? 'color:var(--cyan)' : '';
+    return `<div class="bar-wrap"><div class="bar" style="height:${pct}%;background:${bg}"><div class="bar-tooltip">${String(hNum).padStart(2,'0')}:00 — ${liters.toFixed(1)} L</div></div><div class="bar-lbl" style="${lblColor}">${lbl}</div></div>`;
+  }).join('');
+}
 
 function renderWeeklyChart(monthDays) {
   const chartEl = document.getElementById('weekly-chart-bars');
@@ -2833,7 +2847,15 @@ async function loadAnomalies() {
     if (!r.ok || !Array.isArray(rows)) { listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Veri alınamadı.</div>'; return; }
 
     const unresolved = rows.filter(a => !a.resolved).length;
-    if (chipEl) { chipEl.textContent = unresolved > 0 ? unresolved + ' aktif' : 'Temiz'; chipEl.className = unresolved > 0 ? 'chip chip-red' : 'chip chip-green'; }
+    if (chipEl) {
+      if (unresolved > 0) {
+        chipEl.textContent = unresolved + ' aktif';
+        chipEl.className = 'chip chip-red';
+        chipEl.style.display = '';
+      } else {
+        chipEl.style.display = 'none';
+      }
+    }
 
     if (rows.length === 0) {
       listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz anomali yok. Sistem normal çalışıyor. ✅</div>';
