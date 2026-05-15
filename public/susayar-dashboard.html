@@ -1490,11 +1490,24 @@ async function loadDashboardData() {
   const month = new Date().toISOString().slice(0, 7);
 
   try {
-    const [latestRes, dailyRes, monthlyRes] = await Promise.all([
+    const [latestRes, dailyRes, monthlyRes, statsRes] = await Promise.all([
       fetch(`${API}/api/latest`,                        { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${API}/api/reports/daily?date=${today}`,   { headers: { Authorization: `Bearer ${token}` } }),
       fetch(`${API}/api/reports/monthly?month=${month}`,{ headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/stats`,                         { headers: { Authorization: `Bearer ${token}` } }),
     ]);
+
+    // Cihaz KPI
+    if (statsRes.ok) {
+      const stats = await statsRes.json();
+      const n = stats.active_devices || 0;
+      const devEl = document.getElementById('kpi-devices');
+      if (devEl) devEl.textContent = n;
+      const devSubEl = document.getElementById('kpi-devices-sub');
+      if (devSubEl) devSubEl.textContent = n === 0 ? 'Cihaz yok' : n === 1 ? '1 cihaz kayıtlı' : n + ' cihaz kayıtlı';
+      const devBarEl = document.getElementById('kpi-devices-bar');
+      if (devBarEl) devBarEl.style.width = Math.min(n * 25, 100) + '%';
+    }
 
     // Anlık
     if (latestRes.ok) {
@@ -2607,9 +2620,6 @@ async function loadDeviceList() {
             <div style="color:#e2e8f0;font-weight:600">${d.name}</div>
             <div style="color:#64748b;font-family:monospace;font-size:.75rem">${d.device_id}</div>
           </div>
-          <button onclick="deleteDevice('${d.id}')"
-            style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:#f87171;
-                   padding:.3rem .6rem;border-radius:6px;font-size:.72rem;cursor:pointer">Sil</button>
         </div>
         <div style="margin-top:.6rem;background:#161c2e;border-radius:6px;padding:.5rem .7rem;
                     display:flex;align-items:center;gap:.5rem">
