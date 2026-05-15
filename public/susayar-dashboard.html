@@ -2287,6 +2287,16 @@ function applyRealReading(data) {
     }
   }
 
+  // Bugünkü tüketim KPI (WebSocket'ten anlık güncelle)
+  const kpiDailyEl = document.getElementById('kpi-daily');
+  if (kpiDailyEl && totalL > 0) {
+    kpiDailyEl.innerHTML = totalL.toFixed(1) + ' <span style="font-size:1rem">L</span>';
+    const subEl = document.getElementById('kpi-daily-sub');
+    if (subEl) subEl.textContent = 'Gerçek veri';
+    const barEl = document.getElementById('kpi-daily-bar');
+    if (barEl) barEl.style.width = Math.min((totalL / 500) * 100, 100) + '%';
+  }
+
   // Cihaz durumu
   const devStatusEl = document.getElementById('device-status-text');
   if (devStatusEl) { devStatusEl.textContent = 'Bağlı'; devStatusEl.style.color = 'var(--green)'; }
