@@ -339,12 +339,11 @@ app.get('/api/anomalies', requireAuth, async (req, res) => {
 
 app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
   try {
-    const n = await db.queryRun(
-      `UPDATE anomalies SET resolved=1 WHERE id=$1 AND user_id=$2`,
-      [req.params.id, req.user.id]
-    );
-    if (!n) return res.status(404).json({ error: 'Bulunamadı' });
-    res.json({ ok: true });
+    const row = await db.queryOne(`SELECT resolved FROM anomalies WHERE id=$1 AND user_id=$2`, [req.params.id, req.user.id]);
+    if (!row) return res.status(404).json({ error: 'Bulunamadı' });
+    const newVal = (row.resolved === true || row.resolved === 1) ? 0 : 1;
+    await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2 AND user_id=$3`, [newVal, req.params.id, req.user.id]);
+    res.json({ ok: true, resolved: !!newVal });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
