@@ -683,14 +683,16 @@ app.post('/api/talep', async (req, res) => {
     const ts = new Date().toISOString();
     console.log(`[TALEP] ${ts} | ${name} | ${phone} | ${address} | ${note || ''}`);
     // E-posta bildirimi (SMTP varsa)
-    if (transporter) {
-      transporter.sendMail({
-        from: process.env.SMTP_FROM || 'destek@susayar.com',
-        to: process.env.ADMIN_EMAIL || 'destek@susayar.com',
-        subject: `Yeni Kurulum Talebi — ${name}`,
-        text: `Ad: ${name}\nTelefon: ${phone}\nİlçe: ${address}\nNot: ${note || '—'}\nTarih: ${ts}`,
-      }).catch(e => console.error('[TALEP MAIL]', e.message));
-    }
+    sendMail({
+      to: process.env.ADMIN_EMAIL || 'destek@susayar.com',
+      subject: `Yeni Kurulum Talebi — ${name}`,
+      html: `<div style="font-family:sans-serif"><h3>Yeni Kurulum Talebi</h3>
+        <p><b>Ad:</b> ${name}</p>
+        <p><b>Telefon:</b> ${phone}</p>
+        <p><b>İlçe/Adres:</b> ${address}</p>
+        <p><b>Not:</b> ${note || '—'}</p>
+        <p><b>Tarih:</b> ${ts}</p></div>`,
+    }).catch(e => console.error('[TALEP MAIL]', e.message));
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
