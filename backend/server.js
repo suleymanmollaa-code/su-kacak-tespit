@@ -358,11 +358,6 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     if (typeof data.flow_lpm !== 'number' || typeof data.total_liters !== 'number')
       return res.status(400).json({ error: 'flow_lpm ve total_liters gerekli' });
 
-    // Parazit filtresi — 50 L/dk üzeri fiziksel olarak imkansız, kaydetme
-    if (data.flow_lpm > 50) {
-      console.log(`[FILTER] Parazit tespit edildi: ${data.flow_lpm} L/dk — kayıt atlandı`);
-      return res.json({ ok: true, filtered: true });
-    }
 
     const reading = {
       user_id: req.device.user_id, device_id: req.device.device_id,
