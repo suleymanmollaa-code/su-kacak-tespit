@@ -2946,6 +2946,24 @@ function autoConnectBackend() {
   connectRealBackend(wsBase + '/ws');
 }
 setTimeout(autoConnectBackend, 1500);
+
+// ── HTTP Polling (WS kopuksa yedek) ──────────────────────────
+async function pollLatest() {
+  const token = localStorage.getItem('susayar_token');
+  if (!token) return;
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  try {
+    const r = await fetch(`${API}/api/latest`, { headers: { Authorization: `Bearer ${token}` } });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.ts) {
+        applyRealReading(data);
+        renderSonOlcumler([data], true);
+      }
+    }
+  } catch {}
+}
+setInterval(pollLatest, 3000);
 </script>
 </body>
 </html>
