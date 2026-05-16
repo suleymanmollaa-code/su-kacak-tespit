@@ -681,6 +681,26 @@ app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Kurulum Talebi ────────────────────────────────────────────
+app.post('/api/talep', async (req, res) => {
+  try {
+    const { name, phone, address, note } = req.body || {};
+    if (!name || !phone || !address) return res.status(400).json({ error: 'Ad, telefon ve adres zorunlu' });
+    const ts = new Date().toISOString();
+    console.log(`[TALEP] ${ts} | ${name} | ${phone} | ${address} | ${note || ''}`);
+    // E-posta bildirimi (SMTP varsa)
+    if (transporter) {
+      transporter.sendMail({
+        from: process.env.SMTP_FROM || 'destek@susayar.com',
+        to: process.env.ADMIN_EMAIL || 'destek@susayar.com',
+        subject: `Yeni Kurulum Talebi — ${name}`,
+        text: `Ad: ${name}\nTelefon: ${phone}\nİlçe: ${address}\nNot: ${note || '—'}\nTarih: ${ts}`,
+      }).catch(e => console.error('[TALEP MAIL]', e.message));
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 app.get('/api/health', (req, res) => res.json({
   status: 'ok', uptime_s: Math.floor(process.uptime()),
   clients: wss.clients.size, db: db.isPg ? 'postgresql' : 'sqlite',

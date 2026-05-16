@@ -494,7 +494,7 @@ nav {
   </div>
   <div class="nav-ctas">
     <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
-    <a class="btn btn-primary" href="/susayar-auth.html?tab=register">Kayıt Ol</a>
+    <a class="btn btn-primary" href="#" onclick="openTalep();return false;">Kurulum Talep Et</a>
   </div>
 </nav>
 
@@ -515,8 +515,8 @@ nav {
       su akışını gerçek zamanlı izlersiniz. Şu an yalnızca <strong>İstanbul</strong>'da hizmet veriyoruz.
     </p>
     <div class="hero-btns">
-      <a class="btn btn-primary btn-xl" href="/susayar-auth.html?tab=register">
-        Kayıt Ol &rarr;
+      <a class="btn btn-primary btn-xl" href="#" onclick="openTalep();return false;">
+        Kurulum Talep Et &rarr;
       </a>
       <a class="btn btn-ghost btn-lg" href="#nasil-calisir">Nasıl Çalışır</a>
     </div>
@@ -678,7 +678,7 @@ nav {
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-num-circle">1</div>
-      <h3>Kayıt Olun</h3>
+      <h3>Kurulum Talep Etun</h3>
       <p>Hesap oluşturun ve randevu talep edin. Ekibimiz size uygun bir zaman ayarlar.</p>
       <div class="step-arrow">&#x2192;</div>
     </div>
@@ -805,7 +805,7 @@ nav {
         <li>Tüm veri geçmişi</li>
         <li>Öncelikli destek</li>
       </ul>
-      <a class="btn btn-primary" href="/susayar-auth.html?tab=register" style="width:100%;justify-content:center;display:flex">Hemen Başla</a>
+      <a class="btn btn-primary" href="#" onclick="openTalep();return false;" style="width:100%;justify-content:center;display:flex">Kurulum Talep Et</a>
       <p style="font-size:.72rem;color:#94a3b8;margin-top:.75rem;text-align:center">Kurulum ücreti abonelikten ayrı fatura edilir.</p>
     </div>
 
@@ -819,7 +819,7 @@ nav {
     <h2>Sonraki su faturanizi siz kontrol edin</h2>
     <p>Hesap oluşturun, cihazınızı bağlayın. Kaçak varsa, görmek için fatura beklemenize gerek yok.</p>
     <div class="cta-btns">
-      <a class="btn btn-white btn-xl" href="/susayar-auth.html?tab=register">Kayıt Ol</a>
+      <a class="btn btn-white btn-xl" href="#" onclick="openTalep();return false;">Kurulum Talep Et</a>
       <a class="btn btn-outline-white btn-xl" href="/susayar-auth.html?tab=login">Giriş Yap</a>
     </div>
     <div class="cta-note">Kurulum bizden &nbsp;·&nbsp; Şu an yalnızca İstanbul &nbsp;·&nbsp; İptal istediğinizde</div>
@@ -854,6 +854,93 @@ setInterval(() => {
   if (tEl) tEl.innerHTML = mockToday + ' <sub>L</sub>';
   if (mEl) mEl.innerHTML = mockMonth.toFixed(1).replace('.', ',') + ' <sub>m&sup3;</sub>';
 }, 2500);
+</script>
+
+<!-- KURULUM TALEP MODAL -->
+<div id="talep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:2rem;max-width:440px;width:100%;position:relative">
+    <button onclick="closeTalep()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer">✕</button>
+    <h2 style="font-size:1.2rem;font-weight:800;color:#f1f5f9;margin-bottom:.4rem">Kurulum Talep Et</h2>
+    <p style="font-size:.82rem;color:#94a3b8;margin-bottom:1.5rem">Bilgilerinizi bırakın, sizi arayalım.</p>
+    <div id="talep-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
+    <div id="talep-success" style="display:none;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
+    <div style="display:flex;flex-direction:column;gap:.85rem">
+      <div>
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Ad Soyad</label>
+        <input id="talep-name" type="text" placeholder="Adınız Soyadınız" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Telefon</label>
+        <input id="talep-phone" type="tel" placeholder="05XX XXX XX XX" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İlçe / Semt</label>
+        <input id="talep-address" type="text" placeholder="Örn: Kadıköy, İstanbul" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Not (isteğe bağlı)</label>
+        <textarea id="talep-note" placeholder="Daire mi, müstakil mi? Ek bilgi..." rows="2" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;resize:none"></textarea>
+      </div>
+    </div>
+    <button onclick="submitTalep()" id="talep-btn" style="width:100%;margin-top:1.25rem;padding:.75rem;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">Talep Gönder</button>
+    <p style="font-size:.72rem;color:#475569;text-align:center;margin-top:.75rem">Sizi en kısa sürede arayacağız.</p>
+  </div>
+</div>
+
+<script>
+function openTalep() {
+  const m = document.getElementById('talep-modal');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeTalep() {
+  const m = document.getElementById('talep-modal');
+  m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('talep-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeTalep();
+});
+async function submitTalep() {
+  const name    = document.getElementById('talep-name').value.trim();
+  const phone   = document.getElementById('talep-phone').value.trim();
+  const address = document.getElementById('talep-address').value.trim();
+  const note    = document.getElementById('talep-note').value.trim();
+  const errEl   = document.getElementById('talep-error');
+  const sucEl   = document.getElementById('talep-success');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  if (!name || !phone || !address) {
+    errEl.textContent = 'Ad, telefon ve ilçe zorunludur.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('talep-btn');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+  try {
+    const res = await fetch('/api/talep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, address, note }),
+    });
+    if (res.ok) {
+      sucEl.textContent = 'Talebiniz alındı! En kısa sürede sizi arayacağız.';
+      sucEl.style.display = 'block';
+      document.getElementById('talep-name').value = '';
+      document.getElementById('talep-phone').value = '';
+      document.getElementById('talep-address').value = '';
+      document.getElementById('talep-note').value = '';
+      setTimeout(closeTalep, 3000);
+    } else {
+      errEl.textContent = 'Bir hata oluştu, lütfen tekrar deneyin.';
+      errEl.style.display = 'block';
+    }
+  } catch {
+    errEl.textContent = 'Bağlantı hatası, lütfen tekrar deneyin.';
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Talep Gönder';
+}
 </script>
 </body>
 </html>
