@@ -504,8 +504,8 @@ nav {
   .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
   .p-card.featured { transform: none; }
   nav .nav-links { display: none; }
-  nav .nav-ctas .btn-ghost { display: none; }
-  .nav-hamburger { display: block; }
+  nav .nav-ctas .btn-ghost { display: none; } /* masaüstü Giriş Yap gizle — mobil menüde var */
+  .nav-hamburger { display: flex !important; }
   .footer-wrap { flex-direction: column; text-align: center; }
   .footer-links { justify-content: center; }
   .live-stats { grid-template-columns: repeat(2,1fr); }
@@ -538,8 +538,8 @@ nav {
   <div class="nav-ctas">
     <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
     <a class="btn btn-primary" href="#" onclick="openTalep();return false;">Kurulum Talep Et</a>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">&#9776;</button>
   </div>
-  <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">&#9776;</button>
 </nav>
 
 <!-- MOBİL MENÜ -->
@@ -575,18 +575,18 @@ nav {
     </div>
     <div class="hero-proof">
       <div>
-        <span class="hero-proof-num">Ücretsiz</span>
-        Kurulum
-      </div>
-      <div class="hero-proof-divider"></div>
-      <div>
         <span class="hero-proof-num">7/24</span>
-        İzleme
+        Gerçek Zamanlı İzleme
       </div>
       <div class="hero-proof-divider"></div>
       <div>
-        <span class="hero-proof-num">%0</span>
-        Yanlış alarm
+        <span class="hero-proof-num">3.000 TL</span>
+        Kurulum (tek seferlik)
+      </div>
+      <div class="hero-proof-divider"></div>
+      <div>
+        <span class="hero-proof-num">99 TL/ay</span>
+        Abonelik
       </div>
     </div>
   </div>
@@ -641,7 +641,7 @@ nav {
     </div>
     <div class="float-badge float-2">
       <span class="float-badge-icon">&#x1F4C9;</span>
-      Bu ay %18 tasarruf
+      Kaçak tespit edildi
     </div>
   </div>
 </div>
@@ -658,7 +658,7 @@ nav {
   </div>
   <div class="proof-item">
     <span class="proof-item-icon">&#x1F4B0;</span>
-    <span>Ortalama tasarruf: <strong>Ayda 180 TL</strong></span>
+    <span>Abonelik: <strong>99 TL/ay</strong></span>
   </div>
   <div class="proof-item">
     <span class="proof-item-icon">&#x1F512;</span>
@@ -726,12 +726,12 @@ nav {
   <div class="section-header">
     <div class="s-label">Nasıl Çalışır</div>
     <h2 class="s-h">Siz sadece izleyin, gerisini biz hallederiz</h2>
-    <p class="s-p">Kurulum dahil her şey bizden. Şu an yalnızca <strong>İstanbul</strong>'da hizmet veriyoruz.</p>
+    <p class="s-p">Kurulum ekibimiz evinize gelir, cihazı kurar. Şu an yalnızca <strong>İstanbul</strong>'da hizmet veriyoruz.</p>
   </div>
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-num-circle">1</div>
-      <h3>Kurulum Talep Etun</h3>
+      <h3>Kurulum Talep Edin</h3>
       <p>Hesap oluşturun ve randevu talep edin. Ekibimiz size uygun bir zaman ayarlar.</p>
       <div class="step-arrow">&#x2192;</div>
     </div>
@@ -927,8 +927,21 @@ setInterval(() => {
         <input id="talep-phone" type="tel" placeholder="05XX XXX XX XX" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
       </div>
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İlçe / Semt</label>
-        <input id="talep-address" type="text" placeholder="Örn: Kadıköy, İstanbul" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İl</label>
+        <select id="talep-il" onchange="updateIlceler()" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;appearance:none;cursor:pointer">
+          <option value="">İl seçin…</option>
+          <option value="İstanbul">İstanbul ✓ (Hizmet verilen)</option>
+          <option value="Ankara" disabled>Ankara (Yakında)</option>
+          <option value="İzmir" disabled>İzmir (Yakında)</option>
+          <option value="Bursa" disabled>Bursa (Yakında)</option>
+          <option value="Antalya" disabled>Antalya (Yakında)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İlçe</label>
+        <select id="talep-ilce" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;appearance:none;cursor:pointer">
+          <option value="">Önce il seçin</option>
+        </select>
       </div>
       <div>
         <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Not (isteğe bağlı)</label>
@@ -954,20 +967,42 @@ function closeTalep() {
 document.getElementById('talep-modal').addEventListener('click', function(e) {
   if (e.target === this) closeTalep();
 });
+const _ISTANBUL_ILCELER = [
+  'Adalar','Arnavutköy','Ataşehir','Avcılar','Bağcılar','Bahçelievler','Bakırköy',
+  'Başakşehir','Bayrampaşa','Beşiktaş','Beykoz','Beylikdüzü','Beyoğlu','Büyükçekmece',
+  'Çatalca','Çekmeköy','Esenler','Esenyurt','Eyüpsultan','Fatih','Gaziosmanpaşa',
+  'Güngören','Kadıköy','Kağıthane','Kartal','Küçükçekmece','Maltepe','Pendik',
+  'Sancaktepe','Sarıyer','Silivri','Sultanbeyli','Sultangazi','Şile','Şişli',
+  'Tuzla','Ümraniye','Üsküdar','Zeytinburnu'
+];
+
+function updateIlceler() {
+  const il = document.getElementById('talep-il').value;
+  const sel = document.getElementById('talep-ilce');
+  if (il === 'İstanbul') {
+    sel.innerHTML = '<option value="">İlçe seçin…</option>' +
+      _ISTANBUL_ILCELER.map(i => `<option value="${i}">${i}</option>`).join('');
+  } else {
+    sel.innerHTML = '<option value="">Önce il seçin</option>';
+  }
+}
+
 async function submitTalep() {
-  const name    = document.getElementById('talep-name').value.trim();
-  const phone   = document.getElementById('talep-phone').value.trim();
-  const address = document.getElementById('talep-address').value.trim();
-  const note    = document.getElementById('talep-note').value.trim();
-  const errEl   = document.getElementById('talep-error');
-  const sucEl   = document.getElementById('talep-success');
+  const name  = document.getElementById('talep-name').value.trim();
+  const phone = document.getElementById('talep-phone').value.trim();
+  const il    = document.getElementById('talep-il').value.trim();
+  const ilce  = document.getElementById('talep-ilce').value.trim();
+  const note  = document.getElementById('talep-note').value.trim();
+  const errEl = document.getElementById('talep-error');
+  const sucEl = document.getElementById('talep-success');
   errEl.style.display = 'none';
   sucEl.style.display = 'none';
-  if (!name || !phone || !address) {
-    errEl.textContent = 'Ad, telefon ve ilçe zorunludur.';
+  if (!name || !phone || !il || !ilce) {
+    errEl.textContent = 'Ad, telefon, il ve ilçe zorunludur.';
     errEl.style.display = 'block';
     return;
   }
+  const address = il + ' / ' + ilce;
   const btn = document.getElementById('talep-btn');
   btn.disabled = true; btn.textContent = 'Gönderiliyor...';
   try {
@@ -981,7 +1016,8 @@ async function submitTalep() {
       sucEl.style.display = 'block';
       document.getElementById('talep-name').value = '';
       document.getElementById('talep-phone').value = '';
-      document.getElementById('talep-address').value = '';
+      document.getElementById('talep-il').value = '';
+      document.getElementById('talep-ilce').innerHTML = '<option value="">Önce il seçin</option>';
       document.getElementById('talep-note').value = '';
       setTimeout(closeTalep, 3000);
     } else {
@@ -1009,6 +1045,11 @@ function closeMobileMenu() {
 window.addEventListener('scroll', () => {
   if (document.getElementById('mobile-menu')?.classList.contains('open')) closeMobileMenu();
 }, { passive: true });
+
+// URL'de ?talep=1 varsa modal otomatik aç
+if (new URLSearchParams(location.search).get('talep') === '1') {
+  window.addEventListener('load', () => setTimeout(openTalep, 400));
+}
 </script>
 </body>
 </html>
