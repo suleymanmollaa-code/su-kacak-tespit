@@ -2642,7 +2642,7 @@ async function loadDeviceList() {
 }
 
 async function addDeviceFromModal() {
-  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
   const name  = document.getElementById('new-dev-name')?.value.trim();
   const devId = document.getElementById('new-dev-id')?.value.trim();
@@ -2688,7 +2688,7 @@ function toggleApiKey(id) {
 
 async function deleteDevice(id) {
   if (!confirm('Bu cihazı silmek istediğinizden emin misiniz?')) return;
-  const API   = (localStorage.getItem('susayar_api_base') || 'http://localhost:3001');
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
   await fetch(`${API}/api/devices/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
   showToast('Cihaz silindi.');
