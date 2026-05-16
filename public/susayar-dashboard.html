@@ -705,6 +705,93 @@
   .pause-opt-warn { border-color: rgba(239,68,68,.25); color: #f87171; }
   .pause-opt-warn:hover { background: rgba(239,68,68,.07); border-color: var(--red); }
 
+  /* ── MOBİL RESPONSIVE ───────────────────── */
+  .hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .4rem .5rem;
+    color: var(--text2);
+    font-size: 1.3rem;
+    line-height: 1;
+    border-radius: 6px;
+    transition: background .15s;
+  }
+  .hamburger:hover { background: rgba(255,255,255,.06); }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 98;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.show { display: block; }
+
+  @media (max-width: 768px) {
+    body { overflow-x: hidden; }
+
+    /* Sidebar → drawer */
+    .sidebar {
+      position: fixed;
+      left: -260px;
+      top: 0; bottom: 0;
+      z-index: 99;
+      transition: left .25s cubic-bezier(.4,0,.2,1);
+      width: 236px;
+      overflow-y: auto;
+    }
+    .sidebar.mobile-open { left: 0; box-shadow: 4px 0 24px rgba(0,0,0,.4); }
+
+    .hamburger { display: flex; align-items: center; justify-content: center; margin-right: .25rem; }
+
+    /* Main full-width */
+    .main { width: 100%; overflow-x: hidden; }
+
+    /* Topbar */
+    .topbar { padding: .7rem 1rem; gap: .5rem; }
+    .topbar-sub { display: none; }
+    .topbar-right { gap: .4rem; }
+    .topbar-right > div:first-child { display: none; } /* status dot+text */
+    #user-display-name { display: none; }
+
+    /* Content */
+    .content { padding: .875rem; }
+
+    /* Grids */
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: .6rem; margin-bottom: 1rem; }
+    .kpi { padding: .9rem 1rem .75rem; }
+    .kpi-value { font-size: 1.4rem; }
+
+    .grid2 { grid-template-columns: 1fr; gap: 1rem; }
+    .grid3 { grid-template-columns: 1fr; gap: 1rem; }
+
+    /* Anlık akış page */
+    #page-anlik-akis > div:first-of-type { grid-template-columns: 1fr !important; }
+
+    /* Cihaz ayarları */
+    #page-cihaz-ayarlari .card > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+    /* Abonelik */
+    #page-abonelik { padding: 0; }
+
+    /* Günlük rapor özet kartları */
+    #page-gunluk-rapor > div > div[style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr 1fr !important; gap: .6rem !important; }
+
+    /* Aylık analiz özet kartları */
+    #page-aylik-analiz > div > div[style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr 1fr !important; gap: .6rem !important; }
+
+    /* Sidebar footer */
+    .sidebar-footer { padding: 1rem; }
+  }
+
+  @media (max-width: 400px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 1.6rem; }
+  }
+
   /* ── COMING SOON ────────────────────────── */
   .coming-soon-box {
     display: flex; flex-direction: column;
@@ -770,8 +857,11 @@
 </head>
 <body>
 
+<!-- MOBİL OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo">
     <div class="logo-inner">
       <div class="logo-icon">&#x1F4A7;</div>
@@ -831,9 +921,12 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <div>
-      <div class="topbar-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-sub">Daire 3 — İstanbul / Kadıköy</div>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menü">&#9776;</button>
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub">Daire 3 — İstanbul / Kadıköy</div>
+      </div>
     </div>
     <div class="topbar-right">
       <div>
@@ -1376,6 +1469,16 @@
   }
 })();
 
+// ── MOBİL SIDEBAR ───────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
 function doLogout() {
   localStorage.removeItem('susayar_token');
   localStorage.removeItem('susayar_user');
@@ -1391,6 +1494,7 @@ const topbarTitle = document.getElementById('topbar-title');
 
 navItems.forEach(item => {
   item.addEventListener('click', () => {
+    closeSidebar(); // mobilde sidebar kapat
     const pageId = item.dataset.page;
     const title = item.dataset.title;
 

@@ -466,19 +466,62 @@ nav {
 .div-line { border: none; border-top: 1px solid var(--border); }
 
 /* ── RESPONSIVE ──────────────────────────────────── */
+/* Hamburger */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: var(--text);
+  padding: .2rem .4rem;
+  margin-left: auto;
+  line-height: 1;
+}
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 64px; left: 0; right: 0;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem clamp(1.25rem,5vw,3rem) 1.5rem;
+  z-index: 199;
+  flex-direction: column;
+  gap: .75rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-size: .95rem; font-weight: 600; color: var(--text); padding: .5rem 0; border-bottom: 1px solid var(--border); }
+.mobile-menu a:last-child { border-bottom: none; }
+
 @media (max-width: 900px) {
-  .hero-wrap { grid-template-columns: 1fr; gap: 3rem; min-height: auto; padding-bottom: 3rem; }
+  .hero-wrap { grid-template-columns: 1fr; gap: 2rem; min-height: auto; padding-bottom: 3rem; }
   .hero-right { display: none; }
   .problem-wrap, .learn-wrap { grid-template-columns: 1fr; gap: 3rem; }
   .steps-grid { grid-template-columns: 1fr; }
   .step-arrow { display: none; }
   .feat-grid, .testi-grid { grid-template-columns: 1fr; }
-  .pricing-grid { grid-template-columns: repeat(2,1fr); }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
   .p-card.featured { transform: none; }
   nav .nav-links { display: none; }
+  nav .nav-ctas .btn-ghost { display: none; }
+  .nav-hamburger { display: block; }
   .footer-wrap { flex-direction: column; text-align: center; }
   .footer-links { justify-content: center; }
   .live-stats { grid-template-columns: repeat(2,1fr); }
+}
+
+@media (max-width: 480px) {
+  .hero-h1 { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+  .hero-p { font-size: .9rem; }
+  .hero-btns { flex-direction: column; }
+  .hero-btns .btn { width: 100%; justify-content: center; }
+  .live-stats { grid-template-columns: 1fr 1fr; }
+  .section-label { font-size: .7rem; }
+  .section-h2 { font-size: clamp(1.4rem, 6vw, 2rem); }
+  nav { padding: 0 1rem; gap: 1rem; }
+  nav .nav-ctas { gap: .4rem; }
+  nav .nav-ctas .btn { padding: .42rem .85rem; font-size: .78rem; }
 }
 </style>
 </head>
@@ -496,7 +539,17 @@ nav {
     <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
     <a class="btn btn-primary" href="#" onclick="openTalep();return false;">Kurulum Talep Et</a>
   </div>
+  <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">&#9776;</button>
 </nav>
+
+<!-- MOBİL MENÜ -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#nasil-calisir" onclick="closeMobileMenu()">Nasıl Çalışır</a>
+  <a href="#ozellikler" onclick="closeMobileMenu()">Özellikler</a>
+  <a href="#fiyatlar" onclick="closeMobileMenu()">Fiyatlar</a>
+  <a href="/susayar-auth.html?tab=login" onclick="closeMobileMenu()">Giriş Yap</a>
+  <a href="#" onclick="openTalep();closeMobileMenu();return false;" style="color:var(--blue);font-weight:700">Kurulum Talep Et →</a>
+</div>
 
 <!-- HERO -->
 <div class="hero-wrap">
@@ -941,6 +994,21 @@ async function submitTalep() {
   }
   btn.disabled = false; btn.textContent = 'Talep Gönder';
 }
+
+function toggleMobileMenu() {
+  const m = document.getElementById('mobile-menu');
+  const h = document.getElementById('nav-hamburger');
+  const open = m.classList.toggle('open');
+  h.textContent = open ? '✕' : '☰';
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('nav-hamburger').textContent = '☰';
+}
+// Scroll'da mobil menüyü kapat
+window.addEventListener('scroll', () => {
+  if (document.getElementById('mobile-menu')?.classList.contains('open')) closeMobileMenu();
+}, { passive: true });
 </script>
 </body>
 </html>
