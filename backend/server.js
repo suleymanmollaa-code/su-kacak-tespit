@@ -236,7 +236,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, password } = req.body;
     if (!token || !password) return res.status(400).json({ error: 'Token ve şifre zorunludur' });
-    if (password.length < 6) return res.status(400).json({ error: 'Şifre en az 6 karakter olmalıdır' });
+    if (password.length < 8) return res.status(400).json({ error: 'Şifre en az 8 karakter olmalıdır' });
     const user = await db.queryOne(
       `SELECT id FROM users WHERE reset_token=$1 AND reset_token_expires>$2`,
       [token, new Date().toISOString()]
@@ -258,7 +258,7 @@ app.put('/api/auth/profile', requireAuth, async (req, res) => {
     if (new_password) {
       if (!current_password) return res.status(400).json({ error: 'Mevcut şifre gerekli' });
       if (!(await bcrypt.compare(current_password, user.password))) return res.status(401).json({ error: 'Mevcut şifre hatalı' });
-      if (new_password.length < 6) return res.status(400).json({ error: 'Yeni şifre en az 6 karakter olmalıdır' });
+      if (new_password.length < 8) return res.status(400).json({ error: 'Yeni şifre en az 8 karakter olmalıdır' });
       const hash = await bcrypt.hash(new_password, 10);
       await db.queryRun(`UPDATE users SET password=$1 WHERE id=$2`, [hash, req.user.id]);
     }
