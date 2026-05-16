@@ -348,13 +348,7 @@ app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-// ── Readings temizle ──────────────────────────────────────────
-app.delete('/api/readings', requireAuth, async (req, res) => {
-  try {
-    await db.queryRun(`DELETE FROM readings WHERE user_id=$1`, [req.user.id]);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
-});
+// DELETE /api/readings kaldırıldı — veriler korunur
 
 // ── Sensör ────────────────────────────────────────────────────
 
