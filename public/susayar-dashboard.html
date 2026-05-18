@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Su Sayar — Dashboard</title>
+<title>SuSayar — Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 30'%3E%3Cpath d='M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z' fill='%233bb5d4'/%3E%3C/svg%3E">
 <script>if (!localStorage.getItem('susayar_token')) { location.replace('/susayar-auth.html'); }</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -16,9 +17,9 @@
     --bg4:       #1c2338;
     --border:    rgba(255,255,255,.07);
     --border2:   rgba(255,255,255,.12);
-    --blue:      #3b82f6;
-    --blue-lt:   #60a5fa;
-    --blue-dk:   #1d4ed8;
+    --blue:      #3bb5d4;
+    --blue-lt:   #5ec8e4;
+    --blue-dk:   #2a9ebe;
     --cyan:      #06b6d4;
     --green:     #10b981;
     --yellow:    #f59e0b;
@@ -57,7 +58,7 @@
     position: absolute;
     top: 0; right: 0; bottom: 0;
     width: 1px;
-    background: linear-gradient(180deg, transparent, rgba(59,130,246,.15) 40%, transparent);
+    background: linear-gradient(180deg, transparent, rgba(59,181,212,.15) 40%, transparent);
     pointer-events: none;
   }
 
@@ -69,12 +70,12 @@
   .logo-inner { display: flex; align-items: center; gap: .6rem; }
   .logo-icon {
     width: 34px; height: 34px;
-    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    background: linear-gradient(135deg, #2a9ebe, #3bb5d4);
     border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
     font-size: .95rem;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(59,130,246,.25);
+    box-shadow: 0 4px 12px rgba(59,181,212,.25);
   }
   .logo-text-wrap { display: flex; flex-direction: column; }
   .logo-top { font-size: .95rem; font-weight: 800; color: var(--text); letter-spacing: .04em; line-height: 1.1; }
@@ -107,7 +108,7 @@
   .nav-item:hover { color: var(--text2); background: rgba(255,255,255,.035); }
   .nav-item.active {
     color: var(--blue-lt);
-    background: linear-gradient(90deg, rgba(59,130,246,.12), rgba(59,130,246,.03));
+    background: linear-gradient(90deg, rgba(59,181,212,.12), rgba(59,181,212,.03));
     border-left-color: var(--blue);
     font-weight: 600;
   }
@@ -134,12 +135,12 @@
   .avatar {
     width: 32px; height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    background: linear-gradient(135deg, #2a9ebe, #3bb5d4);
     display: flex; align-items: center; justify-content: center;
     font-size: .75rem;
     font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(59,130,246,.2);
+    box-shadow: 0 2px 8px rgba(59,181,212,.2);
   }
   .user-name { font-size: .8rem; font-weight: 600; color: var(--text); }
   .user-plan { font-size: .66rem; color: var(--blue-lt); margin-top: .05rem; }
@@ -183,11 +184,11 @@
     font-family: inherit;
   }
   .btn-primary {
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    background: linear-gradient(135deg, #2a9ebe, #3bb5d4);
     color: white;
-    box-shadow: 0 2px 8px rgba(59,130,246,.3);
+    box-shadow: 0 2px 8px rgba(59,181,212,.3);
   }
-  .btn-primary:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); box-shadow: 0 4px 12px rgba(59,130,246,.4); }
+  .btn-primary:hover { background: linear-gradient(135deg, #2a9ebe, #2a9ebe); box-shadow: 0 4px 12px rgba(59,181,212,.4); }
   .btn-ghost {
     background: transparent;
     color: var(--muted2);
@@ -223,7 +224,7 @@
     height: 2px;
     border-radius: 12px 12px 0 0;
   }
-  .kpi:nth-child(1)::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .kpi:nth-child(1)::before { background: linear-gradient(90deg, #3bb5d4, #5ec8e4); }
   .kpi:nth-child(2)::before { background: linear-gradient(90deg, #10b981, #34d399); }
   .kpi:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
   .kpi:nth-child(4)::before { background: linear-gradient(90deg, #ef4444, #f87171); }
@@ -285,7 +286,7 @@
   .chip-green  { background: rgba(16,185,129,.12); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
   .chip-yellow { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
   .chip-red    { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
-  .chip-blue   { background: rgba(59,130,246,.12); color: var(--blue-lt); border: 1px solid rgba(59,130,246,.2); }
+  .chip-blue   { background: rgba(59,181,212,.12); color: var(--blue-lt); border: 1px solid rgba(59,181,212,.2); }
 
   /* ── BAR CHART ──────────────────────────── */
   .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 120px; }
@@ -365,7 +366,7 @@
   .anomali-item:hover { border-color: var(--border2); }
   .anomali-item.red-bg    { background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.18); }
   .anomali-item.yellow-bg { background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.18); }
-  .anomali-item.blue-bg   { background: rgba(59,130,246,.05); border-color: rgba(59,130,246,.18); }
+  .anomali-item.blue-bg   { background: rgba(59,181,212,.05); border-color: rgba(59,181,212,.18); }
   .anomali-icon { font-size: 1rem; margin-top: .15rem; flex-shrink: 0; }
   .anomali-title { font-size: .82rem; font-weight: 700; margin-bottom: .2rem; color: var(--text); }
   .anomali-desc { font-size: .73rem; color: var(--muted2); line-height: 1.55; }
@@ -409,7 +410,7 @@
     width: 100%;
     padding: .6rem;
     border-radius: 8px;
-    border: 1px dashed rgba(59,130,246,.3);
+    border: 1px dashed rgba(59,181,212,.3);
     background: transparent;
     color: var(--blue-lt);
     font-size: .76rem;
@@ -422,7 +423,7 @@
     transition: all .15s;
     font-family: inherit;
   }
-  .add-btn:hover { background: rgba(59,130,246,.07); border-color: rgba(59,130,246,.5); }
+  .add-btn:hover { background: rgba(59,181,212,.07); border-color: rgba(59,181,212,.5); }
 
   /* ── TABLO ──────────────────────────────── */
   .week-table { width: 100%; border-collapse: collapse; }
@@ -522,7 +523,7 @@
   }
   .form-input:focus, .form-select:focus {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+    box-shadow: 0 0 0 3px rgba(59,181,212,.12);
   }
   .form-select option { background: var(--bg3); }
   .form-actions { display: flex; gap: .65rem; justify-content: flex-end; margin-top: 1.375rem; }
@@ -569,8 +570,8 @@
   .fb-done { font-size: .67rem; color: var(--green); font-weight: 700; }
 
   .kalibrасyon-banner {
-    background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(59,130,246,.04));
-    border: 1px solid rgba(59,130,246,.18);
+    background: linear-gradient(135deg, rgba(59,181,212,.08), rgba(59,181,212,.04));
+    border: 1px solid rgba(59,181,212,.18);
     border-radius: 10px;
     padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
@@ -582,7 +583,7 @@
   .kalib-title { font-size: .8rem; font-weight: 700; margin-bottom: .3rem; }
   .kalib-sub { font-size: .7rem; color: var(--muted); }
   .kalib-bar { height: 4px; background: rgba(255,255,255,.07); border-radius: 3px; margin-top: .5rem; overflow: hidden; }
-  .kalib-bar-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 3px; width: 43%; transition: width 1s ease; }
+  .kalib-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9ebe, #5ec8e4); border-radius: 3px; width: 43%; transition: width 1s ease; }
 
   /* ── TOGGLE ROWS ────────────────────────── */
   .toggle-row {
@@ -611,7 +612,7 @@
     outline: none;
     font-family: inherit;
   }
-  .toggle-threshold input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,130,246,.1); }
+  .toggle-threshold input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,181,212,.1); }
   .toggle-threshold span { font-size: .68rem; color: var(--muted); }
   .paused-badge {
     font-size: .6rem;
@@ -656,7 +657,7 @@
   .anomali-rich:hover { border-color: var(--border2); }
   .anomali-rich.red-bg    { background: rgba(239,68,68,.04); border-color: rgba(239,68,68,.18); }
   .anomali-rich.yellow-bg { background: rgba(245,158,11,.04); border-color: rgba(245,158,11,.18); }
-  .anomali-rich.blue-bg   { background: rgba(59,130,246,.04); border-color: rgba(59,130,246,.18); }
+  .anomali-rich.blue-bg   { background: rgba(59,181,212,.04); border-color: rgba(59,181,212,.18); }
   .anomali-rich.resolved  { opacity: .4; }
   .ar-head { display: flex; align-items: flex-start; gap: .8rem; }
   .ar-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
@@ -666,7 +667,7 @@
   .ar-sev { font-size: .6rem; font-weight: 700; padding: .12rem .42rem; border-radius: 4px; }
   .sev-red    { background: rgba(239,68,68,.18); color: #f87171; }
   .sev-yellow { background: rgba(245,158,11,.18); color: #fbbf24; }
-  .sev-blue   { background: rgba(59,130,246,.18); color: var(--blue-lt); }
+  .sev-blue   { background: rgba(59,181,212,.18); color: var(--blue-lt); }
   .ar-desc { font-size: .73rem; color: var(--muted2); line-height: 1.55; }
   .ar-time { font-size: .66rem; color: var(--muted); margin-top: .22rem; }
   .ar-metrics { display: flex; gap: .55rem; flex-wrap: wrap; }
@@ -701,7 +702,7 @@
     transition: all .15s;
     font-family: inherit;
   }
-  .pause-opt:hover { border-color: var(--blue); background: rgba(59,130,246,.06); color: var(--text); }
+  .pause-opt:hover { border-color: var(--blue); background: rgba(59,181,212,.06); color: var(--text); }
   .pause-opt-warn { border-color: rgba(239,68,68,.25); color: #f87171; }
   .pause-opt-warn:hover { background: rgba(239,68,68,.07); border-color: var(--red); }
 
@@ -848,7 +849,7 @@
     transition: all .15s;
     font-family: inherit;
   }
-  .filter-btn.active { background: rgba(59,130,246,.14); color: var(--blue-lt); border-color: rgba(59,130,246,.35); }
+  .filter-btn.active { background: rgba(59,181,212,.14); color: var(--blue-lt); border-color: rgba(59,181,212,.35); }
   .filter-btn:hover { color: var(--text); border-color: var(--border2); }
 
   /* ── KULLANICI PAGE FULL ────────────────── */
@@ -1137,7 +1138,7 @@
           <h2 style="font-size:1.4rem;font-weight:800;color:var(--text)">SuSayar Paketi</h2>
           <p style="font-size:.85rem;color:var(--muted);margin-top:.4rem">Mevcut plan: <strong style="color:var(--text)" id="current-plan-label">Plan Secilmedi</strong></p>
         </div>
-        <div class="card" style="border:1px solid rgba(59,130,246,.4);padding:2rem;position:relative">
+        <div class="card" style="border:1px solid rgba(59,181,212,.4);padding:2rem;position:relative">
           <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:.68rem;font-weight:700;padding:.25rem .9rem;border-radius:20px;white-space:nowrap">TEK PAKET</div>
           <div style="font-size:.75rem;font-weight:700;letter-spacing:.06em;color:var(--blue);text-transform:uppercase;margin-bottom:.75rem">SuSayar Bireysel</div>
           <div style="display:flex;align-items:flex-end;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap">
@@ -1208,7 +1209,7 @@
           <div class="card-title">Bildirimler & Anomaliler</div>
           <div style="display:flex;gap:.5rem;align-items:center">
             <span class="chip" id="anomaly-count-chip" style="display:none"></span>
-            <button onclick="loadAnomalies()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,130,246,.1);color:var(--blue-lt);border:1px solid rgba(59,130,246,.25);border-radius:6px;cursor:pointer">Yenile</button>
+            <button onclick="loadAnomalies()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">Yenile</button>
           </div>
         </div>
         <div id="anomaly-list" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.5rem">
@@ -1682,7 +1683,7 @@ function renderWeeklyChart(monthDays) {
 
   chartEl.innerHTML = last7.map(d => {
     const pct = Math.max((d.liters / maxL) * 100, d.liters > 0 ? 4 : 2);
-    const color = d.isToday ? 'var(--blue)' : d.liters > maxL * 0.9 ? 'rgba(239,68,68,.6)' : 'rgba(59,130,246,.5)';
+    const color = d.isToday ? 'var(--blue)' : d.liters > maxL * 0.9 ? 'rgba(239,68,68,.6)' : 'rgba(59,181,212,.5)';
     return `<div class="bar-wrap">
       <div class="bar" style="height:${pct}%;background:${color}">
         <div class="bar-tooltip">${d.label}: ${d.liters.toFixed(1)} L</div>
@@ -1898,7 +1899,7 @@ function renderPauseStep() {
           </div>
           <input type="text" class="form-input" id="suresiz-confirm" placeholder="ASKIYA AL" style="margin-top:.75rem" oninput="checkSuresizConfirm()">
         </div>` : `
-        <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--muted)">
+        <div style="background:rgba(59,181,212,.07);border:1px solid rgba(59,181,212,.2);border-radius:8px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--muted)">
           &#x2139;&#xFE0F; <strong style="color:var(--blue-lt)">${selectedDuration.label}</strong> sonra uyarı otomatik olarak yeniden aktif hale gelecek.
         </div>`}
       <div style="font-size:.82rem;margin-bottom:.5rem;display:flex;flex-direction:column;gap:.4rem">
@@ -2017,7 +2018,7 @@ function openTatilModuModal() {
       <label class="form-label">Eve girebilecek yetkili kişi (opsiyonel)</label>
       <input type="text" class="form-input" id="tatil-yetkili" placeholder="Örnek: Komşu Ayşe H. — temizlik için">
     </div>
-    <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem;font-size:.75rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">
+    <div style="background:rgba(59,181,212,.07);border:1px solid rgba(59,181,212,.2);border-radius:8px;padding:.85rem;font-size:.75rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">
       &#x2139;&#xFE0F; Akış tespit edilince önce <strong style="color:var(--text)">"Yetkili kişi mi?"</strong> diye sorulacak.
       Evet derseniz alarm kapatılır. Hayır derseniz kritik bildirim gönderilir.
     </div>
@@ -2204,7 +2205,7 @@ const anomaliData = [
         <div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
           Gündüz saatinde 47 dakikalık kesintisiz akış tespit edildi. Ev sakinleri uyumadığı için kritik sınıflandırma yapılmadı, ancak açık kalan musluk veya bahçe sulama olabilir.
         </div>
-        <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:.85rem;font-size:.78rem;color:var(--blue-lt)">
+        <div style="background:rgba(59,181,212,.08);border:1px solid rgba(59,181,212,.2);border-radius:8px;padding:.85rem;font-size:.78rem;color:var(--blue-lt)">
           &#x2139;&#xFE0F; Tavsiye: Uzun süre evde yokken cihazı izleme moduna alın.
         </div>
       </div>
@@ -2664,9 +2665,9 @@ function openCihazBaglaModal() {
       <!-- Cihaz listesi -->
       <div id="device-list-area" style="font-size:.8rem;color:#64748b">Yükleniyor…</div>
 
-      <div style="margin-top:1.25rem;padding:.85rem 1rem;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:10px;font-size:.78rem;color:#94a3b8;line-height:1.6">
+      <div style="margin-top:1.25rem;padding:.85rem 1rem;background:rgba(59,181,212,.06);border:1px solid rgba(59,181,212,.18);border-radius:10px;font-size:.78rem;color:#94a3b8;line-height:1.6">
         📍 Yeni cihaz kurulumu için bize ulaşın — ekibimiz gelir, kurar.<br>
-        <a href="mailto:destek@susayar.com" style="color:#60a5fa;text-decoration:none">destek@susayar.com</a>
+        <a href="mailto:destek@susayar.com" style="color:#5ec8e4;text-decoration:none">destek@susayar.com</a>
         &nbsp;·&nbsp; Şu an yalnızca <strong style="color:#e2e8f0">İstanbul</strong>'da hizmet veriyoruz.
       </div>
     </div>
@@ -2706,7 +2707,7 @@ async function loadDeviceList() {
             Göster
           </button>
           <button onclick="navigator.clipboard.writeText(document.getElementById('apikey-${d.id}').dataset.key);showToast('API anahtarı kopyalandı!')"
-            style="background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.3);color:#60a5fa;
+            style="background:rgba(59,181,212,.2);border:1px solid rgba(59,181,212,.3);color:#5ec8e4;
                    padding:.25rem .5rem;border-radius:5px;font-size:.7rem;cursor:pointer;white-space:nowrap">
             Kopyala
           </button>
@@ -2955,7 +2956,7 @@ async function loadAnomalies() {
     }
 
     listEl.innerHTML = rows.map(a => {
-      const cfg = _ANOMALY_ICONS[a.type] || { icon: '🔔', color: 'rgba(59,130,246,.06)', border: 'rgba(59,130,246,.2)', label: a.type };
+      const cfg = _ANOMALY_ICONS[a.type] || { icon: '🔔', color: 'rgba(59,181,212,.06)', border: 'rgba(59,181,212,.2)', label: a.type };
       const ts = a.ts ? new Date(a.ts).toLocaleString('tr-TR') : '—';
       const resolvedStyle = a.resolved ? 'opacity:.5;' : '';
       const toggleBtn = a.resolved
