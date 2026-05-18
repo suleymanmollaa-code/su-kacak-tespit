@@ -69,6 +69,7 @@ const sensorLimiter = rateLimit({
 
 // ── Express ───────────────────────────────────────────────────
 const app = express();
+app.set('trust proxy', 1); // Render reverse proxy arkasında çalışır
 app.use(helmet({ contentSecurityPolicy: false })); // güvenlik headerları
 app.use(cors({
   origin: CORS_ORIGINS.split(',').map(s => s.trim()),
