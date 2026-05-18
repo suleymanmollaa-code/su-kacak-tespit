@@ -14,31 +14,21 @@ const path              = require('path');
 const bcrypt            = require('bcryptjs');
 const jwt               = require('jsonwebtoken');
 const { randomUUID }    = require('crypto');
-const nodemailer        = require('nodemailer');
+const { Resend }        = require('resend');
 const db                = require('./db');
 
 // ── E-posta ───────────────────────────────────────────────────
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_FROM = process.env.SMTP_FROM || `SuSayar <${SMTP_USER}>`;
-
-function getMailer() {
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
-  return nodemailer.createTransport({
-    host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
-}
+const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.SMTP_PASS;
+const MAIL_FROM      = process.env.SMTP_FROM || 'SuSayar <noreply@susayar.com>';
 
 async function sendMail({ to, subject, html }) {
-  const mailer = getMailer();
-  if (!mailer) {
-    console.log(`[MAIL] Servis ayarlı değil. Alıcı: ${to} | Konu: ${subject}`);
+  if (!RESEND_API_KEY) {
+    console.log(`[MAIL] RESEND_API_KEY ayarlı değil. Alıcı: ${to} | Konu: ${subject}`);
     return false;
   }
-  await mailer.sendMail({ from: SMTP_FROM, to, subject, html });
+  const resend = new Resend(RESEND_API_KEY);
+  const { error } = await resend.emails.send({ from: MAIL_FROM, to, subject, html });
+  if (error) { console.error('[MAIL] Hata:', error); return false; }
   console.log(`[MAIL] Gönderildi → ${to}`);
   return true;
 }
