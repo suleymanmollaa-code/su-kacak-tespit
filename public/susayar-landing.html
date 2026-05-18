@@ -8,9 +8,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --blue:    #2563eb;
-  --blue-dk: #1d4ed8;
-  --blue-lt: #eff6ff;
+  --blue:    #3bb5d4;
+  --blue-dk: #2a9ebe;
+  --blue-lt: #e6f8fc;
   --text:    #0f172a;
   --sub:     #475569;
   --muted:   #94a3b8;
@@ -102,7 +102,7 @@ nav {
 /* HERO MOCKUP */
 .hero-right { position: relative; padding-bottom: 3rem; }
 .hero-phone-wrap {
-  background: linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 45%, #0369a1 100%);
+  background: linear-gradient(150deg, #1e3a8a 0%, #2a9ebe 45%, #0369a1 100%);
   border-radius: 24px; padding: 2.5rem 2rem;
   box-shadow: 0 40px 80px rgba(30,58,138,.25), 0 8px 20px rgba(0,0,0,.12);
   position: relative; overflow: hidden;
@@ -279,7 +279,7 @@ nav {
   font-size: .75rem; font-weight: 600;
 }
 .tag-green { background: #dcfce7; color: #15803d; }
-.tag-blue  { background: #dbeafe; color: #1d4ed8; }
+.tag-blue  { background: #dbeafe; color: #2a9ebe; }
 .tag-amber { background: #fef3c7; color: #92400e; }
 .learn-card {
   background: white; border: 1px solid var(--border);
@@ -620,13 +620,13 @@ nav {
       <div class="mock-chart-box">
         <div class="mock-chart-lbl">Haftalık Tüketim</div>
         <div class="mock-bars">
-          <div class="mock-bar" style="height:55%;background:#60a5fa"></div>
-          <div class="mock-bar" style="height:70%;background:#60a5fa"></div>
-          <div class="mock-bar" style="height:45%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:55%;background:#3bb5d4"></div>
+          <div class="mock-bar" style="height:70%;background:#3bb5d4"></div>
+          <div class="mock-bar" style="height:45%;background:#3bb5d4"></div>
           <div class="mock-bar" style="height:85%;background:#f87171"></div>
-          <div class="mock-bar" style="height:62%;background:#60a5fa"></div>
-          <div class="mock-bar" style="height:50%;background:#60a5fa"></div>
-          <div class="mock-bar" style="height:78%;background:#60a5fa"></div>
+          <div class="mock-bar" style="height:62%;background:#3bb5d4"></div>
+          <div class="mock-bar" style="height:50%;background:#3bb5d4"></div>
+          <div class="mock-bar" style="height:78%;background:#3bb5d4"></div>
         </div>
       </div>
       <div class="mock-alert">
@@ -793,7 +793,7 @@ nav {
         <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
         <p class="testi-q">3 aydır olan sifon kaçağını ilk haftada tespit etti. Tamirden sonra faturam 180 TL düştü.</p>
         <div class="testi-author">
-          <div class="testi-avatar" style="background:#2563eb">AK</div>
+          <div class="testi-avatar" style="background:#3bb5d4">AK</div>
           <div>
             <div class="testi-name">Ahmet K.</div>
             <div class="testi-city">İstanbul, Kadıköy</div>
@@ -863,7 +863,7 @@ nav {
     </div>
 
   </div>
-  <p style="text-align:center;margin-top:1.5rem;font-size:.82rem;color:#64748b">Kurumsal veya çok cihazlı çözüm için: <a href="mailto:info@susayar.com" style="color:#3b82f6">info@susayar.com</a></p>
+  <p style="text-align:center;margin-top:1.5rem;font-size:.82rem;color:#64748b">Kurumsal veya çok cihazlı çözüm için: <a href="mailto:info@susayar.com" style="color:#3bb5d4">info@susayar.com</a></p>
 </div>
 
 <!-- CTA FINAL -->
@@ -948,7 +948,7 @@ setInterval(() => {
         <textarea id="talep-note" placeholder="Daire mi, müstakil mi? Ek bilgi..." rows="2" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;resize:none"></textarea>
       </div>
     </div>
-    <button onclick="submitTalep()" id="talep-btn" style="width:100%;margin-top:1.25rem;padding:.75rem;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">Talep Gönder</button>
+    <button onclick="submitTalep()" id="talep-btn" style="width:100%;margin-top:1.25rem;padding:.75rem;background:#3bb5d4;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">Talep Gönder</button>
     <p style="font-size:.72rem;color:#475569;text-align:center;margin-top:.75rem">Sizi en kısa sürede arayacağız.</p>
   </div>
 </div>
@@ -967,14 +967,7 @@ function closeTalep() {
 document.getElementById('talep-modal').addEventListener('click', function(e) {
   if (e.target === this) closeTalep();
 });
-const _ISTANBUL_ILCELER = [
-  'Adalar','Arnavutköy','Ataşehir','Avcılar','Bağcılar','Bahçelievler','Bakırköy',
-  'Başakşehir','Bayrampaşa','Beşiktaş','Beykoz','Beylikdüzü','Beyoğlu','Büyükçekmece',
-  'Çatalca','Çekmeköy','Esenler','Esenyurt','Eyüpsultan','Fatih','Gaziosmanpaşa',
-  'Güngören','Kadıköy','Kağıthane','Kartal','Küçükçekmece','Maltepe','Pendik',
-  'Sancaktepe','Sarıyer','Silivri','Sultanbeyli','Sultangazi','Şile','Şişli',
-  'Tuzla','Ümraniye','Üsküdar','Zeytinburnu'
-];
+const _ISTANBUL_ILCELER = ['Avcılar'];
 
 function updateIlceler() {
   const il = document.getElementById('talep-il').value;
