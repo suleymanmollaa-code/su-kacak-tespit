@@ -24,14 +24,14 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,181,212,0.15) 0%, transparent 70%),
         radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16,185,129,0.08) 0%, transparent 60%);
       pointer-events: none;
     }
 
     .auth-card {
       background: rgba(15,23,42,0.95);
-      border: 1px solid rgba(59,130,246,0.2);
+      border: 1px solid rgba(59,181,212,0.2);
       border-radius: 1.25rem;
       padding: 2.5rem;
       width: 100%;
@@ -53,7 +53,7 @@
     .logo-name {
       font-size: 1.5rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #3b82f6, #10b981);
+      background: linear-gradient(135deg, #3bb5d4, #10b981);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -86,9 +86,9 @@
       transition: all .2s;
     }
     .tab-btn.active {
-      background: rgba(59,130,246,0.2);
-      color: #3b82f6;
-      border: 1px solid rgba(59,130,246,0.3);
+      background: rgba(59,181,212,0.2);
+      color: #3bb5d4;
+      border: 1px solid rgba(59,181,212,0.3);
     }
 
     /* ── Form ── */
@@ -117,12 +117,12 @@
       transition: border-color .2s;
     }
     input::placeholder { color: #475569; }
-    input:focus { border-color: rgba(59,130,246,0.6); }
+    input:focus { border-color: rgba(59,181,212,0.6); }
 
     .btn-primary {
       width: 100%;
       padding: .8rem;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      background: linear-gradient(135deg, #3bb5d4, #2a9ebe);
       border: none;
       border-radius: .6rem;
       color: #fff;
@@ -212,7 +212,7 @@
 <body>
   <div class="auth-card">
     <div class="logo">
-      <div class="logo-name">SuSayar</div>
+      <div class="logo-name" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="#3bb5d4"/></svg><span>SuSayar</span></div>
       <div class="logo-sub">Akıllı Su Kaçak Tespit Sistemi</div>
     </div>
 
@@ -238,7 +238,7 @@
       <div class="hint">
         <a onclick="switchTab('forgot')" style="color:#64748b">Şifremi unuttum</a>
         &nbsp;·&nbsp;
-        Kurulum için: <a href="/susayar-landing.html?talep=1" style="color:#3b82f6">Kurulum talep et</a>
+        Kurulum için: <a href="/susayar-landing.html?talep=1" style="color:#3bb5d4">Kurulum talep et</a>
       </div>
     </div>
 
