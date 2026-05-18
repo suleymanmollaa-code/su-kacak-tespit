@@ -21,6 +21,29 @@ const db                = require('./db');
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.SMTP_PASS;
 const MAIL_FROM      = process.env.SMTP_FROM || 'SuSayar <noreply@susayar.com>';
 
+function mailHtml({ title, body }) {
+  return `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 16px">
+<tr><td align="center">
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:560px">
+<tr><td style="background:linear-gradient(135deg,#0e6e87,#1a9dbd);border-radius:16px 16px 0 0;padding:28px 40px;text-align:center">
+<table cellpadding="0" cellspacing="0" style="margin:0 auto"><tr>
+<td style="padding-right:9px;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="24" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="white"/></svg></td>
+<td style="vertical-align:middle"><span style="font-size:20px;font-weight:900;color:white;letter-spacing:-.01em">SuSayar</span></td>
+</tr></table>
+<div style="color:rgba(255,255,255,.7);font-size:13px;margin-top:6px">${title}</div>
+</td></tr>
+<tr><td style="background:white;padding:36px 40px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0">${body}</td></tr>
+<tr><td style="background:#0f172a;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center">
+<p style="margin:0 0 4px;color:rgba(255,255,255,.4);font-size:12px">© ${new Date().getFullYear()} SuSayar · İstanbul, Türkiye</p>
+<a href="https://www.susayar.com" style="color:#3bb5d4;font-size:12px;text-decoration:none">www.susayar.com</a>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
 async function sendMail({ to, subject, html }) {
   if (!RESEND_API_KEY) {
     console.log(`[MAIL] RESEND_API_KEY ayarlı değil. Alıcı: ${to} | Konu: ${subject}`);
@@ -118,13 +141,15 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
     const sent = await sendMail({
       to: user.email,
       subject: 'SuSayar — E-posta Doğrulama Kodunuz',
-      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
-        <h2 style="color:#3b82f6">SuSayar</h2>
-        <p>Merhaba <strong>${user.name}</strong>,</p>
-        <p>Kaydınızı tamamlamak için doğrulama kodunuz:</p>
-        <div style="font-size:2.5rem;font-weight:800;letter-spacing:.5rem;text-align:center;padding:1.5rem;background:#f1f5f9;border-radius:12px;margin:1.5rem 0">${otp}</div>
-        <p style="color:#64748b;font-size:.85rem">Bu kod 10 dakika geçerlidir. Eğer kayıt olmadıysanız bu e-postayı görmezden gelin.</p>
-      </div>`,
+      html: mailHtml({ title: 'E-posta Doğrulama', body: `
+        <p style="font-size:16px;color:#1e293b;margin:0 0 12px">Merhaba <strong>${user.name}</strong>,</p>
+        <p style="font-size:14px;color:#475569;margin:0 0 24px">Kaydınızı tamamlamak için aşağıdaki doğrulama kodunu girin.</p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:28px;text-align:center;margin:0 0 24px">
+          <div style="font-size:38px;font-weight:900;letter-spacing:10px;color:#0f172a;font-family:monospace">${otp}</div>
+          <p style="margin:10px 0 0;font-size:12px;color:#94a3b8">Bu kod 10 dakika geçerlidir</p>
+        </div>
+        <p style="font-size:12px;color:#94a3b8;margin:0">Bu kaydı siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
+      ` }),
     });
     if (!sent) console.log(`[AUTH] OTP (${user.email}): ${otp}`);
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
@@ -164,12 +189,15 @@ app.post('/api/auth/resend-otp', authLimiter, requireAuth, async (req, res) => {
     const sent = await sendMail({
       to: user.email,
       subject: 'SuSayar — Yeni Doğrulama Kodunuz',
-      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
-        <h2 style="color:#3b82f6">SuSayar</h2>
-        <p>Merhaba <strong>${user.name}</strong>, yeni doğrulama kodunuz:</p>
-        <div style="font-size:2.5rem;font-weight:800;letter-spacing:.5rem;text-align:center;padding:1.5rem;background:#f1f5f9;border-radius:12px;margin:1.5rem 0">${otp}</div>
-        <p style="color:#64748b;font-size:.85rem">Bu kod 10 dakika geçerlidir.</p>
-      </div>`,
+      html: mailHtml({ title: 'E-posta Doğrulama', body: `
+        <p style="font-size:16px;color:#1e293b;margin:0 0 12px">Merhaba <strong>${user.name}</strong>,</p>
+        <p style="font-size:14px;color:#475569;margin:0 0 24px">Yeni doğrulama kodunuz aşağıda.</p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:28px;text-align:center;margin:0 0 24px">
+          <div style="font-size:38px;font-weight:900;letter-spacing:10px;color:#0f172a;font-family:monospace">${otp}</div>
+          <p style="margin:10px 0 0;font-size:12px;color:#94a3b8">Bu kod 10 dakika geçerlidir</p>
+        </div>
+        <p style="font-size:12px;color:#94a3b8;margin:0">Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
+      ` }),
     });
     if (!sent) console.log(`[AUTH] OTP yeniden (${user.email}): ${otp}`);
     res.json({ ok: true });
@@ -206,15 +234,14 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
       const sent = await sendMail({
         to: email,
         subject: 'SuSayar — Şifre Sıfırlama',
-        html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
-          <h2 style="color:#3b82f6">SuSayar</h2>
-          <p>Merhaba${u ? ' <strong>' + u.name + '</strong>' : ''},</p>
-          <p>Şifrenizi sıfırlamak için aşağıdaki butona tıklayın. Link 1 saat geçerlidir.</p>
-          <div style="text-align:center;margin:1.5rem 0">
-            <a href="${resetUrl}" style="background:#3b82f6;color:white;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600">Şifremi Sıfırla</a>
+        html: mailHtml({ title: 'Şifre Sıfırlama', body: `
+          <p style="font-size:16px;color:#1e293b;margin:0 0 12px">Merhaba${u ? ' <strong>' + u.name + '</strong>' : ''},</p>
+          <p style="font-size:14px;color:#475569;margin:0 0 28px">Hesabınızın şifresini sıfırlamak için aşağıdaki butona tıklayın. Link <strong>1 saat</strong> geçerlidir.</p>
+          <div style="text-align:center;margin:0 0 28px">
+            <a href="${resetUrl}" style="display:inline-block;background:#3bb5d4;color:white;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">Şifremi Sıfırla</a>
           </div>
-          <p style="color:#64748b;font-size:.85rem">Bu isteği siz yapmadıysanız görmezden gelin.</p>
-        </div>`,
+          <p style="font-size:12px;color:#94a3b8;margin:0">Bu isteği siz yapmadıysanız bu e-postayı güvenle görmezden gelebilirsiniz.</p>
+        ` }),
       });
       if (!sent) console.log(`[RESET] Şifre sıfırlama linki: ${resetUrl}`);
     }
@@ -603,15 +630,15 @@ app.post('/api/admin/users/:id/reset-link', adminLimiter, requireAdmin, async (r
     const resetUrl = `${appUrl}/susayar-auth.html?reset_token=${token}`;
     await sendMail({
       to: user.email,
-      subject: 'SuSayar — Şifre Sıfırlama (Admin)',
-      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto">
-        <h2 style="color:#3b82f6">SuSayar</h2>
-        <p>Merhaba <strong>${user.name}</strong>,</p>
-        <p>Hesabınızın şifresini sıfırlamak için aşağıdaki butona tıklayın. Link 24 saat geçerlidir.</p>
-        <div style="text-align:center;margin:1.5rem 0">
-          <a href="${resetUrl}" style="background:#3b82f6;color:white;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600">Şifremi Sıfırla</a>
+      subject: 'SuSayar — Şifre Sıfırlama',
+      html: mailHtml({ title: 'Şifre Sıfırlama', body: `
+        <p style="font-size:16px;color:#1e293b;margin:0 0 12px">Merhaba <strong>${user.name}</strong>,</p>
+        <p style="font-size:14px;color:#475569;margin:0 0 28px">Hesabınızın şifresini sıfırlamak için aşağıdaki butona tıklayın. Link <strong>24 saat</strong> geçerlidir.</p>
+        <div style="text-align:center;margin:0 0 28px">
+          <a href="${resetUrl}" style="display:inline-block;background:#3bb5d4;color:white;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">Şifremi Sıfırla</a>
         </div>
-      </div>`,
+        <p style="font-size:12px;color:#94a3b8;margin:0">Bu isteği siz yapmadıysanız bu e-postayı güvenle görmezden gelebilirsiniz.</p>
+      ` }),
     });
     res.json({ ok: true }); // resetUrl response'a eklenmez
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -677,12 +704,16 @@ app.post('/api/talep', async (req, res) => {
     sendMail({
       to: process.env.ADMIN_EMAIL || 'destek@susayar.com',
       subject: `Yeni Kurulum Talebi — ${name}`,
-      html: `<div style="font-family:sans-serif"><h3>Yeni Kurulum Talebi</h3>
-        <p><b>Ad:</b> ${name}</p>
-        <p><b>Telefon:</b> ${phone}</p>
-        <p><b>İlçe/Adres:</b> ${address}</p>
-        <p><b>Not:</b> ${note || '—'}</p>
-        <p><b>Tarih:</b> ${ts}</p></div>`,
+      html: mailHtml({ title: 'Yeni Kurulum Talebi', body: `
+        <p style="font-size:16px;color:#1e293b;font-weight:700;margin:0 0 20px">Yeni bir kurulum talebi geldi.</p>
+        <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:100px">Ad Soyad</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:14px;font-weight:600">${name}</td></tr>
+          <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Telefon</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:14px;font-weight:600">${phone}</td></tr>
+          <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Adres</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:14px;font-weight:600">${address}</td></tr>
+          <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Not</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#0f172a;font-size:14px">${note || '—'}</td></tr>
+          <tr><td style="padding:10px 0;color:#64748b;font-size:13px">Tarih</td><td style="padding:10px 0;color:#94a3b8;font-size:13px">${ts}</td></tr>
+        </table>
+      ` }),
     }).catch(e => console.error('[TALEP MAIL]', e.message));
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
