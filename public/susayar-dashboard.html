@@ -932,9 +932,15 @@
       </div>
     </div>
     <div class="topbar-right">
-      <div>
-        <span class="status-dot" id="status-dot"></span>
-        <span class="status-text" id="status-text">Cihaz Bağlı</span>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div>
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Cihaz Bağlı</span>
+        </div>
+        <div id="rssi-topbar" style="display:none;align-items:center;gap:.3rem;font-size:.72rem;color:var(--muted2)">
+          <span id="rssi-bars" style="font-size:.85rem">📶</span>
+          <span id="rssi-topbar-val">—</span>
+        </div>
       </div>
       <button class="btn-sm" id="btn-cihaz-bagla" onclick="openCihazBaglaModal()"
         style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;font-weight:600">
@@ -2385,14 +2391,18 @@ function applyRealReading(data) {
 
   // RSSI
   if (data.rssi_dbm) {
+    const r = parseInt(data.rssi_dbm);
+    const q = r > -60 ? 'İyi' : r > -75 ? 'Orta' : 'Zayıf';
+    const c = r > -60 ? 'var(--green)' : r > -75 ? 'var(--yellow)' : 'var(--red)';
+    const bars = r > -60 ? '▂▄▆█' : r > -75 ? '▂▄▆' : '▂▄';
     const rssiEl = document.getElementById('rssi-text');
-    if (rssiEl) {
-      const r = parseInt(data.rssi_dbm);
-      const q = r > -60 ? 'iyi' : r > -75 ? 'orta' : 'zayıf';
-      const c = r > -60 ? 'var(--green)' : r > -75 ? 'var(--yellow)' : 'var(--red)';
-      rssiEl.textContent = r + ' dBm (' + q + ')';
-      rssiEl.style.color = c;
-    }
+    if (rssiEl) { rssiEl.textContent = r + ' dBm (' + q + ')'; rssiEl.style.color = c; }
+    const rssiTop = document.getElementById('rssi-topbar');
+    const rssiTopVal = document.getElementById('rssi-topbar-val');
+    const rssiBars = document.getElementById('rssi-bars');
+    if (rssiTop) rssiTop.style.display = 'flex';
+    if (rssiTopVal) { rssiTopVal.textContent = r + ' dBm'; rssiTopVal.style.color = c; }
+    if (rssiBars) { rssiBars.textContent = bars; rssiBars.style.color = c; }
   }
 
   // Bugünkü tüketim KPI (WebSocket'ten anlık güncelle)
