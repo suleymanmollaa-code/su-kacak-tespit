@@ -972,6 +972,17 @@
     <!-- PAGE: DASHBOARD -->
     <div class="page active" id="page-dashboard">
 
+      <!-- CİHAZ SELECTOR BAR -->
+      <div id="dash-device-bar" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+        <span style="font-size:.73rem;color:var(--muted);flex-shrink:0">Cihaz:</span>
+        <button id="dash-dev-btn-all" onclick="selectDashDevice(null)"
+          style="font-size:.73rem;padding:.25rem .7rem;border-radius:99px;cursor:pointer;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.15);color:var(--blue-lt);font-weight:600">
+          Tümü
+        </button>
+        <div id="dash-dev-chips" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+        <span id="dash-device-label" style="margin-left:auto;font-size:.72rem;color:var(--muted);display:none"></span>
+      </div>
+
       <!-- TATİL MODU BANNER -->
       <div id="tatil-banner" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--red);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;animation:tatilPulse 2s infinite">
         <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
@@ -1320,23 +1331,33 @@
           <div class="card-title">Uyarı Ayarları</div>
           <span id="settings-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
         </div>
+        <!-- CİHAZ SEÇİCİ -->
+        <div class="form-group" style="margin-bottom:1.25rem">
+          <label class="form-label">Ayar Uygulanacak Cihaz</label>
+          <select class="form-select" id="setting-device" onchange="onSettingDeviceChange()">
+            <option value="">Tüm Cihazlar (varsayılan)</option>
+          </select>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Her cihaz için ayrı uyarı saati ve süre ayarlayabilirsiniz.</div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
           <div>
             <div class="form-group">
-              <label class="form-label">Gece Akış Uyarısı — Saatten Sonra</label>
-              <select class="form-select" id="setting-alert-hour">
-                <option value="20">20:00'den sonra</option>
-                <option value="21">21:00'den sonra</option>
-                <option value="22" selected>22:00'den sonra</option>
-                <option value="23">23:00'den sonra</option>
-                <option value="0">00:00'dan sonra (gece yarısı)</option>
-              </select>
-              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Seçilen saatten sonra su akışı varsa uyarı alırsınız.</div>
+              <label class="form-label">Uyarı Başlangıç Saati</label>
+              <div style="display:flex;gap:.5rem;align-items:center">
+                <select class="form-select" id="setting-alert-hour" style="flex:1">
+                  ${Array.from({length:24},(_,i)=>`<option value="${i}"${i===22?' selected':''}>${String(i).padStart(2,'0')}</option>`).join('')}
+                </select>
+                <span style="color:var(--muted);font-weight:700;flex-shrink:0">:</span>
+                <select class="form-select" id="setting-alert-minute" style="flex:1">
+                  ${[0,5,10,15,20,25,30,45].map(m=>`<option value="${m}">${String(m).padStart(2,'0')}</option>`).join('')}
+                </select>
+              </div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Bu saatten sonra su akışı varsa uyarı alırsınız.</div>
             </div>
             <div class="form-group">
               <label class="form-label">Sürekli Akış Uyarısı (dakika)</label>
               <input type="number" class="form-input" id="setting-cont-flow" min="5" max="120" value="30" placeholder="30">
-              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Girilen dakika boyunca kesintisiz akış varsa uyarı alırsınız.</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Kesintisiz akış bu süreyi aşarsa uyarı alırsınız.</div>
             </div>
           </div>
           <div>
@@ -1724,13 +1745,14 @@ async function loadDashboardData() {
   const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const today = new Date().toISOString().slice(0, 10);
   const month = new Date().toISOString().slice(0, 7);
+  const devQ  = _dashDevice ? `&device=${encodeURIComponent(_dashDevice.device_id)}` : '';
 
   try {
     const [latestRes, dailyRes, monthlyRes, statsRes] = await Promise.all([
-      fetch(`${API}/api/latest`,                        { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/api/reports/daily?date=${today}`,   { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/api/reports/monthly?month=${month}`,{ headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/api/stats`,                         { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/latest${devQ ? '?' + devQ.slice(1) : ''}`,          { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/reports/daily?date=${today}${devQ}`,                { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/reports/monthly?month=${month}${devQ}`,             { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/api/stats`,                                              { headers: { Authorization: `Bearer ${token}` } }),
     ]);
 
     // Cihaz KPI
@@ -3192,6 +3214,61 @@ async function resolveAnomaly(id) {
   loadAnomalies();
 }
 
+// ============================
+// DASHBOARD CİHAZ SEÇİCİ
+// ============================
+let _dashDevice = null; // { name, device_id, ... } veya null (Tümü)
+
+function selectDashDevice(d) {
+  _dashDevice = d;
+  // Chip stillerini güncelle
+  document.getElementById('dash-dev-btn-all').style.background = d ? 'transparent' : 'rgba(59,181,212,.15)';
+  document.getElementById('dash-dev-btn-all').style.color = d ? 'var(--muted)' : 'var(--blue-lt)';
+  document.getElementById('dash-dev-btn-all').style.borderColor = d ? 'var(--border2)' : 'rgba(59,181,212,.5)';
+  document.querySelectorAll('.dash-dev-chip').forEach(btn => {
+    const active = d && btn.dataset.devId === d.device_id;
+    btn.style.background   = active ? 'rgba(59,181,212,.15)' : 'transparent';
+    btn.style.color        = active ? 'var(--blue-lt)'       : 'var(--muted)';
+    btn.style.borderColor  = active ? 'rgba(59,181,212,.5)'  : 'var(--border2)';
+    btn.style.fontWeight   = active ? '600' : '400';
+  });
+  // Label
+  const lbl = document.getElementById('dash-device-label');
+  if (lbl) { lbl.textContent = d ? '📡 ' + d.name : ''; lbl.style.display = d ? '' : 'none'; }
+  // Veriyi yeniden yükle
+  loadDashboardData();
+}
+
+async function loadDashDeviceChips() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const chips = document.getElementById('dash-dev-chips');
+  if (!chips) return;
+  try {
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    const devs = await r.json();
+    if (!r.ok || !devs.length) return;
+    const now = Date.now();
+    chips.innerHTML = devs.map(d => {
+      const online = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
+      const dot    = online ? '<span style="color:var(--green)">●</span>' : '<span style="color:var(--muted)">○</span>';
+      return `<button class="dash-dev-chip" data-dev-id="${d.device_id}"
+        onclick="selectDashDevice(${JSON.stringify(d)})"
+        style="font-size:.73rem;padding:.25rem .7rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);display:flex;align-items:center;gap:.3rem">
+        ${dot} ${esc(d.name)}
+      </button>`;
+    }).join('');
+  } catch { /* sessiz */ }
+}
+
+function openDeviceDashboard(d) {
+  // Dashboard'a geç, o cihazı seç
+  const navDash = document.querySelector('.nav-item[data-page="dashboard"]');
+  if (navDash) navDash.click();
+  // Chips yüklendikten sonra seç (ya da hemen)
+  setTimeout(() => selectDashDevice(d), 100);
+}
+
 // ── Sayfa geçiş yardımcısı (nav olmayan sayfalar için) ────────
 function showPage(pageId, title) {
   const topbarTitle = document.getElementById('topbar-title');
@@ -3236,7 +3313,7 @@ async function loadDevicesPage() {
       const todayL      = d.today_liters != null ? (+d.today_liters).toFixed(1) : '—';
       const lastSeenStr = d.last_seen ? new Date(d.last_seen).toLocaleString('tr-TR') : '—';
       const rssi        = d.rssi_dbm ? d.rssi_dbm + ' dBm' : '—';
-      return `<div class="card" style="padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor='rgba(59,181,212,.4)'" onmouseleave="this.style.borderColor=''" onclick="openDeviceDetail(${JSON.stringify(d)})">
+      return `<div class="card" style="padding:1.25rem;cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor='rgba(59,181,212,.4)'" onmouseleave="this.style.borderColor=''" onclick="openDeviceDashboard(${JSON.stringify(d)})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
           <div>
             <div style="font-size:.95rem;font-weight:700;margin-bottom:.25rem">${esc(d.name)}</div>
@@ -3264,6 +3341,8 @@ async function loadDevicesPage() {
             style="font-size:.68rem;padding:.2rem .45rem;background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">👁</button>
           <button onclick="event.stopPropagation();navigator.clipboard.writeText('${d.api_key}');showToast('API anahtarı kopyalandı!')"
             style="font-size:.68rem;padding:.2rem .45rem;background:rgba(59,181,212,.15);color:var(--blue-lt);border:1px solid rgba(59,181,212,.3);border-radius:4px;cursor:pointer;flex-shrink:0">Kopyala</button>
+          <button onclick="event.stopPropagation();openDeviceDetail(${JSON.stringify(d)})"
+            style="font-size:.68rem;padding:.2rem .5rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">Detay ›</button>
         </div>
       </div>`;
     }).join('');
@@ -3410,35 +3489,79 @@ function toggleSlider(checkbox) {
   }
 }
 
-async function loadSettings() {
+async function loadSettingsDeviceList() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const sel   = document.getElementById('setting-device');
+  if (!sel) return;
   try {
-    const r = await fetch(`${API}/api/settings`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    const devs = await r.json();
+    if (!r.ok || !Array.isArray(devs)) return;
+    // Mevcut seçimi koru
+    const current = sel.value;
+    sel.innerHTML = `<option value="">Tüm Cihazlar (varsayılan)</option>` +
+      devs.map(d => `<option value="${d.device_id}">${esc(d.name)}</option>`).join('');
+    if (current) sel.value = current;
+  } catch { /* sessiz */ }
+}
+
+async function loadSettings() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  await loadSettingsDeviceList();
+  const device = document.getElementById('setting-device')?.value || '';
+  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!r.ok) return;
     const { settings } = await r.json();
-    const hourEl = document.getElementById('setting-alert-hour');
-    const contEl = document.getElementById('setting-cont-flow');
-    const dailyEl = document.getElementById('setting-daily');
+    const hourEl   = document.getElementById('setting-alert-hour');
+    const minEl    = document.getElementById('setting-alert-minute');
+    const contEl   = document.getElementById('setting-cont-flow');
+    const dailyEl  = document.getElementById('setting-daily');
     const weeklyEl = document.getElementById('setting-weekly');
-    if (hourEl) hourEl.value = String(settings.alert_after_hour ?? 22);
-    if (contEl) contEl.value = String(settings.continuous_flow_min ?? 30);
-    if (dailyEl) { dailyEl.checked = !!settings.daily_report; toggleSlider(dailyEl); }
+    if (hourEl)   hourEl.value  = String(settings.alert_after_hour   ?? 22);
+    if (minEl)    minEl.value   = String(settings.alert_after_minute ?? 0);
+    if (contEl)   contEl.value  = String(settings.continuous_flow_min ?? 30);
+    if (dailyEl)  { dailyEl.checked  = !!settings.daily_report;  toggleSlider(dailyEl); }
     if (weeklyEl) { weeklyEl.checked = !!settings.weekly_report; toggleSlider(weeklyEl); }
   } catch { /* sessiz hata */ }
 }
 
-async function saveSettings() {
+async function onSettingDeviceChange() {
+  // Cihaz değişince o cihazın ayarlarını yükle
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const device = document.getElementById('setting-device')?.value || '';
+  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
+  try {
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return;
+    const { settings } = await r.json();
+    const hourEl = document.getElementById('setting-alert-hour');
+    const minEl  = document.getElementById('setting-alert-minute');
+    const contEl = document.getElementById('setting-cont-flow');
+    if (hourEl) hourEl.value = String(settings.alert_after_hour   ?? 22);
+    if (minEl)  minEl.value  = String(settings.alert_after_minute ?? 0);
+    if (contEl) contEl.value = String(settings.continuous_flow_min ?? 30);
+  } catch { /* sessiz */ }
+}
+
+async function saveSettings() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const device = document.getElementById('setting-device')?.value || '';
   const body = {
-    alert_after_hour: parseInt(document.getElementById('setting-alert-hour')?.value || '22', 10),
-    continuous_flow_min: parseInt(document.getElementById('setting-cont-flow')?.value || '30', 10),
-    daily_report: document.getElementById('setting-daily')?.checked || false,
+    alert_after_hour:   parseInt(document.getElementById('setting-alert-hour')?.value   || '22', 10),
+    alert_after_minute: parseInt(document.getElementById('setting-alert-minute')?.value || '0',  10),
+    continuous_flow_min: parseInt(document.getElementById('setting-cont-flow')?.value   || '30', 10),
+    daily_report:  document.getElementById('setting-daily')?.checked  || false,
     weekly_report: document.getElementById('setting-weekly')?.checked || false,
   };
+  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
   try {
-    const r = await fetch(`${API}/api/settings`, {
+    const r = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
@@ -3446,7 +3569,8 @@ async function saveSettings() {
     if (r.ok) {
       const chip = document.getElementById('settings-save-chip');
       if (chip) { chip.style.display = ''; setTimeout(() => { chip.style.display = 'none'; }, 2500); }
-      showToast('✅ Uyarı ayarları kaydedildi');
+      const devName = document.getElementById('setting-device')?.selectedOptions[0]?.text || 'Tüm Cihazlar';
+      showToast(`✅ ${devName} ayarları kaydedildi`);
     } else {
       showToast('❌ Kayıt başarısız');
     }
@@ -3456,6 +3580,7 @@ async function saveSettings() {
 // Sayfa yüklenince gerçek veri çek
 setTimeout(loadDashboardData, 500);
 setTimeout(loadDashAnomalies, 800);
+setTimeout(loadDashDeviceChips, 600);
 
 // ── WebSocket bağlantısı ─────────────────────────────────────
 function connectRealBackend(url) {

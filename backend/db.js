@@ -74,9 +74,18 @@ const SCHEMA_PG = `
   CREATE TABLE IF NOT EXISTS user_settings (
     user_id              TEXT PRIMARY KEY REFERENCES users(id),
     alert_after_hour     INTEGER NOT NULL DEFAULT 22,
+    alert_after_minute   INTEGER NOT NULL DEFAULT 0,
     continuous_flow_min  INTEGER NOT NULL DEFAULT 30,
     daily_report         BOOLEAN NOT NULL DEFAULT FALSE,
     weekly_report        BOOLEAN NOT NULL DEFAULT FALSE
+  );
+  CREATE TABLE IF NOT EXISTS device_alert_settings (
+    user_id              TEXT NOT NULL,
+    device_id            TEXT NOT NULL,
+    alert_after_hour     INTEGER NOT NULL DEFAULT 22,
+    alert_after_minute   INTEGER NOT NULL DEFAULT 0,
+    continuous_flow_min  INTEGER NOT NULL DEFAULT 30,
+    PRIMARY KEY (user_id, device_id)
   );
 `;
 
@@ -107,9 +116,17 @@ const SCHEMA_SQLITE = `
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
   CREATE TABLE IF NOT EXISTS user_settings (
     user_id TEXT PRIMARY KEY, alert_after_hour INTEGER NOT NULL DEFAULT 22,
+    alert_after_minute INTEGER NOT NULL DEFAULT 0,
     continuous_flow_min INTEGER NOT NULL DEFAULT 30,
     daily_report INTEGER NOT NULL DEFAULT 0, weekly_report INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+  CREATE TABLE IF NOT EXISTS device_alert_settings (
+    user_id TEXT NOT NULL, device_id TEXT NOT NULL,
+    alert_after_hour INTEGER NOT NULL DEFAULT 22,
+    alert_after_minute INTEGER NOT NULL DEFAULT 0,
+    continuous_flow_min INTEGER NOT NULL DEFAULT 30,
+    PRIMARY KEY (user_id, device_id)
   );
 `;
 
@@ -162,6 +179,7 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified INTEGER NOT NULL DEFAULT 0`).catch(() => {});
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp_expires TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS alert_after_minute INTEGER NOT NULL DEFAULT 0`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -171,6 +189,7 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE users ADD COLUMN phone_verified INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp_expires TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN alert_after_minute INTEGER NOT NULL DEFAULT 0`); } catch {}
   }
 }
 

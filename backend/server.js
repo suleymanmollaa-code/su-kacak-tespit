@@ -375,25 +375,55 @@ app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
 // ── Kullanıcı Ayarları ────────────────────────────────────────
 app.get('/api/settings', requireAuth, async (req, res) => {
   try {
-    let s = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]);
-    if (!s) s = { user_id: req.user.id, alert_after_hour: 22, continuous_flow_min: 30, daily_report: false, weekly_report: false };
-    res.json({ ok: true, settings: { alert_after_hour: s.alert_after_hour, continuous_flow_min: s.continuous_flow_min, daily_report: !!s.daily_report, weekly_report: !!s.weekly_report } });
+    const device = req.query.device;
+    const global = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    if (device) {
+      const ds = await db.queryOne(`SELECT * FROM device_alert_settings WHERE user_id=$1 AND device_id=$2`, [req.user.id, device]) || {};
+      res.json({ ok: true, settings: {
+        alert_after_hour:   ds.alert_after_hour   ?? global?.alert_after_hour   ?? 22,
+        alert_after_minute: ds.alert_after_minute ?? global?.alert_after_minute ?? 0,
+        continuous_flow_min: ds.continuous_flow_min ?? global?.continuous_flow_min ?? 30,
+        daily_report:  !!global?.daily_report,
+        weekly_report: !!global?.weekly_report,
+      }});
+    } else {
+      const s = global || {};
+      res.json({ ok: true, settings: {
+        alert_after_hour:   s.alert_after_hour   ?? 22,
+        alert_after_minute: s.alert_after_minute ?? 0,
+        continuous_flow_min: s.continuous_flow_min ?? 30,
+        daily_report:  !!s.daily_report,
+        weekly_report: !!s.weekly_report,
+      }});
+    }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.put('/api/settings', requireAuth, async (req, res) => {
   try {
-    const { alert_after_hour, continuous_flow_min, daily_report, weekly_report } = req.body;
-    const hour = parseInt(alert_after_hour ?? 22);
-    const mins = parseInt(continuous_flow_min ?? 30);
-    if (hour < 0 || hour > 23) return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
+    const device = req.query.device;
+    const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report } = req.body;
+    const hour   = parseInt(alert_after_hour   ?? 22);
+    const minute = parseInt(alert_after_minute ?? 0);
+    const mins   = parseInt(continuous_flow_min ?? 30);
+    if (hour < 0 || hour > 23)  return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
+    if (minute < 0 || minute > 59) return res.status(400).json({ error: 'Dakika 0-59 arasında olmalı' });
     if (mins < 5 || mins > 1440) return res.status(400).json({ error: 'Süre 5-1440 dk arasında olmalı' });
-    await db.queryRun(
-      `INSERT INTO user_settings (user_id,alert_after_hour,continuous_flow_min,daily_report,weekly_report)
-       VALUES ($1,$2,$3,$4,$5)
-       ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, continuous_flow_min=$3, daily_report=$4, weekly_report=$5`,
-      [req.user.id, hour, mins, daily_report ? 1 : 0, weekly_report ? 1 : 0]
-    );
+    if (device) {
+      await db.queryRun(
+        `INSERT INTO device_alert_settings (user_id,device_id,alert_after_hour,alert_after_minute,continuous_flow_min)
+         VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (user_id,device_id) DO UPDATE SET alert_after_hour=$3, alert_after_minute=$4, continuous_flow_min=$5`,
+        [req.user.id, device, hour, minute, mins]
+      );
+    } else {
+      await db.queryRun(
+        `INSERT INTO user_settings (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report)
+         VALUES ($1,$2,$3,$4,$5,$6)
+         ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4, daily_report=$5, weekly_report=$6`,
+        [req.user.id, hour, minute, mins, daily_report ? 1 : 0, weekly_report ? 1 : 0]
+      );
+    }
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
@@ -427,21 +457,29 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     broadcastToUser(reading.user_id, { type: 'sensor_update', payload: reading });
 
     // ── Anomali tespiti ─────────────────────────────────────
-    const trHour = ((new Date().getUTCHours() + 3) % 24 + 24) % 24;
+    const now = new Date();
+    const trHour   = ((now.getUTCHours()   + 3) % 24 + 24) % 24;
+    const trMinute = now.getUTCMinutes();
+    const trTotalMin = trHour * 60 + trMinute;
     const anomalies = [];
 
-    // Kullanıcı ayarlarını al
-    const settings = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [reading.user_id]);
-    const alertHour      = settings?.alert_after_hour     ?? 22;
-    const contFlowMin    = settings?.continuous_flow_min  ?? 30;
+    // Kullanıcı ayarlarını al (cihaza özgü varsa önce onu dene)
+    const settings   = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [reading.user_id]);
+    const devSettings = await db.queryOne(`SELECT * FROM device_alert_settings WHERE user_id=$1 AND device_id=$2`, [reading.user_id, reading.device_id]);
+    const alertHour   = devSettings?.alert_after_hour   ?? settings?.alert_after_hour   ?? 22;
+    const alertMinute = devSettings?.alert_after_minute ?? settings?.alert_after_minute ?? 0;
+    const contFlowMin = devSettings?.continuous_flow_min ?? settings?.continuous_flow_min ?? 30;
+    const alertTotalMin = alertHour * 60 + alertMinute;
 
     // Gece akışı (00:00–05:00 arası flow > 0.1 L/dk)
     if (trHour >= 0 && trHour < 5 && reading.flow_lpm > 0.1) {
-      anomalies.push({ type: 'gece-akis', detail: `${trHour}:00 saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
+      anomalies.push({ type: 'gece-akis', detail: `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')} saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
     // Kullanıcının belirlediği saatten sonra akış
-    if (trHour >= alertHour && reading.flow_lpm > 0.1) {
-      anomalies.push({ type: 'saat-akis', detail: `${trHour}:00 saatinde (${alertHour}:00 sonrası) ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
+    if (trTotalMin >= alertTotalMin && reading.flow_lpm > 0.1) {
+      const alertStr = `${String(alertHour).padStart(2,'0')}:${String(alertMinute).padStart(2,'0')}`;
+      const nowStr   = `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')}`;
+      anomalies.push({ type: 'saat-akis', detail: `${nowStr} saatinde (${alertStr} sonrası) ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
     // Çok yüksek akış (>8 L/dk)
     if (reading.flow_lpm > 8) {
@@ -486,7 +524,10 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
 
 app.get('/api/latest', requireAuth, async (req, res) => {
   try {
-    const row = await db.queryOne(`SELECT * FROM readings WHERE user_id=$1 ORDER BY id DESC LIMIT 1`, [req.user.id]);
+    const device = req.query.device;
+    const row = device
+      ? await db.queryOne(`SELECT * FROM readings WHERE user_id=$1 AND device_id=$2 ORDER BY id DESC LIMIT 1`, [req.user.id, device])
+      : await db.queryOne(`SELECT * FROM readings WHERE user_id=$1 ORDER BY id DESC LIMIT 1`, [req.user.id]);
     res.json(row || { flow_lpm: 0, total_liters: 0, ts: null });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
@@ -525,12 +566,14 @@ app.get('/api/stats', requireAuth, async (req, res) => {
 // ── Günlük Rapor (saatlik tüketim) ───────────────────────────
 app.get('/api/reports/daily', requireAuth, async (req, res) => {
   try {
-    const uid  = req.user.id;
-    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    const uid    = req.user.id;
+    const date   = req.query.date || new Date().toISOString().slice(0, 10);
+    const device = req.query.device;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'Geçersiz tarih formatı (YYYY-MM-DD)' });
-    // TR saat dilimine göre gün başı/sonu (UTC+3)
     const dayStart = date + 'T00:00:00.000+03:00';
     const dayEnd   = date + 'T23:59:59.999+03:00';
+    const devFilter = device ? ' AND device_id=$4' : '';
+    const params    = device ? [uid, dayStart, dayEnd, device] : [uid, dayStart, dayEnd];
 
     let rows;
     if (db.isPg) {
@@ -538,15 +581,15 @@ app.get('/api/reports/daily', requireAuth, async (req, res) => {
         `SELECT to_char(ts::timestamptz AT TIME ZONE 'Europe/Istanbul', 'HH24') AS hour,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
-         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
-         GROUP BY hour ORDER BY hour`, [uid, dayStart, dayEnd]);
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3${devFilter}
+         GROUP BY hour ORDER BY hour`, params);
     } else {
       rows = await db.queryAll(
         `SELECT strftime('%H', datetime(ts, '+3 hours')) AS hour,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
-         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
-         GROUP BY hour ORDER BY hour`, [uid, dayStart, dayEnd]);
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3${devFilter}
+         GROUP BY hour ORDER BY hour`, params);
     }
 
     const total = rows.reduce((s, r) => s + parseFloat(r.liters || 0), 0);
@@ -557,11 +600,14 @@ app.get('/api/reports/daily', requireAuth, async (req, res) => {
 // ── Aylık Rapor (günlük tüketim) ──────────────────────────────
 app.get('/api/reports/monthly', requireAuth, async (req, res) => {
   try {
-    const uid   = req.user.id;
-    const month = req.query.month || new Date().toISOString().slice(0, 7);
+    const uid    = req.user.id;
+    const month  = req.query.month || new Date().toISOString().slice(0, 7);
+    const device = req.query.device;
     if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ error: 'Geçersiz ay formatı (YYYY-MM)' });
     const monthStart = month + '-01T00:00:00.000+03:00';
     const monthEnd   = month + '-31T23:59:59.999+03:00';
+    const devFilter  = device ? ' AND device_id=$4' : '';
+    const params     = device ? [uid, monthStart, monthEnd, device] : [uid, monthStart, monthEnd];
 
     let rows;
     if (db.isPg) {
@@ -569,15 +615,15 @@ app.get('/api/reports/monthly', requireAuth, async (req, res) => {
         `SELECT to_char(ts::timestamptz AT TIME ZONE 'Europe/Istanbul', 'DD') AS day,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
-         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
-         GROUP BY day ORDER BY day`, [uid, monthStart, monthEnd]);
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3${devFilter}
+         GROUP BY day ORDER BY day`, params);
     } else {
       rows = await db.queryAll(
         `SELECT strftime('%d', datetime(ts, '+3 hours')) AS day,
                 SUM((flow_lpm / 60.0) * 2.5) AS liters,
                 AVG(flow_lpm) AS avg_lpm, MAX(flow_lpm) AS max_lpm, COUNT(*) AS n
-         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3
-         GROUP BY day ORDER BY day`, [uid, monthStart, monthEnd]);
+         FROM readings WHERE user_id=$1 AND ts>=$2 AND ts<=$3${devFilter}
+         GROUP BY day ORDER BY day`, params);
     }
 
     const total = rows.reduce((s, r) => s + parseFloat(r.liters || 0), 0);
