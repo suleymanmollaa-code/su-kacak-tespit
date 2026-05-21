@@ -1590,9 +1590,13 @@ async function loadDashboardData() {
     if (latestRes.ok) {
       const latest = await latestRes.json();
       if (latest.ts) {
+        // Son veri zamanını ayarla (3dk eşiğine göre online/offline belirlenir)
+        _lastSensorMs = new Date(latest.ts).getTime();
         applyRealReading(latest);
         const luEl = document.getElementById('last-update');
         if (luEl) luEl.textContent = new Date(latest.ts).toLocaleTimeString('tr-TR');
+      } else {
+        updateDeviceStatus(); // veri hiç yoksa offline göster
       }
     }
 
@@ -2342,6 +2346,29 @@ let savedWsUrl      = localStorage.getItem('susayar_ws_url') || '';
 function stopDemo() { /* simülasyon kaldırıldı */ }
 function startDemo() { /* simülasyon kaldırıldı */ }
 
+// ── Cihaz çevrimiçi eşiği: son 3 dakikada veri geldiyse online ──
+const DEVICE_ONLINE_MS = 30 * 1000; // 30 saniye — cihaz her 2sn veri gönderir
+let _lastSensorMs = 0;
+
+function updateDeviceStatus() {
+  const isOnline = _lastSensorMs > 0 && (Date.now() - _lastSensorMs) < DEVICE_ONLINE_MS;
+  const devStatusEl = document.getElementById('device-status-text');
+  const statusDotEl2 = document.getElementById('status-dot');
+  const statusTextEl2 = document.getElementById('status-text');
+  if (isOnline) {
+    if (devStatusEl)   { devStatusEl.textContent = 'Çevrimiçi'; devStatusEl.style.color = 'var(--green)'; }
+    if (statusDotEl2)  statusDotEl2.style.background = 'var(--green)';
+    if (statusTextEl2) statusTextEl2.textContent = 'Cihaz Bağlı';
+    setCihazBtn('connected');
+  } else {
+    if (devStatusEl)   { devStatusEl.textContent = 'Çevrimdışı'; devStatusEl.style.color = 'var(--red)'; }
+    if (statusDotEl2)  statusDotEl2.style.background = 'var(--red)';
+    if (statusTextEl2) statusTextEl2.textContent = 'Cihaz Bağlı Değil';
+    setCihazBtn('disconnected');
+  }
+}
+setInterval(updateDeviceStatus, 30000);
+
 // ── Gerçek veri → dashboard DOM ─────────────────────────────
 function applyRealReading(data) {
   const lpm      = parseFloat(data.flow_lpm  || 0);
@@ -2415,9 +2442,9 @@ function applyRealReading(data) {
     if (barEl) barEl.style.width = Math.min((totalL / 500) * 100, 100) + '%';
   }
 
-  // Cihaz durumu
-  const devStatusEl = document.getElementById('device-status-text');
-  if (devStatusEl) { devStatusEl.textContent = 'Bağlı'; devStatusEl.style.color = 'var(--green)'; }
+  // Cihaz durumu — son veri zamanını güncelle, eşik kontrolü yap
+  _lastSensorMs = Date.now();
+  updateDeviceStatus();
 
   // Flow history mini chart
   updateFlowHistory(lpm);
@@ -2591,10 +2618,10 @@ function _connectRealBackendLegacy(wsUrl) {
   }
   realWs.onopen = () => {
     realModeActive = true;
-    setCihazBtn('connected');
-    showToast('✅ ESP32 backend\'e bağlandı!');
+    showToast('✅ Backend\'e bağlanıldı, cihaz verisi bekleniyor...');
     localStorage.setItem('susayar_ws_url', wsUrl);
     savedWsUrl = wsUrl;
+    updateDeviceStatus();
   };
 
   realWs.onmessage = (e) => {
@@ -3010,9 +3037,9 @@ function connectRealBackend(url) {
 
   ws.onopen = function() {
     console.log('[WS] Bağlandı');
-    const statusEl = document.getElementById('ws-status-text');
-    if (statusEl) { statusEl.textContent = 'Bağlı'; statusEl.style.color = 'var(--green)'; }
-    setCihazBtn('connected');
+    // NOT: WS = browser↔backend bağlantısı, ESP32↔backend değil.
+    // Cihaz durumu veri gelince (applyRealReading) güncellenir.
+    updateDeviceStatus();
   };
 
   ws.onmessage = function(e) {

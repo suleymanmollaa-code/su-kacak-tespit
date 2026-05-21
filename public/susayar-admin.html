@@ -353,7 +353,18 @@ async function loadDevices() {
             <div style="font-size:.8rem">${esc(d.user_name)}</div>
             <div style="font-size:.72rem;color:var(--muted)">${esc(d.user_email)}</div>
           </td>
-          <td style="font-size:.75rem;color:var(--muted2)">${d.last_seen ? new Date(d.last_seen).toLocaleDateString('tr-TR') : 'Hic'}</td>
+          <td style="font-size:.75rem">
+            ${(()=>{
+              if (!d.last_seen) return '<span style="color:var(--muted2)">Hiç bağlanmadı</span>';
+              const diffMs = Date.now() - new Date(d.last_seen).getTime();
+              const isOnline = diffMs < 30 * 1000;
+              const timeStr = new Date(d.last_seen).toLocaleString('tr-TR');
+              const badge = isOnline
+                ? '<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(16,185,129,.15);color:#10b981;font-weight:600;font-size:.7rem">🟢 Çevrimiçi</span>'
+                : '<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(100,116,139,.12);color:var(--muted2);font-weight:600;font-size:.7rem">⚫ Çevrimdışı</span>';
+              return badge + '<div style="margin-top:3px;color:var(--muted2)">' + timeStr + '</div>';
+            })()}
+          </td>
           <td>
             <button class="btn-ghost btn-red" style="font-size:.72rem;padding:.3rem .6rem;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)"
               onclick="deleteDevice('${d.id}')">Sil</button>
