@@ -2365,6 +2365,15 @@ function updateDeviceStatus() {
     if (statusDotEl2)  statusDotEl2.style.background = 'var(--red)';
     if (statusTextEl2) statusTextEl2.textContent = 'Cihaz Bağlı Değil';
     setCihazBtn('disconnected');
+    // Cihaz offline — anlık akış göstergesini sıfırla
+    const offlineGrad = 'conic-gradient(var(--border) 0deg 360deg)';
+    const rEl = document.getElementById('flow-ring');    if (rEl) rEl.style.background = offlineGrad;
+    const brEl = document.getElementById('flow-big-ring'); if (brEl) brEl.style.background = offlineGrad;
+    const fnEl = document.getElementById('flow-num');    if (fnEl) fnEl.textContent = '—';
+    const kfEl = document.getElementById('kpi-flow');    if (kfEl) kfEl.innerHTML = '— <span style="font-size:1rem">L/dk</span>';
+    const bnEl = document.getElementById('flow-big-num'); if (bnEl) bnEl.textContent = '—';
+    const subEl = document.getElementById('kpi-flow-sub'); if (subEl) subEl.textContent = 'Cihaz çevrimdışı';
+    const luEl = document.getElementById('last-update');  if (luEl) luEl.textContent = _lastSensorMs ? 'Son: ' + new Date(_lastSensorMs).toLocaleTimeString('tr-TR') : '—';
   }
 }
 setInterval(updateDeviceStatus, 30000);
