@@ -1470,6 +1470,19 @@
         </div>
         <div id="anomaly-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
       </div>
+
+      <!-- SİSTEM ÖĞRENİYOR KARTI -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🧠 Sistem Öğreniyor</div>
+          <button type="button" onclick="loadLearning()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+        </div>
+        <p style="font-size:.76rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
+          Anomali kartlarında <strong>❌ Normal</strong> butonuna bastıkça sistem öğrenir. Aynı tür uyarı 3 kez "Normal" işaretlenirse artık tetiklenmez. Dilediğinizde öğrenmeyi sıfırlayabilirsiniz.
+        </p>
+        <div id="learning-list"><div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz geri bildirim yok — anomali kartlarındaki butonları kullanın.</div></div>
+      </div>
+
     </div><!-- /page-bildirimler -->
 
     <!-- PAGE: CİHAZ AYARLARI -->
@@ -1768,7 +1781,7 @@ navItems.forEach(item => {
     if (pageId === 'aylik-analiz') loadMonthlyReport();
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
-    if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); }
+    if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); loadLearning(); }
   });
 });
 
@@ -3359,6 +3372,67 @@ async function resolveAnomaly(id) {
   loadAnomalies(false);
 }
 
+const _ANOMALY_TYPE_LABELS = {
+  'gece-akis': 'Gece Akışı', 'saat-akis': 'Saat Uyarısı',
+  'yuksek-akis': 'Yüksek Akış', 'surekli-akis': 'Sürekli Akış', 'kacak': 'Sızıntı'
+};
+
+async function loadLearning() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const el = document.getElementById('learning-list');
+  if (!el) return;
+  try {
+    const r = await fetch(`${API}/api/learning`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return;
+    const { learning } = await r.json();
+    if (!learning.length) {
+      el.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz geri bildirim yok — anomali kartlarındaki butonları kullanın.</div>`;
+      return;
+    }
+    el.innerHTML = learning.map(item => {
+      const label  = _ANOMALY_TYPE_LABELS[item.type] || item.type;
+      const fp     = item.false_positive || 0;
+      const real   = item.real || 0;
+      const pct    = Math.min(100, Math.round((fp / 3) * 100));
+      const suppressed = item.suppressed;
+      const barColor = suppressed ? 'var(--red)' : fp >= 2 ? '#f59e0b' : 'var(--blue)';
+      const badge = suppressed
+        ? `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(239,68,68,.15);color:#ef4444;border-radius:4px;font-weight:700">Baskılandı</span>`
+        : `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border-radius:4px">Öğreniyor ${fp}/3</span>`;
+      return `<div style="padding:.85rem;border:1px solid var(--border);border-radius:9px;background:var(--bg2);margin-bottom:.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <span style="font-size:.82rem;font-weight:700">${label}</span>
+            <span style="font-size:.72rem;color:var(--muted)">— ${esc(item.device)}</span>
+            ${badge}
+          </div>
+          <button onclick="resetLearning('${esc(item.device)}','${item.type}')" style="font-size:.68rem;padding:.2rem .55rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:5px;cursor:pointer">↺ Sıfırla</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div style="flex:1;height:5px;background:var(--bg3);border-radius:99px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${barColor};border-radius:99px;transition:width .4s"></div>
+          </div>
+          <span style="font-size:.68rem;color:var(--muted);white-space:nowrap">${fp} yanlış / ${real} gerçek</span>
+        </div>
+        ${suppressed ? `<div style="font-size:.72rem;color:#ef4444;margin-top:.4rem">⚠️ Bu uyarı tipi artık tetiklenmiyor. Sıfırlamak için butona bas.</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch { /* sessiz */ }
+}
+
+async function resetLearning(device, type) {
+  if (!confirm(`"${_ANOMALY_TYPE_LABELS[type] || type}" öğrenmesi sıfırlanacak — ${device} cihazı için tüm geri bildirimler silinir. Devam?`)) return;
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const r = await fetch(`${API}/api/learning`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ device, type }),
+  });
+  if (r.ok) { showToast('↺ Öğrenme sıfırlandı'); loadLearning(); }
+}
+
 async function setFeedback(id, feedback) {
   const token = localStorage.getItem('susayar_token') || '';
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
@@ -3875,6 +3949,8 @@ async function saveChannelSettings() {
   const prevChatId = chatIdEl?.dataset.savedValue || '';
   if (prevChatId && !newChatId) {
     if (!confirm('Telegram Chat ID\'yi silmek istediğinizden emin misiniz? Telegram bildirimleri devre dışı kalacak.')) return;
+  } else if (prevChatId && newChatId && prevChatId !== newChatId) {
+    if (!confirm(`Chat ID değiştirilecek:\n${prevChatId} → ${newChatId}\n\nDevam etmek istiyor musunuz?`)) return;
   }
   const body = {
     notify_realtime_email: document.getElementById('setting-notify-email')?.checked  || false,

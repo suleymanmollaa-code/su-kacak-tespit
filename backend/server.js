@@ -412,6 +412,44 @@ app.put('/api/anomalies/:id/feedback', requireAuth, async (req, res) => {
   } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Öğrenme istatistikleri ────────────────────────────────────
+app.get('/api/learning', requireAuth, async (req, res) => {
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const rows = await db.queryAll(
+      `SELECT type, device, feedback, COUNT(*) as cnt
+       FROM anomalies
+       WHERE user_id=$1 AND feedback IS NOT NULL AND ts>=$2
+       GROUP BY type, device, feedback`,
+      [req.user.id, cutoff]
+    );
+    // Pivot: { device+type -> { real, false_positive } }
+    const map = {};
+    for (const r of rows) {
+      const key = `${r.device}||${r.type}`;
+      if (!map[key]) map[key] = { device: r.device, type: r.type, real: 0, false_positive: 0 };
+      map[key][r.feedback] = parseInt(r.cnt);
+    }
+    const learning = Object.values(map).map(m => ({
+      ...m,
+      suppressed: m.false_positive >= 3,
+    }));
+    res.json({ learning });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.delete('/api/learning', requireAuth, async (req, res) => {
+  try {
+    const { device, type } = req.body;
+    if (!device || !type) return res.status(400).json({ error: 'device ve type zorunlu' });
+    await db.queryRun(
+      `UPDATE anomalies SET feedback=NULL WHERE user_id=$1 AND device=$2 AND type=$3`,
+      [req.user.id, device, type]
+    );
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // DELETE /api/readings kaldırıldı — veriler korunur
 
 // ── Kullanıcı Ayarları ────────────────────────────────────────
@@ -980,7 +1018,9 @@ async function sendAnomalyNotifications(userId, anomalies) {
       await sendTelegram(s.telegram_chat_id.trim(), msg).catch(() => {});
     }
 
-    if (s.notify_realtime_email || s.notify_realtime_email === true || s.notify_realtime_email === 1) {
+    const emailEnabled = s.notify_realtime_email === true || s.notify_realtime_email === 1 || s.notify_realtime_email === '1';
+    console.log(`[NOTIFY] email_enabled=${emailEnabled} telegram_enabled=${!!s.notify_telegram} user=${user.email}`);
+    if (emailEnabled) {
       const icon = { 'KRİTİK': '🔴', 'UYARI': '🟡', 'BİLGİ': '🔵' }[severity] || '🔔';
       sendMail({
         to: user.email,
