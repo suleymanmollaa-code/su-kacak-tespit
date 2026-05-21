@@ -693,6 +693,19 @@ app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Geçici: Bozuk readings temizle (sonra silinecek) ──────────
+app.delete('/api/admin/readings/cleanup', adminLimiter, requireAdmin, async (req, res) => {
+  try {
+    // total_liters > 10000 veya flow_lpm > 100 olan bozuk kayıtları sil
+    const r1 = await db.queryRun(`DELETE FROM readings WHERE total_liters > 10000`);
+    const r2 = await db.queryRun(`DELETE FROM readings WHERE flow_lpm > 100`);
+    // anomalileri de temizle
+    await db.queryRun(`DELETE FROM anomalies WHERE created_at < NOW() - INTERVAL '7 days'`);
+    console.log('[CLEANUP] Bozuk readings temizlendi');
+    res.json({ ok: true, deleted_total_liters: r1.changes || r1.rowCount, deleted_flow: r2.changes || r2.rowCount });
+  } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
+});
+
 // ── Kurulum Talebi ────────────────────────────────────────────
 app.post('/api/talep', async (req, res) => {
   try {
