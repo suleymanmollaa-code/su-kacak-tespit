@@ -383,6 +383,23 @@ app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+app.post('/api/anomalies/:id/notify', requireAuth, async (req, res) => {
+  try {
+    const a = await db.queryOne(`SELECT * FROM anomalies WHERE id=$1 AND user_id=$2`, [req.params.id, req.user.id]);
+    if (!a) return res.status(404).json({ error: 'Bulunamadı' });
+    const s = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    if (!s?.telegram_chat_id) return res.status(400).json({ error: 'Telegram Chat ID ayarlı değil' });
+    if (!process.env.TELEGRAM_BOT_TOKEN) return res.status(500).json({ error: 'Bot token sunucuda tanımlı değil' });
+    const LABELS = { 'yuksek-akis':'Yüksek Akış','surekli-akis':'Sürekli Akış','kacak':'Sızıntı Tespiti','gece-akis':'Gece Akışı','saat-akis':'Saat Uyarısı' };
+    const label = LABELS[a.type] || a.type;
+    const ts = new Date(a.ts).toLocaleString('tr-TR');
+    const msg = `⚠️ <b>SuSayar Anomali Bildirimi</b>\n\n🔴 <b>${label}</b>\n📡 Cihaz: ${a.device}\n📝 ${a.detail}\n🕐 ${ts}`;
+    const result = await sendTelegram(s.telegram_chat_id.trim(), msg);
+    if (!result?.ok) return res.status(500).json({ error: result?.description || 'Telegram hatası' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // DELETE /api/readings kaldırıldı — veriler korunur
 
 // ── Kullanıcı Ayarları ────────────────────────────────────────
@@ -558,6 +575,8 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     if (newAnomalies.length > 0) {
       sendAnomalyNotifications(reading.user_id, newAnomalies).catch(() => {});
     }
+    // Canlı durum panelini güncelle
+    updateTelegramLivePanel(reading.user_id, data, devRow.name).catch(() => {});
 
     console.log(`[${reading.ts}] ${reading.device_id} | ${data.flow_lpm} L/dk | ${data.total_liters} L`);
     res.json({ ok: true, ts: reading.ts });
@@ -960,6 +979,58 @@ async function sendAnomalyNotifications(userId, anomalies) {
     }
   }
 }
+
+// ── Telegram Canlı Durum Paneli ──────────────────────────────
+async function updateTelegramLivePanel(userId, data, deviceName) {
+  if (!process.env.TELEGRAM_BOT_TOKEN) return;
+  const s = await db.queryOne(
+    `SELECT notify_telegram, telegram_chat_id, telegram_live_msg_id FROM user_settings WHERE user_id=$1`, [userId]
+  );
+  if (!s?.notify_telegram || !s?.telegram_chat_id) return;
+
+  const flow = (data.flow_lpm || 0).toFixed(2);
+  const total = (data.total_liters || 0).toFixed(1);
+  const status = parseFloat(flow) > 0 ? '🟢 Akış Var' : '⚪ Akış Yok';
+  const ts = new Date().toLocaleString('tr-TR');
+  const text = `📊 <b>SuSayar Canlı Durum</b>\n\n📡 Cihaz: ${deviceName || '—'}\n💧 Anlık Akış: <b>${flow} L/dk</b>\n📦 Toplam: ${total} L\n${status}\n\n🕐 Son güncelleme: ${ts}`;
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = s.telegram_chat_id.trim();
+
+  if (s.telegram_live_msg_id) {
+    // Mevcut mesajı güncelle
+    const r = await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, message_id: parseInt(s.telegram_live_msg_id), text, parse_mode: 'HTML' }),
+    });
+    const d = await r.json();
+    // Mesaj değişmediyse Telegram 400 döner — normal, yok say
+    if (!d.ok && d.error_code !== 400) {
+      // Mesaj silinmiş olabilir, yeniden gönder
+      const r2 = await sendTelegram(chatId, text);
+      if (r2?.ok && r2?.result?.message_id) {
+        await db.queryRun(`UPDATE user_settings SET telegram_live_msg_id=$1 WHERE user_id=$2`,
+          [String(r2.result.message_id), userId]);
+      }
+    }
+  } else {
+    // İlk kez gönder, mesaj ID'sini kaydet
+    const result = await sendTelegram(chatId, text);
+    if (result?.ok && result?.result?.message_id) {
+      await db.queryRun(`UPDATE user_settings SET telegram_live_msg_id=$1 WHERE user_id=$2`,
+        [String(result.result.message_id), userId]);
+    }
+  }
+}
+
+// Canlı paneli sıfırla (durdur)
+app.post('/api/telegram/live/stop', requireAuth, async (req, res) => {
+  try {
+    await db.queryRun(`UPDATE user_settings SET telegram_live_msg_id=NULL WHERE user_id=$1`, [req.user.id]);
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
 
 // ── Günlük / Haftalık Email Raporu ───────────────────────────
 async function sendReports(type) {

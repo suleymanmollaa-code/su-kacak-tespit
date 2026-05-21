@@ -188,6 +188,7 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notify_realtime_email BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notify_telegram BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_live_msg_id TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -201,6 +202,7 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN notify_realtime_email INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN notify_telegram INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_chat_id TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_live_msg_id TEXT`); } catch {}
   }
 }
 
