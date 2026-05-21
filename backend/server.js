@@ -352,10 +352,10 @@ app.delete('/api/devices/:id', requireAuth, async (req, res) => {
 // ── Anomaliler ────────────────────────────────────────────────
 app.get('/api/anomalies', requireAuth, async (req, res) => {
   try {
-    const rows = await db.queryAll(
-      `SELECT * FROM anomalies WHERE user_id=$1 ORDER BY id DESC LIMIT 50`,
-      [req.user.id]
-    );
+    const device = req.query.device;
+    const rows = device
+      ? await db.queryAll(`SELECT * FROM anomalies WHERE user_id=$1 AND device=$2 ORDER BY id DESC LIMIT 50`, [req.user.id, device])
+      : await db.queryAll(`SELECT * FROM anomalies WHERE user_id=$1 ORDER BY id DESC LIMIT 50`, [req.user.id]);
     res.json(rows.map(db.normalizeAnomaly));
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
