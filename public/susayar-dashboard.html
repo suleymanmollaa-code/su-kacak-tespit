@@ -2347,7 +2347,7 @@ function stopDemo() { /* simülasyon kaldırıldı */ }
 function startDemo() { /* simülasyon kaldırıldı */ }
 
 // ── Cihaz çevrimiçi eşiği: son 3 dakikada veri geldiyse online ──
-const DEVICE_ONLINE_MS = 30 * 1000; // 30 saniye — cihaz her 2sn veri gönderir
+const DEVICE_ONLINE_MS = 10 * 1000; // 10 saniye — cihaz her 2sn veri gönderir
 let _lastSensorMs = 0;
 
 function updateDeviceStatus() {

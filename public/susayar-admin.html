@@ -499,7 +499,7 @@ function showUserDetail(userId){
       ? '<div style="font-size:.82rem;color:var(--muted2)">Bu kullanıcıya ait cihaz yok.</div>'
       : userDevices.map(d=>{
           const diffMs=d.last_seen?Date.now()-new Date(d.last_seen).getTime():Infinity;
-          const online=diffMs<30000;
+          const online=diffMs<10000;
           return `<div class="device-card">
             <div class="device-name">${esc(d.name)} <span class="badge badge-${online?'online':'offline'}" style="margin-left:6px">${online?'Çevrimiçi':'Çevrimdışı'}</span></div>
             <div class="device-meta">ID: ${esc(d.device_id)}</div>
@@ -539,7 +539,7 @@ function renderDevicesTable(){
     <tbody>
       ${allDevices.map(d=>{
         const diffMs=d.last_seen?Date.now()-new Date(d.last_seen).getTime():Infinity;
-        const online=diffMs<30000;
+        const online=diffMs<10000;
         const timeStr=d.last_seen?new Date(d.last_seen).toLocaleString('tr-TR'):'—';
         return `<tr class="tr-no-hover">
           <td style="font-weight:600">${esc(d.name)}</td>
