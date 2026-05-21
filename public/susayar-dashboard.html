@@ -776,6 +776,8 @@
     #page-cihaz-ayarlari .card > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
     /* Uyarı ayarları settings grid */
     #page-bildirimler .card div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    /* Cihazlarım grid */
+    #devices-page-grid { grid-template-columns: 1fr !important; }
 
     /* Abonelik */
     #page-abonelik { padding: 0; }
@@ -891,6 +893,9 @@
     <span class="nav-icon">&#x1F4C8;</span><span class="nav-label">Aylık Analiz</span>
   </div>
 
+  <div class="nav-item" data-page="cihazlarim" data-title="Cihazlarım">
+    <span class="nav-icon">&#x1F4E1;</span><span class="nav-label">Cihazlarım</span>
+  </div>
   <div class="nav-section">Bildirimler</div>
   <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
     <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
@@ -1071,6 +1076,23 @@
           </div>
         </div>
       </div>
+      <!-- SON ANOMALİLER MİNİ -->
+      <div class="card" style="margin-top:1.5rem" id="dash-anomaly-card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Son Anomaliler</div>
+            <div class="card-sub">Aktif & çözülmemiş uyarılar</div>
+          </div>
+          <button onclick="document.querySelectorAll('.nav-item[data-page=bildirimler]')[0]?.click()"
+            style="font-size:.72rem;padding:.25rem .7rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer;white-space:nowrap">
+            Tümünü Gör →
+          </button>
+        </div>
+        <div id="dash-anomaly-list" style="display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem">
+          <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
+        </div>
+      </div>
+
     </div><!-- /page-dashboard -->
 
     <!-- PAGE: ANLIK AKIS -->
@@ -1211,6 +1233,22 @@
       </div>
     </div><!-- /page-profil -->
 
+
+    <!-- PAGE: CİHAZLARIM -->
+    <div class="page" id="page-cihazlarim">
+      <div class="section-header" style="margin-bottom:1.25rem">
+        <div>
+          <div style="font-size:1.05rem;font-weight:700">Cihazlarım</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">Hesabınıza bağlı tüm su sayaçları</div>
+        </div>
+        <button onclick="loadDevicesPage()" style="font-size:.72rem;padding:.3rem .75rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">
+          ↻ Yenile
+        </button>
+      </div>
+      <div id="devices-page-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);font-size:.85rem">Yükleniyor...</div>
+      </div>
+    </div><!-- /page-cihazlarim -->
 
     <!-- PAGE: BİLDİRİMLER -->
     <div class="page" id="page-bildirimler">
@@ -1583,6 +1621,7 @@ navItems.forEach(item => {
 
     if (pageId === 'gunluk-rapor') loadDailyReport();
     if (pageId === 'aylik-analiz') loadMonthlyReport();
+    if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); }
   });
 });
@@ -3093,6 +3132,105 @@ async function resolveAnomaly(id) {
 }
 
 // ============================
+// CİHAZLARIM SAYFASI
+// ============================
+async function loadDevicesPage() {
+  const grid = document.getElementById('devices-page-grid');
+  if (!grid) return;
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);font-size:.85rem">Yükleniyor...</div>';
+  try {
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    const devs = await r.json();
+    if (!r.ok || !Array.isArray(devs)) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">Cihazlar yüklenemedi.</div>'; return; }
+    if (devs.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">
+        <div style="font-size:2rem;margin-bottom:.75rem">📡</div>
+        <div style="font-size:.9rem;font-weight:600;margin-bottom:.4rem">Henüz cihaz yok</div>
+        <div style="font-size:.78rem">Cihaz eklemek için sağ üstteki <strong>📡 Cihaz Bağla</strong> butonunu kullanın.</div>
+      </div>`;
+      return;
+    }
+    const now = Date.now();
+    grid.innerHTML = devs.map(d => {
+      const lastSeenMs = d.last_seen ? new Date(d.last_seen).getTime() : 0;
+      const online = lastSeenMs && (now - lastSeenMs) < 30000;
+      const statusColor = online ? 'var(--green)' : 'var(--muted)';
+      const statusBg    = online ? 'rgba(16,185,129,.12)' : 'rgba(100,116,139,.1)';
+      const statusBorder= online ? 'rgba(16,185,129,.3)'  : 'rgba(100,116,139,.25)';
+      const statusText  = online ? '● Çevrimiçi' : '○ Çevrimdışı';
+      const flowVal     = (d.flow_lpm != null && online) ? (+d.flow_lpm).toFixed(1) + ' L/dk' : '—';
+      const flowColor   = (d.flow_lpm > 0.1 && online) ? 'var(--blue-lt)' : 'var(--muted)';
+      const todayL      = d.today_liters != null ? (+d.today_liters).toFixed(1) : '—';
+      const lastSeenStr = d.last_seen ? new Date(d.last_seen).toLocaleString('tr-TR') : '—';
+      const rssi        = d.rssi_dbm ? d.rssi_dbm + ' dBm' : '—';
+      return `<div class="card" style="padding:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;margin-bottom:.25rem">${esc(d.name)}</div>
+            <div style="font-size:.72rem;color:var(--muted);font-family:monospace">${esc(d.device_id)}</div>
+          </div>
+          <span style="font-size:.72rem;padding:.2rem .6rem;background:${statusBg};color:${statusColor};border:1px solid ${statusBorder};border-radius:99px;white-space:nowrap">${statusText}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">
+          <div style="background:var(--bg3);border-radius:8px;padding:.7rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:${flowColor}">${flowVal}</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem">Anlık Akış</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:.7rem;text-align:center">
+            <div style="font-size:1.2rem;font-weight:700;color:var(--green)">${todayL} L</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem">Bugünkü Tüketim</div>
+          </div>
+        </div>
+        <div style="font-size:.73rem;color:var(--muted);display:flex;flex-direction:column;gap:.3rem">
+          <div style="display:flex;justify-content:space-between"><span>Son görülme</span><span style="color:var(--text)">${lastSeenStr}</span></div>
+          <div style="display:flex;justify-content:space-between"><span>WiFi sinyal</span><span style="color:var(--text)">${rssi}</span></div>
+        </div>
+        <div style="margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.4rem">
+          <code style="font-size:.68rem;color:var(--green);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="devpg-key-${d.id}">${d.api_key.slice(0,4)}${'•'.repeat(20)}${d.api_key.slice(-4)}</code>
+          <button onclick="(function(el,key){el.textContent===el.textContent.replace(/•/g,'') ? el.textContent=key.slice(0,4)+'${'•'.repeat(20)}'+key.slice(-4) : el.textContent=key})(document.getElementById('devpg-key-${d.id}'),'${d.api_key}')"
+            style="font-size:.68rem;padding:.2rem .45rem;background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">👁</button>
+          <button onclick="navigator.clipboard.writeText('${d.api_key}');showToast('API anahtarı kopyalandı!')"
+            style="font-size:.68rem;padding:.2rem .45rem;background:rgba(59,181,212,.15);color:var(--blue-lt);border:1px solid rgba(59,181,212,.3);border-radius:4px;cursor:pointer;flex-shrink:0">Kopyala</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">Bağlantı hatası.</div>'; }
+}
+
+// ── Dashboard mini anomali widget ───────────────────────────
+async function loadDashAnomalies() {
+  const listEl = document.getElementById('dash-anomaly-list');
+  const card   = document.getElementById('dash-anomaly-card');
+  if (!listEl) return;
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r = await fetch(`${API}/api/anomalies`, { headers: { Authorization: `Bearer ${token}` } });
+    const rows = await r.json();
+    if (!r.ok || !Array.isArray(rows)) return;
+    const active = rows.filter(a => !a.resolved).slice(0, 3);
+    if (active.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:.75rem;color:var(--green);font-size:.8rem">✅ Aktif anomali yok — sistem normal</div>';
+      return;
+    }
+    listEl.innerHTML = active.map(a => {
+      const cfg = _ANOMALY_ICONS[a.type] || { icon: '🔔', color: 'rgba(59,181,212,.06)', border: 'rgba(59,181,212,.2)', label: a.type };
+      const ts  = a.ts ? new Date(a.ts).toLocaleString('tr-TR') : '—';
+      return `<div style="display:flex;gap:.65rem;padding:.65rem .75rem;border-radius:7px;background:${cfg.color};border:1px solid ${cfg.border};align-items:flex-start">
+        <div style="font-size:.95rem;margin-top:.05rem">${cfg.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.78rem;font-weight:700;color:var(--text)">${cfg.label}</div>
+          <div style="font-size:.71rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.detail)}</div>
+          <div style="font-size:.66rem;color:var(--muted);margin-top:.15rem">${ts}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch { listEl.innerHTML = ''; if (card) card.style.display = 'none'; }
+}
+
+// ============================
 // UYARI AYARLARI
 // ============================
 function toggleSlider(checkbox) {
@@ -3158,6 +3296,7 @@ async function saveSettings() {
 
 // Sayfa yüklenince gerçek veri çek
 setTimeout(loadDashboardData, 500);
+setTimeout(loadDashAnomalies, 800);
 
 // ── WebSocket bağlantısı ─────────────────────────────────────
 function connectRealBackend(url) {

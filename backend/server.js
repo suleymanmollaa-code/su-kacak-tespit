@@ -299,9 +299,14 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
 
 app.get('/api/devices', requireAuth, async (req, res) => {
   try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
     const devs = await db.queryAll(
-      `SELECT id,name,device_id,api_key,last_seen,rssi_dbm,created_at FROM devices WHERE user_id=$1 ORDER BY created_at DESC`,
-      [req.user.id]
+      `SELECT d.id, d.name, d.device_id, d.api_key, d.last_seen, d.rssi_dbm, d.created_at,
+        (SELECT r.flow_lpm FROM readings r WHERE r.device_id=d.device_id AND r.user_id=d.user_id ORDER BY r.ts DESC LIMIT 1) AS flow_lpm,
+        COALESCE((SELECT SUM((r.flow_lpm/60.0)*2.5) FROM readings r WHERE r.device_id=d.device_id AND r.user_id=d.user_id AND r.ts>=$2), 0) AS today_liters
+       FROM devices d WHERE d.user_id=$1 ORDER BY d.created_at DESC`,
+      [req.user.id, todayStart.toISOString()]
     );
     res.json(devs);
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
