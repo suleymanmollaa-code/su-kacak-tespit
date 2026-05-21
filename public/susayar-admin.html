@@ -3,208 +3,337 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuSayar Admin</title>
+<title>SuSayar — Admin Paneli</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f1117; --bg2: #161b27; --bg3: #1c2333;
-    --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12);
-    --text: #e8eaf0; --muted: #8892a4; --muted2: #6b7585;
-    --blue: #3b82f6; --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
-  }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1c2333;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.12);
+  --text:#e8eaf0;--muted:#8892a4;--muted2:#6b7585;
+  --blue:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  /* LOGIN */
-  #login-screen {
-    display: flex; align-items: center; justify-content: center; min-height: 100vh;
-  }
-  .login-card {
-    background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px;
-    padding: 2.5rem 2rem; width: 100%; max-width: 380px;
-  }
-  .login-title { font-size: 1.3rem; font-weight: 800; margin-bottom: .25rem; }
-  .login-sub { font-size: .82rem; color: var(--muted); margin-bottom: 1.75rem; }
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+.login-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.login-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.login-logo-text{font-size:1.1rem;font-weight:800;color:var(--text)}
+.login-logo-sub{font-size:.7rem;color:var(--muted);font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.login-title{font-size:1.1rem;font-weight:700;margin-bottom:.3rem}
+.login-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem}
 
-  /* ADMIN LAYOUT */
-  #admin-screen { display: none; }
-  .topbar {
-    background: var(--bg2); border-bottom: 1px solid var(--border);
-    padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
-  }
-  .topbar-brand { font-size: 1rem; font-weight: 800; color: var(--blue); }
-  .topbar-right { display: flex; gap: .75rem; align-items: center; }
-  .main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+/* ── ADMIN LAYOUT ── */
+#admin-screen{display:none;min-height:100vh}
+.admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
 
-  /* TABS */
-  .tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
-  .tab-btn {
-    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
-    padding: .5rem 1.1rem; font-size: .82rem; font-weight: 600; color: var(--muted);
-    cursor: pointer; transition: all .15s;
-  }
-  .tab-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+/* ── SIDEBAR ── */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:0;display:flex;flex-direction:column}
+.sidebar-brand{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+.sidebar-brand-row{display:flex;align-items:center;gap:8px}
+.sidebar-icon-box{width:30px;height:30px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sidebar-brand-name{font-size:.9rem;font-weight:800;color:var(--text)}
+.sidebar-brand-tag{font-size:.6rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.sidebar-nav{padding:.75rem 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:.6rem 1.25rem;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--blue);background:rgba(59,130,246,.08);border-left-color:var(--blue);font-weight:600}
+.nav-item .ni{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:.62rem;font-weight:700;padding:1px 7px;border-radius:100px}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.sidebar-user{font-size:.75rem;color:var(--muted2);margin-bottom:.6rem}
+.btn-logout{width:100%;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:.45rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
 
-  /* CARD */
-  .card {
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-    padding: 1.25rem; margin-bottom: 1.25rem;
-  }
-  .card-title { font-size: .95rem; font-weight: 700; margin-bottom: 1rem; }
+/* ── MAIN ── */
+.main-area{overflow-y:auto}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:.95rem;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:.72rem;color:var(--muted);margin-top:1px}
+.main-content{padding:1.5rem;max-width:1100px}
 
-  /* TABLE */
-  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-  th { text-align: left; color: var(--muted); font-weight: 600; padding: .6rem .75rem; border-bottom: 1px solid var(--border); }
-  td { padding: .6rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.02); }
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem}
+.stat-label{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.stat-val{font-size:1.7rem;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1}
+.stat-sub{font-size:.72rem;color:var(--muted2);margin-top:.3rem}
+.stat-card.blue .stat-val{color:var(--blue)}
+.stat-card.green .stat-val{color:var(--green)}
 
-  /* FORM */
-  .form-group { margin-bottom: 1rem; }
-  .form-label { display: block; font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; }
-  .form-input, .form-select {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 8px; padding: .55rem .85rem; font-size: .85rem;
-    color: var(--text); outline: none; font-family: inherit;
-  }
-  .form-input:focus, .form-select:focus { border-color: var(--blue); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:1.25rem;overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem;border-bottom:1px solid var(--border)}
+.card-title{font-size:.88rem;font-weight:700;color:var(--text)}
+.card-body{padding:1.25rem}
 
-  /* BUTTONS */
-  .btn {
-    background: var(--blue); color: #fff; border: none; border-radius: 8px;
-    padding: .6rem 1.25rem; font-size: .83rem; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: opacity .15s;
-  }
-  .btn:hover { opacity: .85; }
-  .btn-red { background: var(--red); }
-  .btn-green { background: var(--green); }
-  .btn-ghost {
-    background: transparent; border: 1px solid var(--border2); color: var(--muted);
-    border-radius: 8px; padding: .5rem .9rem; font-size: .78rem; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-  }
-  .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:left;color:var(--muted);font-weight:600;padding:.6rem .85rem;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:.7rem .85rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover td{background:rgba(59,130,246,.05)}
+.tr-no-hover{cursor:default!important}
+.tr-no-hover:hover td{background:transparent!important}
 
-  /* BADGE */
-  .badge {
-    display: inline-block; font-size: .68rem; font-weight: 700; padding: .15rem .55rem;
-    border-radius: 20px; text-transform: uppercase;
-  }
-  .badge-starter    { background: rgba(139,148,158,.15); color: #8b949e; }
-  .badge-individual { background: rgba(59,130,246,.15);  color: var(--blue); }
-  .badge-business   { background: rgba(245,158,11,.15);  color: var(--yellow); }
-  .badge-corporate  { background: rgba(16,185,129,.15);  color: var(--green); }
+/* ── FORM ── */
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:.4rem}
+.form-input,.form-select{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:.55rem .85rem;font-size:.85rem;color:var(--text);outline:none;font-family:inherit;transition:border-color .15s}
+.form-input:focus,.form-select:focus{border-color:var(--blue)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 
-  /* TOAST */
-  #toast {
-    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(60px);
-    background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px;
-    padding: .65rem 1.25rem; font-size: .82rem; font-weight: 500;
-    transition: transform .25s; pointer-events: none; z-index: 9999;
-    white-space: nowrap;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
+/* ── BUTTONS ── */
+.btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:.55rem 1.1rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:.4rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:.35rem .75rem;font-size:.75rem}
 
-  /* API KEY */
-  .api-key { font-family: monospace; font-size: .75rem; color: var(--muted2); }
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:.68rem;font-weight:700;padding:.15rem .6rem;border-radius:20px;text-transform:uppercase;white-space:nowrap}
+.badge-starter{background:rgba(139,148,158,.15);color:#8b949e}
+.badge-bireysel{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge-isletme{background:rgba(245,158,11,.15);color:var(--yellow)}
+.badge-kurumsal{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-online{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-offline{background:rgba(107,117,133,.12);color:var(--muted2)}
 
-  /* Error */
-  .err { font-size: .78rem; color: var(--red); margin-top: .5rem; }
-  .ok  { font-size: .78rem; color: var(--green); margin-top: .5rem; }
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:flex-end;padding:0}
+.modal-overlay.open{display:flex}
+.modal-panel{background:var(--bg2);border-left:1px solid var(--border2);width:100%;max-width:480px;height:100vh;overflow-y:auto;animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-head h3{font-size:1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.5rem}
+.detail-row{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-lbl{font-size:.72rem;font-weight:600;color:var(--muted);min-width:110px;flex-shrink:0;padding-top:1px}
+.detail-val{font-size:.83rem;color:var(--text)}
+.section-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:1.25rem 0 .75rem}
+.device-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;margin-bottom:.6rem}
+.device-name{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem}
+.device-meta{font-size:.72rem;color:var(--muted2)}
 
-  /* Empty */
-  .empty { text-align: center; color: var(--muted); padding: 2rem; font-size: .85rem; }
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:.6rem 1.25rem;font-size:.82rem;font-weight:500;transition:transform .25s;pointer-events:none;z-index:9999;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── MISC ── */
+.api-key{font-family:monospace;font-size:.73rem;color:var(--muted2);word-break:break-all}
+.err{font-size:.78rem;color:var(--red);margin-top:.5rem}
+.ok{font-size:.78rem;color:var(--green);margin-top:.5rem}
+.empty{text-align:center;color:var(--muted);padding:2.5rem;font-size:.85rem}
+.tag-verified{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:var(--green)}
+.tag-unverified{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:var(--muted2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .admin-layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .modal-panel{max-width:100%}
+  /* mobile bottom nav */
+  .mobile-nav{display:flex!important}
+}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding:.5rem 0}
+.mobile-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.4rem;font-size:.62rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:inherit;transition:color .15s}
+.mobile-nav-item.active{color:var(--blue)}
+.mobile-nav-item .mni{font-size:18px}
 </style>
 </head>
 <body>
 
-<!-- ── Giriş ──────────────────────────────────────────────── -->
+<!-- ── GİRİŞ ── -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-title">SuSayar Admin</div>
-    <div class="login-sub">Yönetici girisi gerekli</div>
+    <div class="login-logo">
+      <div class="login-logo-icon">💧</div>
+      <div>
+        <div class="login-logo-text">SuSayar</div>
+        <div class="login-logo-sub">Admin Paneli</div>
+      </div>
+    </div>
+    <div class="login-title">Yönetici Girişi</div>
+    <div class="login-sub">Devam etmek için admin şifresini girin</div>
     <div class="form-group">
-      <label class="form-label">Admin Sifresi</label>
+      <label class="form-label">Şifre</label>
       <input type="password" class="form-input" id="admin-pass-input" placeholder="••••••••"
         onkeydown="if(event.key==='Enter') doAdminLogin()">
     </div>
     <div id="login-err" class="err" style="display:none"></div>
-    <button class="btn" style="width:100%;margin-top:.5rem" onclick="doAdminLogin()">Giris Yap</button>
+    <button class="btn" style="width:100%;margin-top:.25rem" onclick="doAdminLogin()">Giriş Yap</button>
   </div>
 </div>
 
-<!-- ── Admin ──────────────────────────────────────────────── -->
+<!-- ── ADMIN ── -->
 <div id="admin-screen">
-  <div class="topbar">
-    <div class="topbar-brand">SuSayar Admin</div>
-    <div class="topbar-right">
-      <span style="font-size:.78rem;color:var(--muted)">Yonetici Paneli</span>
-      <button class="btn-ghost" onclick="doAdminLogout()">Cikis</button>
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-row">
+          <div class="sidebar-icon-box">💧</div>
+          <div>
+            <div class="sidebar-brand-name">SuSayar</div>
+            <div class="sidebar-brand-tag">Admin Paneli</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="switchTab('ozet',this)">
+          <span class="ni">📊</span> Genel Bakış
+        </div>
+        <div class="nav-item" onclick="switchTab('users',this)">
+          <span class="ni">👤</span> Kullanıcılar
+          <span class="nav-badge" id="badge-users">0</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('devices',this)">
+          <span class="ni">📡</span> Cihazlar
+          <span class="nav-badge" id="badge-devices">0</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('add-device',this)">
+          <span class="ni">➕</span> Cihaz Ekle
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user" id="sidebar-user-label">Yönetici</div>
+        <button class="btn-logout" onclick="doAdminLogout()">Çıkış Yap</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-area">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="topbar-title">Genel Bakış</div>
+          <div class="topbar-sub" id="topbar-sub">SuSayar yönetim paneli</div>
+        </div>
+        <button class="btn-ghost btn-sm" onclick="refreshAll()">↺ Yenile</button>
+      </div>
+
+      <div class="main-content">
+
+        <!-- TAB: GENEL BAKIŞ -->
+        <div id="tab-ozet">
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card blue">
+              <div class="stat-label">Toplam Kullanıcı</div>
+              <div class="stat-val" id="stat-users">—</div>
+              <div class="stat-sub">kayıtlı hesap</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Toplam Cihaz</div>
+              <div class="stat-val" id="stat-devices">—</div>
+              <div class="stat-sub">tanımlı cihaz</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-label">Çevrimiçi</div>
+              <div class="stat-val" id="stat-online">—</div>
+              <div class="stat-sub">son 30 saniye</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Aktif Plan</div>
+              <div class="stat-val" id="stat-plans">—</div>
+              <div class="stat-sub">ücretli üye</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Son Kaydolan Kullanıcılar</span>
+              <button class="btn-ghost btn-sm" onclick="switchTab('users',null)">Tümünü Gör →</button>
+            </div>
+            <div id="recent-users-wrap"><div class="empty">Yükleniyor...</div></div>
+          </div>
+        </div>
+
+        <!-- TAB: KULLANICILAR -->
+        <div id="tab-users" style="display:none">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Kayıtlı Kullanıcılar</span>
+              <input class="form-input" style="width:200px;padding:.35rem .7rem;font-size:.8rem" placeholder="Ara..." oninput="filterUsers(this.value)">
+            </div>
+            <div id="users-table-wrap"><div class="empty">Yükleniyor...</div></div>
+          </div>
+        </div>
+
+        <!-- TAB: CİHAZLAR -->
+        <div id="tab-devices" style="display:none">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Tüm Cihazlar</span>
+            </div>
+            <div id="devices-table-wrap"><div class="empty">Yükleniyor...</div></div>
+          </div>
+        </div>
+
+        <!-- TAB: CİHAZ EKLE -->
+        <div id="tab-add-device" style="display:none">
+          <div class="card" style="max-width:520px">
+            <div class="card-head"><span class="card-title">Müşteri İçin Cihaz Ekle</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Kullanıcı</label>
+                <select class="form-select" id="add-user-select">
+                  <option value="">-- Kullanıcı seçin --</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Cihaz Adı</label>
+                  <input type="text" class="form-input" id="add-device-name" placeholder="Örn: Mutfak Sayacı">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Device ID (ESP32)</label>
+                  <input type="text" class="form-input" id="add-device-id" placeholder="susayar-001">
+                </div>
+              </div>
+              <div id="add-device-msg"></div>
+              <button class="btn" onclick="doAddDevice()">Cihaz Ekle</button>
+              <div id="add-device-result" style="display:none;margin-top:1.25rem">
+                <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:1rem">
+                  <div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.75rem">Cihaz başarıyla eklendi</div>
+                  <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.8rem">
+                    <div><span style="color:var(--muted)">Device ID: </span><span class="api-key" id="result-device-id"></span></div>
+                    <div><span style="color:var(--muted)">API Key: </span><span class="api-key" id="result-api-key" style="font-weight:700;color:var(--text)"></span></div>
+                  </div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:.75rem">Bu API key'i ESP32 firmware'ine yükleyin. Tekrar gösterilmeyecek.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
-  <div class="main">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('users')">Kullanicilar</button>
-      <button class="tab-btn" onclick="switchTab('devices')">Cihazlar</button>
-      <button class="tab-btn" onclick="switchTab('add-device')">Cihaz Ekle</button>
-    </div>
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-item active" onclick="switchTab('ozet',this)"><span class="mni">📊</span>Özet</button>
+    <button class="mobile-nav-item" onclick="switchTab('users',this)"><span class="mni">👤</span>Kullanıcılar</button>
+    <button class="mobile-nav-item" onclick="switchTab('devices',this)"><span class="mni">📡</span>Cihazlar</button>
+    <button class="mobile-nav-item" onclick="switchTab('add-device',this)"><span class="mni">➕</span>Cihaz Ekle</button>
+  </nav>
+</div>
 
-    <!-- TAB: KULLANICILAR -->
-    <div id="tab-users">
-      <div class="card">
-        <div class="card-title">Kayitli Kullanicilar</div>
-        <div id="users-table-wrap"><div class="empty">Yukleniyor...</div></div>
-      </div>
+<!-- ── KULLANICI DETAY PANELİ ── -->
+<div class="modal-overlay" id="modal-user" onclick="if(event.target===this)closeUserModal()">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h3 id="modal-user-name">Kullanıcı Detayı</h3>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
     </div>
-
-    <!-- TAB: CIHAZLAR -->
-    <div id="tab-devices" style="display:none">
-      <div class="card">
-        <div class="card-title">Tum Cihazlar</div>
-        <div id="devices-table-wrap"><div class="empty">Yukleniyor...</div></div>
-      </div>
-    </div>
-
-    <!-- TAB: CİHAZ EKLE -->
-    <div id="tab-add-device" style="display:none">
-      <div class="card" style="max-width:520px">
-        <div class="card-title">Musteri Icin Cihaz Ekle</div>
-        <div class="form-group">
-          <label class="form-label">Kullanici</label>
-          <select class="form-select" id="add-user-select">
-            <option value="">-- Kullanici secin --</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Cihaz Adi</label>
-            <input type="text" class="form-input" id="add-device-name" placeholder="Örn: Mutfak Sayaci">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Device ID (ESP32)</label>
-            <input type="text" class="form-input" id="add-device-id" placeholder="susayar-001">
-          </div>
-        </div>
-        <div id="add-device-msg"></div>
-        <div style="margin-top:.5rem">
-          <button class="btn" onclick="doAddDevice()">Cihaz Ekle</button>
-        </div>
-        <div id="add-device-result" style="margin-top:1.25rem;display:none">
-          <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:1rem">
-            <div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.75rem">Cihaz basariyla eklendi</div>
-            <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.8rem">
-              <div><span style="color:var(--muted)">Device ID: </span><span class="api-key" id="result-device-id"></span></div>
-              <div><span style="color:var(--muted)">API Key: </span><span class="api-key" id="result-api-key" style="font-weight:700;color:var(--text)"></span></div>
-            </div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.75rem">
-              Bu API key'i ESP32 firmware'ine yukleyin. Tekrar gosterilmeyecek.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="modal-body" id="modal-user-body"></div>
   </div>
 </div>
 
@@ -213,238 +342,313 @@
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 let adminSecret = '';
+let allUsers = [];
+let allDevices = [];
+const TABS = ['ozet','users','devices','add-device'];
+const TAB_TITLES = {
+  'ozet': ['Genel Bakış','SuSayar yönetim paneli'],
+  'users': ['Kullanıcılar','Tüm kayıtlı hesaplar'],
+  'devices': ['Cihazlar','Tüm tanımlı cihazlar'],
+  'add-device': ['Cihaz Ekle','Müşteri için yeni cihaz tanımla']
+};
 
-// ── Auth ─────────────────────────────────────────────────────
-function doAdminLogin() {
+// ── Güvenli escape ──────────────────────────────────────────
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Auth ────────────────────────────────────────────────────
+function doAdminLogin(){
   const pass = document.getElementById('admin-pass-input').value.trim();
-  if (!pass) return;
+  if(!pass) return;
   adminSecret = pass;
-  // Test: kullanicilari cek
-  fetch(`${API}/api/admin/users`, { headers: { 'x-admin-secret': adminSecret } })
-    .then(r => {
-      if (!r.ok) throw new Error('Yanlis sifre');
-      return r.json();
-    })
-    .then(() => {
-      sessionStorage.setItem('admin_secret', adminSecret);
+  fetch(`${API}/api/admin/users`,{headers:{'x-admin-secret':adminSecret}})
+    .then(r=>{if(!r.ok)throw new Error('Yanlış şifre');return r.json();})
+    .then(()=>{
+      sessionStorage.setItem('admin_secret',adminSecret);
       showAdmin();
     })
-    .catch(e => {
-      const el = document.getElementById('login-err');
-      el.textContent = e.message;
-      el.style.display = 'block';
+    .catch(e=>{
+      const el=document.getElementById('login-err');
+      el.textContent=e.message;el.style.display='block';
     });
 }
 
-function doAdminLogout() {
+function doAdminLogout(){
   sessionStorage.removeItem('admin_secret');
-  adminSecret = '';
-  document.getElementById('admin-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  adminSecret='';
+  document.getElementById('admin-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
 }
 
-function showAdmin() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('admin-screen').style.display = 'block';
+function showAdmin(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-screen').style.display='block';
   loadUsers();
   loadDevices();
 }
 
-// Oturum devam
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = sessionStorage.getItem('admin_secret');
-  if (saved) { adminSecret = saved; showAdmin(); }
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=sessionStorage.getItem('admin_secret');
+  if(saved){adminSecret=saved;showAdmin();}
 });
 
-// ── Tabs ─────────────────────────────────────────────────────
-function switchTab(name) {
-  ['users','devices','add-device'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+// ── Tabs ────────────────────────────────────────────────────
+function switchTab(name, triggerEl){
+  TABS.forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.style.display=t===name?'block':'none';
   });
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['users','devices','add-device'][i] === name);
-  });
-  if (name === 'add-device') populateUserSelect();
+  // sidebar active
+  document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',TABS[i]===name));
+  // mobile active
+  document.querySelectorAll('.mobile-nav-item').forEach((b,i)=>b.classList.toggle('active',TABS[i]===name));
+  // topbar
+  const [title,sub]=TAB_TITLES[name]||['',''];
+  document.getElementById('topbar-title').textContent=title;
+  document.getElementById('topbar-sub').textContent=sub;
+  if(name==='add-device') populateUserSelect();
+  if(name==='ozet') renderOzet();
 }
 
-// ── Kullanicilar ─────────────────────────────────────────────
-let allUsers = [];
-
-async function loadUsers() {
-  const wrap = document.getElementById('users-table-wrap');
-  try {
-    const r = await fetch(`${API}/api/admin/users`, { headers: { 'x-admin-secret': adminSecret } });
-    allUsers = await r.json();
-    if (!allUsers.length) { wrap.innerHTML = '<div class="empty">Henuz kullanici yok</div>'; return; }
-    wrap.innerHTML = `<table>
-      <thead><tr>
-        <th>Ad</th><th>E-posta</th><th>Telefon</th><th>Plan</th><th>Kayit</th><th>Plan Degistir</th><th>Islemler</th>
-      </tr></thead>
-      <tbody>
-        ${allUsers.map(u => `<tr>
-          <td style="font-weight:600">${esc(u.name)}</td>
-          <td style="color:var(--muted)">${esc(u.email)}</td>
-          <td style="color:var(--muted)">${esc(u.phone || '—')}</td>
-          <td><span class="badge badge-${u.plan || 'starter'}">${u.plan || 'starter'}</span></td>
-          <td style="color:var(--muted2);font-size:.75rem">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
-          <td>
-            <select class="form-select" style="width:auto;padding:.3rem .6rem;font-size:.75rem"
-              onchange="changePlan('${u.id}', this.value)">
-              <option value="">-- Degistir --</option>
-              <option value="starter" ${u.plan==='starter'?'selected':''}>Plan Yok</option>
-              <option value="individual" ${u.plan==='individual'?'selected':''}>Bireysel (99 TL)</option>
-              <option value="business" ${u.plan==='business'?'selected':''}>Isletme (249 TL)</option>
-              <option value="corporate" ${u.plan==='corporate'?'selected':''}>Kurumsal (599 TL)</option>
-            </select>
-          </td>
-          <td>
-            <button class="btn-ghost" style="font-size:.72rem;padding:.3rem .6rem" onclick="sendResetLink('${u.id}', '${esc(u.email)}')">Sifre Sifirla</button>
-          </td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-  } catch (e) {
-    wrap.innerHTML = `<div class="empty" style="color:var(--red)">Hata: ${e.message}</div>`;
+// ── Kullanıcılar ────────────────────────────────────────────
+async function loadUsers(){
+  const wrap=document.getElementById('users-table-wrap');
+  try{
+    const r=await fetch(`${API}/api/admin/users`,{headers:{'x-admin-secret':adminSecret}});
+    allUsers=await r.json();
+    document.getElementById('badge-users').textContent=allUsers.length;
+    renderUsersTable(allUsers);
+    renderOzet();
+  }catch(e){
+    wrap.innerHTML=`<div class="empty" style="color:var(--red)">Hata: ${esc(e.message)}</div>`;
   }
 }
 
-async function sendResetLink(userId, email) {
-  if (!confirm(`${email} adresine sifre sifirlama linki gonderilsin mi?`)) return;
-  const r = await fetch(`${API}/api/admin/users/${userId}/reset-link`, {
-    method: 'POST', headers: { 'x-admin-secret': adminSecret },
-  });
-  const data = await r.json();
-  if (r.ok) {
-    toast('Link gonderildi: ' + email);
-    if (data.resetUrl) {
-      prompt('E-posta servisi yoksa bu linki kullaniciya iletin:', data.resetUrl);
+function planLabel(p){
+  const map={starter:'Ücretsiz',bireysel:'Bireysel',isletme:'İşletme',kurumsal:'Kurumsal',individual:'Bireysel',business:'İşletme',corporate:'Kurumsal'};
+  return map[p]||p||'Ücretsiz';
+}
+function planClass(p){
+  const map={bireysel:'bireysel',individual:'bireysel',isletme:'isletme',business:'isletme',kurumsal:'kurumsal',corporate:'kurumsal'};
+  return map[p]||'starter';
+}
+
+function renderUsersTable(users){
+  const wrap=document.getElementById('users-table-wrap');
+  if(!users.length){wrap.innerHTML='<div class="empty">Kullanıcı bulunamadı</div>';return;}
+  wrap.innerHTML=`<table>
+    <thead><tr>
+      <th>Ad Soyad</th><th>E-posta</th><th>Plan</th><th>Doğrulama</th><th>Kayıt Tarihi</th>
+    </tr></thead>
+    <tbody>
+      ${users.map(u=>`<tr onclick="showUserDetail('${u.id}')">
+        <td style="font-weight:600">${esc(u.name)}</td>
+        <td style="color:var(--muted)">${esc(u.email)}</td>
+        <td><span class="badge badge-${planClass(u.plan)}">${esc(planLabel(u.plan))}</span></td>
+        <td>${u.phone_verified
+          ? '<span class="tag-verified">✓ Doğrulandı</span>'
+          : '<span class="tag-unverified">— Bekliyor</span>'}</td>
+        <td style="color:var(--muted2);font-size:.75rem">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function filterUsers(q){
+  const filtered=allUsers.filter(u=>
+    u.name.toLowerCase().includes(q.toLowerCase())||
+    u.email.toLowerCase().includes(q.toLowerCase())
+  );
+  renderUsersTable(filtered);
+}
+
+// ── Kullanıcı Detay Modal ───────────────────────────────────
+function showUserDetail(userId){
+  const u=allUsers.find(x=>x.id===userId);
+  if(!u) return;
+  document.getElementById('modal-user-name').textContent=u.name;
+  const userDevices=allDevices.filter(d=>d.user_email===u.email);
+
+  document.getElementById('modal-user-body').innerHTML=`
+    <div style="margin-bottom:1rem">
+      <div class="detail-row"><span class="detail-lbl">Ad Soyad</span><span class="detail-val">${esc(u.name)}</span></div>
+      <div class="detail-row"><span class="detail-lbl">E-posta</span><span class="detail-val">${esc(u.email)}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Telefon</span><span class="detail-val">${esc(u.phone||'—')}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Doğrulama</span><span class="detail-val">${u.phone_verified?'<span class="tag-verified">✓ Doğrulandı</span>':'<span class="tag-unverified">Bekleniyor</span>'}</span></div>
+      <div class="detail-row"><span class="detail-lbl">Plan</span><span class="detail-val"><span class="badge badge-${planClass(u.plan)}">${esc(planLabel(u.plan))}</span></span></div>
+      <div class="detail-row"><span class="detail-lbl">Kayıt Tarihi</span><span class="detail-val" style="font-size:.8rem;color:var(--muted)">${new Date(u.created_at).toLocaleString('tr-TR')}</span></div>
+    </div>
+
+    <div class="section-title">Plan Değiştir</div>
+    <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:1.25rem">
+      <select class="form-select" id="modal-plan-select" style="flex:1">
+        <option value="starter" ${(u.plan||'starter')==='starter'?'selected':''}>Ücretsiz</option>
+        <option value="bireysel" ${u.plan==='bireysel'||u.plan==='individual'?'selected':''}>Bireysel</option>
+        <option value="isletme" ${u.plan==='isletme'||u.plan==='business'?'selected':''}>İşletme</option>
+        <option value="kurumsal" ${u.plan==='kurumsal'||u.plan==='corporate'?'selected':''}>Kurumsal</option>
+      </select>
+      <button class="btn btn-sm" onclick="changePlan('${u.id}',document.getElementById('modal-plan-select').value)">Kaydet</button>
+    </div>
+
+    <div class="section-title">Şifre</div>
+    <button class="btn-ghost btn-sm" style="margin-bottom:1.25rem" onclick="sendResetLink('${u.id}','${esc(u.email)}')">Şifre Sıfırlama Linki Gönder</button>
+
+    <div class="section-title">Cihazlar (${userDevices.length})</div>
+    ${userDevices.length===0
+      ? '<div style="font-size:.82rem;color:var(--muted2)">Bu kullanıcıya ait cihaz yok.</div>'
+      : userDevices.map(d=>{
+          const diffMs=d.last_seen?Date.now()-new Date(d.last_seen).getTime():Infinity;
+          const online=diffMs<30000;
+          return `<div class="device-card">
+            <div class="device-name">${esc(d.name)} <span class="badge badge-${online?'online':'offline'}" style="margin-left:6px">${online?'Çevrimiçi':'Çevrimdışı'}</span></div>
+            <div class="device-meta">ID: ${esc(d.device_id)}</div>
+            <div class="device-meta" style="margin-top:2px">Son bağlantı: ${d.last_seen?new Date(d.last_seen).toLocaleString('tr-TR'):'—'}</div>
+          </div>`;
+        }).join('')
     }
-  } else toast('Hata: ' + (data.error || 'Bilinmeyen hata'));
+  `;
+  document.getElementById('modal-user').classList.add('open');
 }
 
-async function changePlan(userId, plan) {
-  if (!plan) return;
-  const r = await fetch(`${API}/api/admin/users/${userId}/plan`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
-    body: JSON.stringify({ plan }),
-  });
-  if (r.ok) { toast('Plan guncellendi: ' + plan); loadUsers(); }
-  else toast('Hata olustu');
+function closeUserModal(){
+  document.getElementById('modal-user').classList.remove('open');
 }
 
-// ── Cihazlar ─────────────────────────────────────────────────
-async function loadDevices() {
-  const wrap = document.getElementById('devices-table-wrap');
-  try {
-    const r = await fetch(`${API}/api/admin/devices`, { headers: { 'x-admin-secret': adminSecret } });
-    const devs = await r.json();
-    if (!devs.length) { wrap.innerHTML = '<div class="empty">Henuz cihaz yok</div>'; return; }
-    wrap.innerHTML = `<table>
-      <thead><tr>
-        <th>Cihaz Adi</th><th>Device ID</th><th>API Key</th><th>Kullanici</th><th>Son Baglanti</th><th></th>
-      </tr></thead>
-      <tbody>
-        ${devs.map(d => `<tr>
+// ── Cihazlar ────────────────────────────────────────────────
+async function loadDevices(){
+  const wrap=document.getElementById('devices-table-wrap');
+  try{
+    const r=await fetch(`${API}/api/admin/devices`,{headers:{'x-admin-secret':adminSecret}});
+    allDevices=await r.json();
+    document.getElementById('badge-devices').textContent=allDevices.length;
+    renderDevicesTable();
+    renderOzet();
+  }catch(e){
+    wrap.innerHTML=`<div class="empty" style="color:var(--red)">Hata: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderDevicesTable(){
+  const wrap=document.getElementById('devices-table-wrap');
+  if(!allDevices.length){wrap.innerHTML='<div class="empty">Henüz cihaz yok</div>';return;}
+  wrap.innerHTML=`<table>
+    <thead><tr>
+      <th>Cihaz Adı</th><th>Device ID</th><th>Kullanıcı</th><th>Durum</th><th>Son Bağlantı</th>
+    </tr></thead>
+    <tbody>
+      ${allDevices.map(d=>{
+        const diffMs=d.last_seen?Date.now()-new Date(d.last_seen).getTime():Infinity;
+        const online=diffMs<30000;
+        const timeStr=d.last_seen?new Date(d.last_seen).toLocaleString('tr-TR'):'—';
+        return `<tr class="tr-no-hover">
           <td style="font-weight:600">${esc(d.name)}</td>
           <td><span class="api-key">${esc(d.device_id)}</span></td>
-          <td><span class="api-key">${esc(d.api_key)}</span></td>
           <td>
-            <div style="font-size:.8rem">${esc(d.user_name)}</div>
+            <div style="font-size:.82rem">${esc(d.user_name)}</div>
             <div style="font-size:.72rem;color:var(--muted)">${esc(d.user_email)}</div>
           </td>
-          <td style="font-size:.75rem">
-            ${(()=>{
-              if (!d.last_seen) return '<span style="color:var(--muted2)">Hiç bağlanmadı</span>';
-              const diffMs = Date.now() - new Date(d.last_seen).getTime();
-              const isOnline = diffMs < 30 * 1000;
-              const timeStr = new Date(d.last_seen).toLocaleString('tr-TR');
-              const badge = isOnline
-                ? '<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(16,185,129,.15);color:#10b981;font-weight:600;font-size:.7rem">🟢 Çevrimiçi</span>'
-                : '<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:rgba(100,116,139,.12);color:var(--muted2);font-weight:600;font-size:.7rem">⚫ Çevrimdışı</span>';
-              return badge + '<div style="margin-top:3px;color:var(--muted2)">' + timeStr + '</div>';
-            })()}
-          </td>
-          <td>
-            <button class="btn-ghost btn-red" style="font-size:.72rem;padding:.3rem .6rem;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)"
-              onclick="deleteDevice('${d.id}')">Sil</button>
-          </td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-  } catch (e) {
-    wrap.innerHTML = `<div class="empty" style="color:var(--red)">Hata: ${e.message}</div>`;
-  }
+          <td><span class="badge badge-${online?'online':'offline'}">${online?'Çevrimiçi':'Çevrimdışı'}</span></td>
+          <td style="font-size:.75rem;color:var(--muted2)">${esc(timeStr)}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
 }
 
-async function deleteDevice(id) {
-  if (!confirm('Bu cihazi silmek istediginizden emin misiniz?')) return;
-  const r = await fetch(`${API}/api/admin/devices/${id}`, {
-    method: 'DELETE',
-    headers: { 'x-admin-secret': adminSecret },
+// ── Genel Bakış ─────────────────────────────────────────────
+function renderOzet(){
+  document.getElementById('stat-users').textContent=allUsers.length||'—';
+  document.getElementById('stat-devices').textContent=allDevices.length||'—';
+  const online=allDevices.filter(d=>d.last_seen&&(Date.now()-new Date(d.last_seen).getTime())<30000).length;
+  document.getElementById('stat-online').textContent=online;
+  const paid=allUsers.filter(u=>u.plan&&u.plan!=='starter').length;
+  document.getElementById('stat-plans').textContent=paid;
+
+  // Son 5 kullanıcı
+  const recent=document.getElementById('recent-users-wrap');
+  if(!allUsers.length){recent.innerHTML='<div class="empty">Henüz kullanıcı yok</div>';return;}
+  const last5=[...allUsers].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  recent.innerHTML=`<table>
+    <thead><tr><th>Ad</th><th>E-posta</th><th>Plan</th><th>Kayıt</th></tr></thead>
+    <tbody>
+      ${last5.map(u=>`<tr onclick="switchTab('users',null);setTimeout(()=>showUserDetail('${u.id}'),100)">
+        <td style="font-weight:600">${esc(u.name)}</td>
+        <td style="color:var(--muted);font-size:.8rem">${esc(u.email)}</td>
+        <td><span class="badge badge-${planClass(u.plan)}">${esc(planLabel(u.plan))}</span></td>
+        <td style="color:var(--muted2);font-size:.75rem">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Plan Değiştir ───────────────────────────────────────────
+async function changePlan(userId,plan){
+  if(!plan) return;
+  const r=await fetch(`${API}/api/admin/users/${userId}/plan`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-admin-secret':adminSecret},
+    body:JSON.stringify({plan}),
   });
-  if (r.ok) { toast('Cihaz silindi'); loadDevices(); }
-  else toast('Hata olustu');
+  if(r.ok){toast('Plan güncellendi: '+planLabel(plan));loadUsers();}
+  else toast('Hata oluştu');
 }
 
-// ── Cihaz Ekle ───────────────────────────────────────────────
-function populateUserSelect() {
-  const sel = document.getElementById('add-user-select');
-  sel.innerHTML = '<option value="">-- Kullanici secin --</option>' +
-    allUsers.map(u => `<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
-}
-
-async function doAddDevice() {
-  const user_id   = document.getElementById('add-user-select').value;
-  const name      = document.getElementById('add-device-name').value.trim();
-  const device_id = document.getElementById('add-device-id').value.trim();
-  const msgEl     = document.getElementById('add-device-msg');
-  const resEl     = document.getElementById('add-device-result');
-
-  if (!user_id || !name || !device_id) {
-    msgEl.innerHTML = '<div class="err">Tum alanlari doldurun</div>';
-    return;
-  }
-
-  msgEl.innerHTML = '';
-  resEl.style.display = 'none';
-
-  const r = await fetch(`${API}/api/admin/devices`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
-    body: JSON.stringify({ user_id, name, device_id }),
+// ── Şifre Sıfırla ───────────────────────────────────────────
+async function sendResetLink(userId,email){
+  if(!confirm(`${email} adresine şifre sıfırlama linki gönderilsin mi?`)) return;
+  const r=await fetch(`${API}/api/admin/users/${userId}/reset-link`,{
+    method:'POST',headers:{'x-admin-secret':adminSecret},
   });
-  const data = await r.json();
+  const data=await r.json();
+  if(r.ok){
+    toast('Link gönderildi: '+email);
+    if(data.resetUrl) prompt('E-posta servisi yoksa bu linki kullanıcıya iletin:',data.resetUrl);
+  } else toast('Hata: '+(data.error||'Bilinmeyen hata'));
+}
 
-  if (!r.ok) {
-    msgEl.innerHTML = `<div class="err">${esc(data.error || 'Hata olustu')}</div>`;
-    return;
+// ── Cihaz Ekle ──────────────────────────────────────────────
+function populateUserSelect(){
+  const sel=document.getElementById('add-user-select');
+  sel.innerHTML='<option value="">-- Kullanıcı seçin --</option>'+
+    allUsers.map(u=>`<option value="${u.id}">${esc(u.name)} (${esc(u.email)})</option>`).join('');
+}
+
+async function doAddDevice(){
+  const user_id=document.getElementById('add-user-select').value;
+  const name=document.getElementById('add-device-name').value.trim();
+  const device_id=document.getElementById('add-device-id').value.trim();
+  const msgEl=document.getElementById('add-device-msg');
+  const resEl=document.getElementById('add-device-result');
+  if(!user_id||!name||!device_id){
+    msgEl.innerHTML='<div class="err">Tüm alanları doldurun</div>';return;
   }
-
-  document.getElementById('result-device-id').textContent = data.device.device_id;
-  document.getElementById('result-api-key').textContent   = data.device.api_key;
-  resEl.style.display = 'block';
-
-  // Formu temizle
-  document.getElementById('add-device-name').value = '';
-  document.getElementById('add-device-id').value   = '';
-
+  msgEl.innerHTML='';resEl.style.display='none';
+  const r=await fetch(`${API}/api/admin/devices`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-admin-secret':adminSecret},
+    body:JSON.stringify({user_id,name,device_id}),
+  });
+  const data=await r.json();
+  if(!r.ok){msgEl.innerHTML=`<div class="err">${esc(data.error||'Hata oluştu')}</div>`;return;}
+  document.getElementById('result-device-id').textContent=data.device.device_id;
+  document.getElementById('result-api-key').textContent=data.device.api_key;
+  resEl.style.display='block';
+  document.getElementById('add-device-name').value='';
+  document.getElementById('add-device-id').value='';
   toast('Cihaz eklendi!');
   loadDevices();
 }
 
-// ── Yardimcilar ──────────────────────────────────────────────
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ── Yardımcılar ─────────────────────────────────────────────
+function refreshAll(){loadUsers();loadDevices();toast('Yenilendi');}
 
 let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
 }
 </script>
 </body>
