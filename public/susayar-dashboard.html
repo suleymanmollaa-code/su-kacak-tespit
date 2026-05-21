@@ -1437,7 +1437,8 @@
             </div>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+          <button type="button" class="btn-sm" id="btn-test-telegram" onclick="testTelegram()" style="background:var(--bg3);color:var(--fg2);border:1px solid var(--border2)">Test Gönder</button>
           <button type="button" class="btn-sm btn-primary" onclick="saveChannelSettings()">Kaydet</button>
         </div>
       </div>
@@ -3812,6 +3813,23 @@ async function saveSettings() {
       showToast('❌ Kayıt başarısız');
     }
   } catch { showToast('❌ Bağlantı hatası'); }
+}
+
+async function testTelegram() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const btn = document.getElementById('btn-test-telegram');
+  if (btn) btn.textContent = 'Gönderiliyor...';
+  try {
+    const r = await fetch(`${API}/api/test-telegram`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await r.json();
+    if (r.ok) showToast('✅ Telegram mesajı gönderildi');
+    else showToast('❌ ' + (data.error || 'Gönderilemedi'));
+  } catch { showToast('❌ Bağlantı hatası'); }
+  finally { if (btn) btn.textContent = 'Test Gönder'; }
 }
 
 async function saveChannelSettings() {

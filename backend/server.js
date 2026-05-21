@@ -451,6 +451,17 @@ app.put('/api/settings', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+// ── Telegram test ─────────────────────────────────────────────
+app.post('/api/test-telegram', requireAuth, async (req, res) => {
+  try {
+    const s = await db.queryOne(`SELECT telegram_chat_id, notify_telegram FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    if (!s?.telegram_chat_id) return res.status(400).json({ error: 'Chat ID ayarlı değil' });
+    if (!process.env.TELEGRAM_BOT_TOKEN) return res.status(500).json({ error: 'Bot token sunucuda tanımlı değil' });
+    await sendTelegram(s.telegram_chat_id.trim(), '✅ <b>SuSayar test mesajı</b>\n\nTelegram bildirimleri çalışıyor!');
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Gönderilemedi' }); }
+});
+
 // ── Sensör ────────────────────────────────────────────────────
 
 app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
