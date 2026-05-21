@@ -341,6 +341,19 @@ app.post('/api/devices', requireAuth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+app.patch('/api/devices/:id', requireAuth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Cihaz adı boş olamaz' });
+    const n = await db.queryRun(
+      `UPDATE devices SET name=$1 WHERE id=$2 AND user_id=$3`,
+      [name.trim(), req.params.id, req.user.id]
+    );
+    if (!n) return res.status(404).json({ error: 'Cihaz bulunamadı' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 app.delete('/api/devices/:id', requireAuth, async (req, res) => {
   try {
     const n = await db.queryRun(`DELETE FROM devices WHERE id=$1 AND user_id=$2`, [req.params.id, req.user.id]);

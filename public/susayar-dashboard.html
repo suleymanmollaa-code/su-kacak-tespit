@@ -972,16 +972,8 @@
     <!-- PAGE: DASHBOARD -->
     <div class="page active" id="page-dashboard">
 
-      <!-- CİHAZ SELECTOR BAR -->
-      <div id="dash-device-bar" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
-        <span style="font-size:.73rem;color:var(--muted);flex-shrink:0">Cihaz:</span>
-        <button id="dash-dev-btn-all" onclick="selectDashDevice(null)"
-          style="font-size:.73rem;padding:.25rem .7rem;border-radius:99px;cursor:pointer;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.15);color:var(--blue-lt);font-weight:600">
-          Tümü
-        </button>
-        <div id="dash-dev-chips" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
-        <span id="dash-device-label" style="margin-left:auto;font-size:.72rem;color:var(--muted);display:none"></span>
-      </div>
+      <!-- CİHAZ MİNİ KARTLAR -->
+      <div id="dash-device-cards" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem"></div>
 
       <!-- TATİL MODU BANNER -->
       <div id="tatil-banner" style="display:none;background:rgba(239,68,68,.1);border:1.5px solid var(--red);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;animation:tatilPulse 2s infinite">
@@ -1345,11 +1337,20 @@
               <label class="form-label">Uyarı Başlangıç Saati</label>
               <div style="display:flex;gap:.5rem;align-items:center">
                 <select class="form-select" id="setting-alert-hour" style="flex:1">
-                  ${Array.from({length:24},(_,i)=>`<option value="${i}"${i===22?' selected':''}>${String(i).padStart(2,'0')}</option>`).join('')}
+                  <option value="0">00</option><option value="1">01</option><option value="2">02</option>
+                  <option value="3">03</option><option value="4">04</option><option value="5">05</option>
+                  <option value="6">06</option><option value="7">07</option><option value="8">08</option>
+                  <option value="9">09</option><option value="10">10</option><option value="11">11</option>
+                  <option value="12">12</option><option value="13">13</option><option value="14">14</option>
+                  <option value="15">15</option><option value="16">16</option><option value="17">17</option>
+                  <option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                  <option value="21">21</option><option value="22" selected>22</option><option value="23">23</option>
                 </select>
                 <span style="color:var(--muted);font-weight:700;flex-shrink:0">:</span>
                 <select class="form-select" id="setting-alert-minute" style="flex:1">
-                  ${[0,5,10,15,20,25,30,45].map(m=>`<option value="${m}">${String(m).padStart(2,'0')}</option>`).join('')}
+                  <option value="0">00</option><option value="5">05</option><option value="10">10</option>
+                  <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+                  <option value="30">30</option><option value="45">45</option>
                 </select>
               </div>
               <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Bu saatten sonra su akışı varsa uyarı alırsınız.</div>
@@ -1410,49 +1411,45 @@
       <div class="card">
         <div class="card-head">
           <div class="card-title">Cihaz Ayarları</div>
-          <span class="chip chip-green">Bağlı</span>
+          <span id="cihaz-ayar-status" class="chip">Yükleniyor...</span>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
-          <div>
-            <div class="form-group">
-              <label class="form-label">Cihaz Adi</label>
-              <input type="text" class="form-input" value="Daire 3 — Mutfak">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Gece Akış Eşiği (L)</label>
-              <input type="number" class="form-input" value="2">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Gece Saatleri</label>
-              <input type="text" class="form-input" value="00:00 – 06:00">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Telefon Bildirimi</label>
-              <select class="form-select">
-                <option>Her anomalide</option>
-                <option>Sadece kritik</option>
-                <option>Kapalı</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <div style="background:var(--bg3);border-radius:10px;padding:1.25rem;margin-bottom:1rem">
-              <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Cihaz Bilgisi</div>
-              <div style="font-size:.82rem;display:flex;flex-direction:column;gap:.5rem">
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Model</span><span>ESP32-WROOM-32U</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Sensör</span><span>YF-S201</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Firmware</span><span>v2.4.1</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">IP Adresi</span><span>192.168.1.104</span></div>
-                <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">WiFi</span><span style="color:var(--green)">Bağlı (-62 dBm)</span></div>
+        <!-- Cihaz seçici -->
+        <div class="form-group" style="margin-bottom:1.25rem">
+          <label class="form-label">Cihaz Seç</label>
+          <select class="form-select" id="cihaz-ayar-select" onchange="loadCihazAyarlari()">
+            <option value="">— Seçiniz —</option>
+          </select>
+        </div>
+        <div id="cihaz-ayar-body" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <div>
+              <div class="form-group">
+                <label class="form-label">Cihaz Adı</label>
+                <input type="text" class="form-input" id="cihaz-ayar-name" placeholder="Örn: Mutfak Sayacı">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Device ID</label>
+                <input type="text" class="form-input" id="cihaz-ayar-devid" readonly style="opacity:.5;cursor:not-allowed">
               </div>
             </div>
-            <button class="btn-sm btn-ghost" style="width:100%;margin-bottom:.5rem">Firmware Güncelle</button>
-            <button class="btn-sm" style="width:100%;background:rgba(239,68,68,.15);color:var(--red);border:none;cursor:pointer">Cihazı Sıfırla</button>
+            <div>
+              <div style="background:var(--bg3);border-radius:10px;padding:1.25rem">
+                <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Bağlantı Bilgisi</div>
+                <div style="font-size:.82rem;display:flex;flex-direction:column;gap:.5rem">
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Son Görülme</span><span id="cihaz-info-lastseen">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">WiFi Sinyal</span><span id="cihaz-info-rssi">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Durum</span><span id="cihaz-info-online">—</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+            <button class="btn-sm btn-ghost" onclick="loadCihazAyarlari()">İptal</button>
+            <button class="btn-sm btn-primary" onclick="saveCihazAyarlari()">Kaydet</button>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)">
-          <button class="btn-sm btn-ghost">İptal</button>
-          <button class="btn-sm btn-primary" onclick="showToast('&#x2705; Ayarlar kaydedildi')">Kaydet</button>
+        <div id="cihaz-ayar-empty" style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">
+          Cihaz listesi yükleniyor...
         </div>
       </div>
     </div><!-- /page-cihaz-ayarlari -->
@@ -1704,6 +1701,7 @@ navItems.forEach(item => {
     if (pageId === 'gunluk-rapor') loadDailyReport();
     if (pageId === 'aylik-analiz') loadMonthlyReport();
     if (pageId === 'cihazlarim') loadDevicesPage();
+    if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); }
   });
 });
@@ -3221,52 +3219,64 @@ let _dashDevice = null; // { name, device_id, ... } veya null (Tümü)
 
 function selectDashDevice(d) {
   _dashDevice = d;
-  // Chip stillerini güncelle
-  document.getElementById('dash-dev-btn-all').style.background = d ? 'transparent' : 'rgba(59,181,212,.15)';
-  document.getElementById('dash-dev-btn-all').style.color = d ? 'var(--muted)' : 'var(--blue-lt)';
-  document.getElementById('dash-dev-btn-all').style.borderColor = d ? 'var(--border2)' : 'rgba(59,181,212,.5)';
-  document.querySelectorAll('.dash-dev-chip').forEach(btn => {
-    const active = d && btn.dataset.devId === d.device_id;
-    btn.style.background   = active ? 'rgba(59,181,212,.15)' : 'transparent';
-    btn.style.color        = active ? 'var(--blue-lt)'       : 'var(--muted)';
-    btn.style.borderColor  = active ? 'rgba(59,181,212,.5)'  : 'var(--border2)';
-    btn.style.fontWeight   = active ? '600' : '400';
-  });
-  // Label
-  const lbl = document.getElementById('dash-device-label');
-  if (lbl) { lbl.textContent = d ? '📡 ' + d.name : ''; lbl.style.display = d ? '' : 'none'; }
-  // Veriyi yeniden yükle
+  _applyDashDeviceCardStyle();
   loadDashboardData();
 }
 
-async function loadDashDeviceChips() {
+async function loadDashDeviceCards() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const chips = document.getElementById('dash-dev-chips');
-  if (!chips) return;
+  const wrap  = document.getElementById('dash-device-cards');
+  if (!wrap) return;
   try {
     const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
     const devs = await r.json();
-    if (!r.ok || !devs.length) return;
+    if (!r.ok || !devs.length) { wrap.innerHTML = ''; return; }
     const now = Date.now();
-    chips.innerHTML = devs.map(d => {
-      const online = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
-      const dot    = online ? '<span style="color:var(--green)">●</span>' : '<span style="color:var(--muted)">○</span>';
-      return `<button class="dash-dev-chip" data-dev-id="${d.device_id}"
-        onclick="selectDashDevice(${JSON.stringify(d)})"
-        style="font-size:.73rem;padding:.25rem .7rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);display:flex;align-items:center;gap:.3rem">
-        ${dot} ${esc(d.name)}
-      </button>`;
+    // "Tümü" kartı
+    const allCard = `<div class="dash-dev-card" id="dash-dev-card-all" onclick="selectDashDevice(null)"
+      style="cursor:pointer;padding:.65rem 1rem;border-radius:10px;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.12);min-width:100px;flex-shrink:0">
+      <div style="font-size:.72rem;font-weight:700;color:var(--blue-lt)">Tüm Cihazlar</div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">${devs.length} cihaz</div>
+    </div>`;
+    const cards = devs.map(d => {
+      const online   = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
+      const dotColor = online ? 'var(--green)' : 'var(--muted)';
+      const flowTxt  = (d.flow_lpm != null && online) ? (+d.flow_lpm).toFixed(1) + ' L/dk' : '—';
+      const flowColor= (d.flow_lpm > 0.1 && online) ? 'var(--blue-lt)' : 'var(--muted)';
+      return `<div class="dash-dev-card" id="dash-dev-card-${d.device_id}" onclick="selectDashDevice(${JSON.stringify(d)})"
+        style="cursor:pointer;padding:.65rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg2);min-width:130px;flex-shrink:0;transition:border-color .15s"
+        onmouseenter="this.style.borderColor='rgba(59,181,212,.3)'" onmouseleave="this.style.borderColor=''">
+        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem">
+          <span style="font-size:.65rem;color:${dotColor}">${online ? '●' : '○'}</span>
+          <span style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${esc(d.name)}</span>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:${flowColor}">${flowTxt}</div>
+      </div>`;
     }).join('');
-  } catch { /* sessiz */ }
+    wrap.innerHTML = allCard + cards;
+    // Mevcut seçimi vurgula
+    _applyDashDeviceCardStyle();
+  } catch { wrap.innerHTML = ''; }
+}
+
+function _applyDashDeviceCardStyle() {
+  document.querySelectorAll('.dash-dev-card').forEach(c => {
+    c.style.borderColor = '';
+    c.style.background  = 'var(--bg2)';
+  });
+  const activeId = _dashDevice ? 'dash-dev-card-' + _dashDevice.device_id : 'dash-dev-card-all';
+  const activeEl = document.getElementById(activeId);
+  if (activeEl) {
+    activeEl.style.borderColor = 'rgba(59,181,212,.6)';
+    activeEl.style.background  = 'rgba(59,181,212,.1)';
+  }
 }
 
 function openDeviceDashboard(d) {
-  // Dashboard'a geç, o cihazı seç
   const navDash = document.querySelector('.nav-item[data-page="dashboard"]');
   if (navDash) navDash.click();
-  // Chips yüklendikten sonra seç (ya da hemen)
-  setTimeout(() => selectDashDevice(d), 100);
+  setTimeout(() => { loadDashDeviceCards().then(() => selectDashDevice(d)); }, 150);
 }
 
 // ── Sayfa geçiş yardımcısı (nav olmayan sayfalar için) ────────
@@ -3347,6 +3357,88 @@ async function loadDevicesPage() {
       </div>`;
     }).join('');
   } catch { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">Bağlantı hatası.</div>'; }
+}
+
+// ============================
+// CİHAZ AYARLARI SAYFASI
+// ============================
+let _cihazAyarDevices = [];
+
+async function loadCihazAyarlariPage() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const sel   = document.getElementById('cihaz-ayar-select');
+  const emptyEl = document.getElementById('cihaz-ayar-empty');
+  if (!sel) return;
+  try {
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    const devs = await r.json();
+    _cihazAyarDevices = Array.isArray(devs) ? devs : [];
+    if (!_cihazAyarDevices.length) {
+      if (emptyEl) emptyEl.textContent = 'Kayıtlı cihaz bulunamadı.';
+      return;
+    }
+    sel.innerHTML = '<option value="">— Seçiniz —</option>' +
+      _cihazAyarDevices.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+    // İlk cihazı otomatik seç
+    sel.value = _cihazAyarDevices[0].id;
+    loadCihazAyarlari();
+  } catch { if (emptyEl) emptyEl.textContent = 'Cihazlar yüklenemedi.'; }
+}
+
+function loadCihazAyarlari() {
+  const sel   = document.getElementById('cihaz-ayar-select');
+  const body  = document.getElementById('cihaz-ayar-body');
+  const empty = document.getElementById('cihaz-ayar-empty');
+  const id    = sel?.value;
+  if (!id) { if (body) body.style.display = 'none'; if (empty) { empty.style.display = ''; empty.textContent = 'Yukarıdan bir cihaz seçin.'; } return; }
+  const d = _cihazAyarDevices.find(x => x.id === id);
+  if (!d) return;
+
+  const now    = Date.now();
+  const online = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
+
+  document.getElementById('cihaz-ayar-name').value  = d.name;
+  document.getElementById('cihaz-ayar-devid').value = d.device_id;
+  document.getElementById('cihaz-info-lastseen').textContent = d.last_seen ? new Date(d.last_seen).toLocaleString('tr-TR') : '—';
+  document.getElementById('cihaz-info-rssi').textContent     = d.rssi_dbm ? d.rssi_dbm + ' dBm' : '—';
+  const onlineEl = document.getElementById('cihaz-info-online');
+  if (onlineEl) { onlineEl.textContent = online ? '● Çevrimiçi' : '○ Çevrimdışı'; onlineEl.style.color = online ? 'var(--green)' : 'var(--muted)'; }
+
+  const statusChip = document.getElementById('cihaz-ayar-status');
+  if (statusChip) { statusChip.textContent = online ? 'Çevrimiçi' : 'Çevrimdışı'; statusChip.className = online ? 'chip chip-green' : 'chip'; }
+
+  if (body)  body.style.display  = '';
+  if (empty) empty.style.display = 'none';
+}
+
+async function saveCihazAyarlari() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const sel   = document.getElementById('cihaz-ayar-select');
+  const id    = sel?.value;
+  const name  = document.getElementById('cihaz-ayar-name')?.value?.trim();
+  if (!id || !name) { showToast('❌ Cihaz adı boş olamaz'); return; }
+  try {
+    const r = await fetch(`${API}/api/devices/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name }),
+    });
+    if (r.ok) {
+      // Local cache güncelle
+      const d = _cihazAyarDevices.find(x => x.id === id);
+      if (d) d.name = name;
+      const opt = sel.querySelector(`option[value="${id}"]`);
+      if (opt) opt.textContent = name;
+      showToast('✅ Cihaz adı güncellendi');
+      // Dashboard kartlarını da yenile
+      loadDashDeviceCards();
+    } else {
+      const err = await r.json().catch(() => ({}));
+      showToast('❌ ' + (err.error || 'Kayıt başarısız'));
+    }
+  } catch { showToast('❌ Bağlantı hatası'); }
 }
 
 // ── Cihaz Detay Sayfası ───────────────────────────────────────
@@ -3580,7 +3672,7 @@ async function saveSettings() {
 // Sayfa yüklenince gerçek veri çek
 setTimeout(loadDashboardData, 500);
 setTimeout(loadDashAnomalies, 800);
-setTimeout(loadDashDeviceChips, 600);
+setTimeout(loadDashDeviceCards, 600);
 
 // ── WebSocket bağlantısı ─────────────────────────────────────
 function connectRealBackend(url) {
