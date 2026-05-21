@@ -68,7 +68,8 @@ const SCHEMA_PG = `
     device   TEXT NOT NULL,
     detail   TEXT NOT NULL,
     ts       TEXT NOT NULL,
-    resolved BOOLEAN NOT NULL DEFAULT FALSE
+    resolved BOOLEAN NOT NULL DEFAULT FALSE,
+    feedback TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
   CREATE TABLE IF NOT EXISTS user_settings (
@@ -114,7 +115,7 @@ const SCHEMA_SQLITE = `
   CREATE TABLE IF NOT EXISTS anomalies (
     id INTEGER PRIMARY KEY, user_id TEXT NOT NULL, type TEXT NOT NULL,
     device TEXT NOT NULL, detail TEXT NOT NULL, ts TEXT NOT NULL,
-    resolved INTEGER NOT NULL DEFAULT 0
+    resolved INTEGER NOT NULL DEFAULT 0, feedback TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
   CREATE TABLE IF NOT EXISTS user_settings (
@@ -189,6 +190,7 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notify_telegram BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_live_msg_id TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE anomalies ADD COLUMN IF NOT EXISTS feedback TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -203,6 +205,7 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN notify_telegram INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_chat_id TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_live_msg_id TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE anomalies ADD COLUMN feedback TEXT`); } catch {}
   }
 }
 

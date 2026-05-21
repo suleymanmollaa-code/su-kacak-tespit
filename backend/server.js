@@ -400,6 +400,18 @@ app.post('/api/anomalies/:id/notify', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
+app.put('/api/anomalies/:id/feedback', requireAuth, async (req, res) => {
+  try {
+    const { feedback } = req.body; // 'real' | 'false_positive'
+    if (!['real', 'false_positive'].includes(feedback))
+      return res.status(400).json({ error: 'Geçersiz feedback' });
+    const row = await db.queryOne(`SELECT id FROM anomalies WHERE id=$1 AND user_id=$2`, [req.params.id, req.user.id]);
+    if (!row) return res.status(404).json({ error: 'Bulunamadı' });
+    await db.queryRun(`UPDATE anomalies SET feedback=$1 WHERE id=$2 AND user_id=$3`, [feedback, req.params.id, req.user.id]);
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // DELETE /api/readings kaldırıldı — veriler korunur
 
 // ── Kullanıcı Ayarları ────────────────────────────────────────
@@ -554,6 +566,14 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     const COOLDOWN = { 'surekli-akis': 30, 'yuksek-akis': 15 };
     const newAnomalies = [];
     for (const a of anomalies) {
+      // Öğrenme: son 7 günde 3+ kez "false_positive" işaretlendiyse atla
+      const learnCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const fpCount = await db.queryOne(
+        `SELECT COUNT(*) as cnt FROM anomalies WHERE user_id=$1 AND type=$2 AND device=$3 AND feedback='false_positive' AND ts>=$4`,
+        [reading.user_id, a.type, reading.device_id, learnCutoff]
+      );
+      if (parseInt(fpCount?.cnt || 0) >= 3) continue; // öğrenilmiş, atla
+
       const coolMin = COOLDOWN[a.type] ?? 60;
       const cutoff  = new Date(Date.now() - coolMin * 60 * 1000).toISOString();
       const existing = await db.queryOne(
