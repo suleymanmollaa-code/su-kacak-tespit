@@ -2442,9 +2442,8 @@ function applyRealReading(data) {
     if (barEl) barEl.style.width = Math.min((totalL / 500) * 100, 100) + '%';
   }
 
-  // Cihaz durumu — son veri zamanını güncelle, eşik kontrolü yap
-  _lastSensorMs = Date.now();
-  updateDeviceStatus();
+  // NOT: _lastSensorMs burada güncellenmez.
+  // Sadece WS üzerinden gelen canlı veri veya loadDashboardData'daki latest.ts günceller.
 
   // Flow history mini chart
   updateFlowHistory(lpm);
@@ -2628,6 +2627,8 @@ function _connectRealBackendLegacy(wsUrl) {
     try {
       const msg = JSON.parse(e.data);
       if (msg.type === 'sensor_update') {
+        _lastSensorMs = Date.now();
+        updateDeviceStatus();
         applyRealReading(msg.payload);
         renderSonOlcumler([msg.payload], true);
       } else if (msg.type === 'init') {
@@ -3046,6 +3047,8 @@ function connectRealBackend(url) {
     try {
       const msg = JSON.parse(e.data);
       if (msg.type === 'sensor_update' && msg.payload) {
+        _lastSensorMs = Date.now(); // canlı veri geldi → online say
+        updateDeviceStatus();
         applyRealReading(msg.payload);
         renderSonOlcumler([msg.payload], true);
       } else if (msg.type === 'anomaly' && msg.payload) {
