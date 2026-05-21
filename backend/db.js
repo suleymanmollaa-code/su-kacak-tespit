@@ -73,11 +73,14 @@ const SCHEMA_PG = `
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
   CREATE TABLE IF NOT EXISTS user_settings (
     user_id              TEXT PRIMARY KEY REFERENCES users(id),
-    alert_after_hour     INTEGER NOT NULL DEFAULT 22,
-    alert_after_minute   INTEGER NOT NULL DEFAULT 0,
-    continuous_flow_min  INTEGER NOT NULL DEFAULT 30,
-    daily_report         BOOLEAN NOT NULL DEFAULT FALSE,
-    weekly_report        BOOLEAN NOT NULL DEFAULT FALSE
+    alert_after_hour        INTEGER NOT NULL DEFAULT 22,
+    alert_after_minute      INTEGER NOT NULL DEFAULT 0,
+    continuous_flow_min     INTEGER NOT NULL DEFAULT 30,
+    daily_report            BOOLEAN NOT NULL DEFAULT FALSE,
+    weekly_report           BOOLEAN NOT NULL DEFAULT FALSE,
+    notify_realtime_email   BOOLEAN NOT NULL DEFAULT FALSE,
+    notify_telegram         BOOLEAN NOT NULL DEFAULT FALSE,
+    telegram_chat_id        TEXT
   );
   CREATE TABLE IF NOT EXISTS device_alert_settings (
     user_id              TEXT NOT NULL,
@@ -119,6 +122,8 @@ const SCHEMA_SQLITE = `
     alert_after_minute INTEGER NOT NULL DEFAULT 0,
     continuous_flow_min INTEGER NOT NULL DEFAULT 30,
     daily_report INTEGER NOT NULL DEFAULT 0, weekly_report INTEGER NOT NULL DEFAULT 0,
+    notify_realtime_email INTEGER NOT NULL DEFAULT 0,
+    notify_telegram INTEGER NOT NULL DEFAULT 0, telegram_chat_id TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
   CREATE TABLE IF NOT EXISTS device_alert_settings (
@@ -180,6 +185,9 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_otp_expires TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS alert_after_minute INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notify_realtime_email BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS notify_telegram BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -190,6 +198,9 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE users ADD COLUMN email_otp_expires TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN alert_after_minute INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN notify_realtime_email INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN notify_telegram INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_chat_id TEXT`); } catch {}
   }
 }
 

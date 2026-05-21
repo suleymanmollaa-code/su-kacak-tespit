@@ -393,20 +393,26 @@ app.get('/api/settings', requireAuth, async (req, res) => {
     if (device) {
       const ds = await db.queryOne(`SELECT * FROM device_alert_settings WHERE user_id=$1 AND device_id=$2`, [req.user.id, device]) || {};
       res.json({ ok: true, settings: {
-        alert_after_hour:   ds.alert_after_hour   ?? global?.alert_after_hour   ?? 22,
-        alert_after_minute: ds.alert_after_minute ?? global?.alert_after_minute ?? 0,
+        alert_after_hour:    ds.alert_after_hour    ?? global?.alert_after_hour    ?? 22,
+        alert_after_minute:  ds.alert_after_minute  ?? global?.alert_after_minute  ?? 0,
         continuous_flow_min: ds.continuous_flow_min ?? global?.continuous_flow_min ?? 30,
-        daily_report:  !!global?.daily_report,
-        weekly_report: !!global?.weekly_report,
+        daily_report:            !!global?.daily_report,
+        weekly_report:           !!global?.weekly_report,
+        notify_realtime_email:   !!global?.notify_realtime_email,
+        notify_telegram:         !!global?.notify_telegram,
+        telegram_chat_id:        global?.telegram_chat_id || '',
       }});
     } else {
       const s = global || {};
       res.json({ ok: true, settings: {
-        alert_after_hour:   s.alert_after_hour   ?? 22,
-        alert_after_minute: s.alert_after_minute ?? 0,
+        alert_after_hour:    s.alert_after_hour    ?? 22,
+        alert_after_minute:  s.alert_after_minute  ?? 0,
         continuous_flow_min: s.continuous_flow_min ?? 30,
-        daily_report:  !!s.daily_report,
-        weekly_report: !!s.weekly_report,
+        daily_report:           !!s.daily_report,
+        weekly_report:          !!s.weekly_report,
+        notify_realtime_email:  !!s.notify_realtime_email,
+        notify_telegram:        !!s.notify_telegram,
+        telegram_chat_id:       s.telegram_chat_id || '',
       }});
     }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -415,7 +421,8 @@ app.get('/api/settings', requireAuth, async (req, res) => {
 app.put('/api/settings', requireAuth, async (req, res) => {
   try {
     const device = req.query.device;
-    const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report } = req.body;
+    const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report,
+            notify_realtime_email, notify_telegram, telegram_chat_id } = req.body;
     const hour   = parseInt(alert_after_hour   ?? 22);
     const minute = parseInt(alert_after_minute ?? 0);
     const mins   = parseInt(continuous_flow_min ?? 30);
@@ -431,10 +438,13 @@ app.put('/api/settings', requireAuth, async (req, res) => {
       );
     } else {
       await db.queryRun(
-        `INSERT INTO user_settings (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4, daily_report=$5, weekly_report=$6`,
-        [req.user.id, hour, minute, mins, daily_report ? 1 : 0, weekly_report ? 1 : 0]
+        `INSERT INTO user_settings (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,notify_realtime_email,notify_telegram,telegram_chat_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4, daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9`,
+        [req.user.id, hour, minute, mins,
+         daily_report ? 1 : 0, weekly_report ? 1 : 0,
+         notify_realtime_email ? 1 : 0, notify_telegram ? 1 : 0,
+         telegram_chat_id || null]
       );
     }
     res.json({ ok: true });
@@ -511,12 +521,15 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       }
     }
 
+    // Cooldown: surekli-akis için 30dk, diğerleri için 60dk (cihaz bazlı)
+    const COOLDOWN = { 'surekli-akis': 30, 'yuksek-akis': 15 };
+    const newAnomalies = [];
     for (const a of anomalies) {
-      // Aynı tipte son 30 dk içinde anomali varsa tekrar ekleme
-      const cutoff30 = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const coolMin = COOLDOWN[a.type] ?? 60;
+      const cutoff  = new Date(Date.now() - coolMin * 60 * 1000).toISOString();
       const existing = await db.queryOne(
-        `SELECT id FROM anomalies WHERE user_id=$1 AND type=$2 AND ts>=$3`,
-        [reading.user_id, a.type, cutoff30]
+        `SELECT id FROM anomalies WHERE user_id=$1 AND type=$2 AND device=$3 AND ts>=$4`,
+        [reading.user_id, a.type, reading.device_id, cutoff]
       );
       if (!existing) {
         const anomId = Date.now();
@@ -524,8 +537,14 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
           `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
           [anomId, reading.user_id, a.type, reading.device_id, a.detail, reading.ts, 0]
         );
-        broadcastToUser(reading.user_id, { type: 'anomaly', payload: { id: anomId, ...a, device: reading.device_id, ts: reading.ts, resolved: false } });
+        const anomPayload = { id: anomId, ...a, device: reading.device_id, ts: reading.ts, resolved: false };
+        broadcastToUser(reading.user_id, { type: 'anomaly', payload: anomPayload });
+        newAnomalies.push(anomPayload);
       }
+    }
+    // Anlık bildirim gönder
+    if (newAnomalies.length > 0) {
+      sendAnomalyNotifications(reading.user_id, newAnomalies).catch(() => {});
     }
 
     console.log(`[${reading.ts}] ${reading.device_id} | ${data.flow_lpm} L/dk | ${data.total_liters} L`);
@@ -875,6 +894,57 @@ wss.on('connection', async (ws, req) => {
   ws.on('close', () => console.log(`[WS] Ayrıldı | Aktif: ${wss.clients.size}`));
   ws.on('error', err => console.error('[WS] Hata:', err.message));
 });
+
+// ── Anomali Bildirim Fonksiyonları ────────────────────────────
+const ANOMALY_SEVERITY = {
+  'yuksek-akis':  'KRİTİK', 'surekli-akis': 'KRİTİK', 'kacak': 'KRİTİK',
+  'gece-akis':    'UYARI',  'saat-akis':    'UYARI',
+};
+
+async function sendTelegram(chatId, text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token || !chatId) return;
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+  });
+}
+
+async function sendAnomalyNotifications(userId, anomalies) {
+  const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [userId]);
+  const s    = await db.queryOne(`SELECT notify_realtime_email, notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [userId]);
+  if (!user || !s) return;
+
+  for (const a of anomalies) {
+    const severity = ANOMALY_SEVERITY[a.type] || 'BİLGİ';
+    const ts = new Date(a.ts).toLocaleString('tr-TR');
+    const deviceName = a.device || '—';
+
+    if (s.notify_telegram && (s.telegram_chat_id || '').trim()) {
+      const msg = `🚨 <b>SuSayar ${severity}</b>\n\n📍 Cihaz: ${deviceName}\n⚠️ ${a.detail}\n🕐 ${ts}`;
+      await sendTelegram(s.telegram_chat_id.trim(), msg).catch(() => {});
+    }
+
+    if (s.notify_realtime_email || s.notify_realtime_email === true || s.notify_realtime_email === 1) {
+      const icon = { 'KRİTİK': '🔴', 'UYARI': '🟡', 'BİLGİ': '🔵' }[severity] || '🔔';
+      sendMail({
+        to: user.email,
+        subject: `${icon} SuSayar ${severity}: ${a.detail.slice(0, 60)}`,
+        html: mailHtml({ title: `${icon} ${severity} Uyarısı`, body: `
+          <p>Merhaba <strong>${user.name}</strong>,</p>
+          <p>Sisteminizde bir anomali tespit edildi:</p>
+          <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:16px 0">
+            <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px;width:80px">Cihaz</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:14px;font-weight:600">${deviceName}</td></tr>
+            <tr><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;color:#64748b;font-size:13px">Açıklama</td><td style="padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:14px">${a.detail}</td></tr>
+            <tr><td style="padding:10px 0;color:#64748b;font-size:13px">Zaman</td><td style="padding:10px 0;font-size:13px;color:#94a3b8">${ts}</td></tr>
+          </table>
+          <p style="font-size:13px;color:#64748b">Dashboard'dan anomaliyi görüntüleyip çözüldü olarak işaretleyebilirsiniz.</p>
+        ` }),
+      }).catch(() => {});
+    }
+  }
+}
 
 // ── Günlük / Haftalık Email Raporu ───────────────────────────
 async function sendReports(type) {

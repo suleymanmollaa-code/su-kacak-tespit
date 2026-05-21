@@ -1392,17 +1392,78 @@
         </div>
       </div>
 
-      <div class="card">
+      <!-- BİLDİRİM KANALLARI KARTI -->
+      <div class="card" style="margin-bottom:1.25rem">
         <div class="card-head">
-          <div class="card-title">Bildirimler & Anomaliler</div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <span class="chip" id="anomaly-count-chip" style="display:none"></span>
-            <button onclick="loadAnomalies()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">Yenile</button>
+          <div class="card-title">Bildirim Kanalları</div>
+          <span id="channels-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <!-- E-posta -->
+          <label style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
+            <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
+              <input type="checkbox" id="setting-notify-email" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+              <div class="slider-track" id="track-setting-notify-email" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+              <div class="slider-thumb" id="thumb-setting-notify-email" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+            </div>
+            <div>
+              <div style="font-size:.83rem;font-weight:600">📧 Anlık E-posta</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda kayıtlı e-postanıza anında bildirim gönderilir.</div>
+            </div>
+          </label>
+          <!-- Telegram -->
+          <div style="padding:.85rem;background:var(--bg3);border-radius:9px;border:1px solid var(--border)">
+            <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
+                <input type="checkbox" id="setting-notify-telegram" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);document.getElementById('telegram-chat-row').style.display=this.checked?'':'none'">
+                <div class="slider-track" id="track-setting-notify-telegram" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-notify-telegram" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:.83rem;font-weight:600">✈️ Telegram</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda Telegram botumuzdan mesaj alırsınız. Ücretsiz, anlık.</div>
+              </div>
+            </label>
+            <div id="telegram-chat-row" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">
+                1. <a href="https://t.me/SuSayarBot" target="_blank" style="color:var(--blue-lt)">@SuSayarBot</a>'a Telegram'dan /start yazın
+                &nbsp;·&nbsp; 2. Size gelen Chat ID'yi buraya girin:
+              </div>
+              <input type="text" class="form-input" id="setting-telegram-chatid" placeholder="Örn: 123456789" style="font-family:monospace;font-size:.82rem">
+            </div>
           </div>
         </div>
-        <div id="anomaly-list" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.5rem">
-          <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
+        <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+          <button type="button" class="btn-sm btn-primary" onclick="saveChannelSettings()">Kaydet</button>
         </div>
+      </div>
+
+      <!-- ANOMALİLER KARTI -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Anomaliler</div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <span id="anomaly-count-chip" style="display:none" class="chip chip-red"></span>
+            <button type="button" id="anomaly-refresh-btn" onclick="loadAnomalies(false)"
+              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">
+              ↻ Yenile
+            </button>
+          </div>
+        </div>
+        <!-- İstatistik satırı -->
+        <div id="anomaly-stats" style="display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);margin-bottom:.75rem;flex-wrap:wrap"></div>
+        <!-- Filtreler -->
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem">
+          <button type="button" class="anomaly-filter-btn active" data-filter="all"
+            onclick="filterAnomalies('all')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.12);color:var(--blue-lt)">Tümü</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="active"
+            onclick="filterAnomalies('active')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Aktif</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="critical"
+            onclick="filterAnomalies('critical')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Kritik</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="resolved"
+            onclick="filterAnomalies('resolved')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Çözüldü</button>
+        </div>
+        <div id="anomaly-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
       </div>
     </div><!-- /page-bildirimler -->
 
@@ -3151,65 +3212,134 @@ async function loadMonthlyReport() {
 // ============================================================
 // BİLDİRİMLER / ANOMALİLER
 // ============================================================
-const _ANOMALY_ICONS = {
-  'gece-akis':   { icon: '🌙', color: 'rgba(239,68,68,.06)', border: 'rgba(239,68,68,.2)',  label: 'Gece Akışı' },
-  'yuksek-akis': { icon: '⚠️', color: 'rgba(239,68,68,.06)', border: 'rgba(239,68,68,.2)',  label: 'Yüksek Akış' },
-  'kacak':       { icon: '💧', color: 'rgba(245,158,11,.06)', border: 'rgba(245,158,11,.2)', label: 'Olası Kaçak' },
+// ── Anomali meta verisi ───────────────────────────────────────
+const _ANOMALY_META = {
+  'gece-akis':    { icon: '🌙', label: 'Gece Akışı',    severity: 'warning',  leftColor: '#f59e0b' },
+  'saat-akis':    { icon: '🕐', label: 'Saatlik Uyarı', severity: 'warning',  leftColor: '#f59e0b' },
+  'yuksek-akis':  { icon: '⚠️', label: 'Yüksek Akış',   severity: 'critical', leftColor: '#ef4444' },
+  'surekli-akis': { icon: '💧', label: 'Sürekli Akış',  severity: 'critical', leftColor: '#ef4444' },
+  'kacak':        { icon: '🔴', label: 'Olası Kaçak',   severity: 'critical', leftColor: '#ef4444' },
 };
+// Eski icon map (dashboard mini + detay sayfası için)
+const _ANOMALY_ICONS = Object.fromEntries(
+  Object.entries(_ANOMALY_META).map(([k,v]) => [k, {
+    icon: v.icon, label: v.label,
+    color: v.severity === 'critical' ? 'rgba(239,68,68,.06)' : 'rgba(245,158,11,.06)',
+    border: v.severity === 'critical' ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)',
+  }])
+);
 
-async function loadAnomalies() {
-  const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+let _anomalyRows = [];      // ham veri (filtre için)
+let _anomalyFilter = 'all'; // aktif filtre
+
+async function loadAnomalies(showLoading = true) {
+  const token  = localStorage.getItem('susayar_token') || '';
+  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const listEl = document.getElementById('anomaly-list');
   const chipEl = document.getElementById('anomaly-count-chip');
+  const btnEl  = document.getElementById('anomaly-refresh-btn');
   if (!listEl) return;
-  listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>';
+
+  if (showLoading) listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>';
+  if (btnEl) btnEl.textContent = '⟳ …';
+
   try {
     const r = await fetch(`${API}/api/anomalies`, { headers: { Authorization: `Bearer ${token}` } });
     const rows = await r.json();
+    if (btnEl) btnEl.textContent = '↻ Yenile';
     if (!r.ok || !Array.isArray(rows)) { listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Veri alınamadı.</div>'; return; }
 
-    const unresolved = rows.filter(a => !a.resolved).length;
-    if (chipEl) {
-      if (unresolved > 0) {
-        chipEl.textContent = unresolved + ' aktif';
-        chipEl.className = 'chip chip-red';
-        chipEl.style.display = '';
-      } else {
-        chipEl.style.display = 'none';
-      }
-    }
+    _anomalyRows = rows;
+    _renderAnomalyStats(rows, chipEl);
+    _renderAnomalyList(_anomalyFilter);
+  } catch {
+    if (btnEl) btnEl.textContent = '↻ Yenile';
+    listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Bağlantı hatası.</div>';
+  }
+}
 
-    if (rows.length === 0) {
-      listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Henüz anomali yok. Sistem normal çalışıyor. ✅</div>';
-      return;
-    }
+function _renderAnomalyStats(rows, chipEl) {
+  const active   = rows.filter(a => !a.resolved);
+  const critical = active.filter(a => (_ANOMALY_META[a.type]?.severity === 'critical'));
+  const today    = rows.filter(a => a.resolved && a.ts && new Date(a.ts).toDateString() === new Date().toDateString());
+  if (chipEl) {
+    if (active.length > 0) { chipEl.textContent = active.length + ' aktif'; chipEl.style.display = ''; }
+    else chipEl.style.display = 'none';
+  }
+  const statsEl = document.getElementById('anomaly-stats');
+  if (!statsEl) return;
+  statsEl.innerHTML = [
+    { label: 'Aktif',   val: active.length,   color: active.length   ? 'var(--red)'    : 'var(--muted)' },
+    { label: 'Kritik',  val: critical.length, color: critical.length ? 'var(--red)'    : 'var(--muted)' },
+    { label: 'Toplam',  val: rows.length,     color: 'var(--text)' },
+    { label: 'Çözüldü bugün', val: today.length, color: today.length ? 'var(--green)' : 'var(--muted)' },
+  ].map(s => `<div style="display:flex;flex-direction:column;align-items:center;padding:.4rem .85rem;background:var(--bg3);border-radius:8px;min-width:60px">
+    <div style="font-size:1.1rem;font-weight:700;color:${s.color}">${s.val}</div>
+    <div style="font-size:.65rem;color:var(--muted);margin-top:.1rem;white-space:nowrap">${s.label}</div>
+  </div>`).join('');
+}
 
-    listEl.innerHTML = rows.map(a => {
-      const cfg = _ANOMALY_ICONS[a.type] || { icon: '🔔', color: 'rgba(59,181,212,.06)', border: 'rgba(59,181,212,.2)', label: a.type };
-      const ts = a.ts ? new Date(a.ts).toLocaleString('tr-TR') : '—';
-      const resolvedStyle = a.resolved ? 'opacity:.5;' : '';
-      const toggleBtn = a.resolved
-        ? `<button onclick="resolveAnomaly(${a.id})" style="font-size:.7rem;padding:.2rem .6rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">↩ Aktif Et</button>`
-        : `<button onclick="resolveAnomaly(${a.id})" style="font-size:.7rem;padding:.2rem .6rem;background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">✓ Çözüldü</button>`;
-      return `<div style="${resolvedStyle}display:flex;gap:.85rem;padding:.85rem;border-radius:8px;background:${cfg.color};border:1px solid ${cfg.border};align-items:flex-start">
-        <div style="font-size:1.1rem;margin-top:.1rem">${cfg.icon}</div>
-        <div style="flex:1">
-          <div style="font-size:.83rem;font-weight:700;margin-bottom:.2rem;color:var(--text)">${cfg.label}</div>
-          <div style="font-size:.76rem;color:var(--muted2);margin-bottom:.3rem">${esc(a.detail)}</div>
-          <div style="font-size:.68rem;color:var(--muted)">${ts} · ${esc(a.device || '—')}</div>
+function filterAnomalies(f) {
+  _anomalyFilter = f;
+  document.querySelectorAll('.anomaly-filter-btn').forEach(b => {
+    const active = b.dataset.filter === f;
+    b.style.background  = active ? 'rgba(59,181,212,.12)' : 'transparent';
+    b.style.color       = active ? 'var(--blue-lt)'       : 'var(--muted)';
+    b.style.borderColor = active ? 'rgba(59,181,212,.5)'  : 'var(--border2)';
+  });
+  _renderAnomalyList(f);
+}
+
+function _renderAnomalyList(filter) {
+  const listEl = document.getElementById('anomaly-list');
+  if (!listEl) return;
+  let rows = _anomalyRows;
+  if (filter === 'active')   rows = rows.filter(a => !a.resolved);
+  if (filter === 'critical') rows = rows.filter(a => !a.resolved && _ANOMALY_META[a.type]?.severity === 'critical');
+  if (filter === 'resolved') rows = rows.filter(a =>  a.resolved);
+  if (rows.length === 0) {
+    listEl.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">${
+      filter === 'all' ? '✅ Anomali yok — sistem normal çalışıyor' : 'Bu filtrede kayıt yok'}</div>`;
+    return;
+  }
+  listEl.innerHTML = rows.map(a => {
+    const meta = _ANOMALY_META[a.type] || { icon: '🔔', label: a.type, severity: 'info', leftColor: '#64748b' };
+    const ts   = a.ts ? new Date(a.ts).toLocaleString('tr-TR') : '—';
+    const dim  = a.resolved ? 'opacity:.55;' : '';
+    const severityBadge = !a.resolved
+      ? (meta.severity === 'critical'
+          ? `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(239,68,68,.15);color:#ef4444;border-radius:4px;font-weight:700">KRİTİK</span>`
+          : `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(245,158,11,.15);color:#f59e0b;border-radius:4px;font-weight:700">UYARI</span>`)
+      : `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(16,185,129,.1);color:var(--green);border-radius:4px">Çözüldü</span>`;
+    const toggleBtn = a.resolved
+      ? `<button type="button" onclick="resolveAnomaly(${a.id})" style="font-size:.68rem;padding:.2rem .55rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">↩ Aktife Al</button>`
+      : `<button type="button" onclick="resolveAnomaly(${a.id})" style="font-size:.68rem;padding:.2rem .55rem;background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0">✓ Çözüldü</button>`;
+    return `<div style="${dim}display:flex;gap:0;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)">
+      <div style="width:3px;flex-shrink:0;background:${a.resolved ? 'var(--muted)' : meta.leftColor}"></div>
+      <div style="display:flex;gap:.75rem;padding:.8rem;flex:1;align-items:flex-start">
+        <div style="font-size:1rem;margin-top:.05rem;flex-shrink:0">${meta.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem">
+            <span style="font-size:.82rem;font-weight:700">${meta.label}</span>
+            ${severityBadge}
+          </div>
+          <div style="font-size:.75rem;color:var(--muted2);margin-bottom:.3rem;line-height:1.4">${esc(a.detail)}</div>
+          <div style="font-size:.67rem;color:var(--muted);display:flex;gap:.6rem;flex-wrap:wrap">
+            <span>📡 ${esc(a.device || '—')}</span>
+            <span>🕐 ${ts}</span>
+          </div>
         </div>
         ${toggleBtn}
-      </div>`;
-    }).join('');
-  } catch (e) { listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Bağlantı hatası.</div>'; }
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function resolveAnomaly(id) {
   const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   await fetch(`${API}/api/anomalies/${id}/resolve`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
-  loadAnomalies();
+  loadAnomalies(false); // flash yok
 }
 
 // ============================
@@ -3618,6 +3748,15 @@ async function loadSettings() {
     if (contEl)   contEl.value  = String(settings.continuous_flow_min ?? 30);
     if (dailyEl)  { dailyEl.checked  = !!settings.daily_report;  toggleSlider(dailyEl); }
     if (weeklyEl) { weeklyEl.checked = !!settings.weekly_report; toggleSlider(weeklyEl); }
+    // Bildirim kanalları (global, cihaza bağlı değil)
+    const emailEl    = document.getElementById('setting-notify-email');
+    const telegramEl = document.getElementById('setting-notify-telegram');
+    const chatIdEl   = document.getElementById('setting-telegram-chatid');
+    if (emailEl)    { emailEl.checked    = !!settings.notify_realtime_email; toggleSlider(emailEl); }
+    if (telegramEl) { telegramEl.checked = !!settings.notify_telegram;       toggleSlider(telegramEl); }
+    if (chatIdEl)   chatIdEl.value = settings.telegram_chat_id || '';
+    const chatRow = document.getElementById('telegram-chat-row');
+    if (chatRow) chatRow.style.display = settings.notify_telegram ? '' : 'none';
   } catch { /* sessiz hata */ }
 }
 
@@ -3663,6 +3802,28 @@ async function saveSettings() {
       if (chip) { chip.style.display = ''; setTimeout(() => { chip.style.display = 'none'; }, 2500); }
       const devName = document.getElementById('setting-device')?.selectedOptions[0]?.text || 'Tüm Cihazlar';
       showToast(`✅ ${devName} ayarları kaydedildi`);
+    } else {
+      showToast('❌ Kayıt başarısız');
+    }
+  } catch { showToast('❌ Bağlantı hatası'); }
+}
+
+async function saveChannelSettings() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const body = {
+    notify_realtime_email: document.getElementById('setting-notify-email')?.checked  || false,
+    notify_telegram:       document.getElementById('setting-notify-telegram')?.checked || false,
+    telegram_chat_id:      document.getElementById('setting-telegram-chatid')?.value.trim() || null,
+  };
+  try {
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) {
+      showToast('✅ Bildirim kanalları kaydedildi');
     } else {
       showToast('❌ Kayıt başarısız');
     }
