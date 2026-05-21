@@ -457,7 +457,8 @@ app.post('/api/test-telegram', requireAuth, async (req, res) => {
     const s = await db.queryOne(`SELECT telegram_chat_id, notify_telegram FROM user_settings WHERE user_id=$1`, [req.user.id]);
     if (!s?.telegram_chat_id) return res.status(400).json({ error: 'Chat ID ayarlı değil' });
     if (!process.env.TELEGRAM_BOT_TOKEN) return res.status(500).json({ error: 'Bot token sunucuda tanımlı değil' });
-    await sendTelegram(s.telegram_chat_id.trim(), '✅ <b>SuSayar test mesajı</b>\n\nTelegram bildirimleri çalışıyor!');
+    const result = await sendTelegram(s.telegram_chat_id.trim(), '✅ <b>SuSayar test mesajı</b>\n\nTelegram bildirimleri çalışıyor!');
+    if (!result?.ok) return res.status(500).json({ error: result?.description || 'Telegram hatası' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: 'Gönderilemedi' }); }
 });
@@ -914,12 +915,15 @@ const ANOMALY_SEVERITY = {
 
 async function sendTelegram(chatId, text) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token || !chatId) return;
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  if (!token || !chatId) return { ok: false, error: 'token veya chatId eksik' };
+  const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
   });
+  const data = await r.json();
+  if (!data.ok) console.error('[TELEGRAM] Hata:', JSON.stringify(data));
+  return data;
 }
 
 async function sendAnomalyNotifications(userId, anomalies) {
