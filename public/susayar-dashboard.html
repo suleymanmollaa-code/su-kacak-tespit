@@ -3097,6 +3097,7 @@ async function pollLatest() {
       if (data.ts) {
         applyRealReading(data);
         renderSonOlcumler([data], true);
+        updateDeviceStatus(); // offline ise hemen "—" yaz
       }
     }
   } catch {}
