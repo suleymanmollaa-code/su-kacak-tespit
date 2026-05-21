@@ -1590,13 +1590,13 @@ async function loadDashboardData() {
     if (latestRes.ok) {
       const latest = await latestRes.json();
       if (latest.ts) {
-        // Son veri zamanını ayarla (3dk eşiğine göre online/offline belirlenir)
         _lastSensorMs = new Date(latest.ts).getTime();
         applyRealReading(latest);
         const luEl = document.getElementById('last-update');
         if (luEl) luEl.textContent = new Date(latest.ts).toLocaleTimeString('tr-TR');
+        updateDeviceStatus(); // online/offline durumunu hemen güncelle
       } else {
-        updateDeviceStatus(); // veri hiç yoksa offline göster
+        updateDeviceStatus();
       }
     }
 
