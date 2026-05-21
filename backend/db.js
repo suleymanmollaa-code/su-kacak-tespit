@@ -71,6 +71,13 @@ const SCHEMA_PG = `
     resolved BOOLEAN NOT NULL DEFAULT FALSE
   );
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
+  CREATE TABLE IF NOT EXISTS user_settings (
+    user_id              TEXT PRIMARY KEY REFERENCES users(id),
+    alert_after_hour     INTEGER NOT NULL DEFAULT 22,
+    continuous_flow_min  INTEGER NOT NULL DEFAULT 30,
+    daily_report         BOOLEAN NOT NULL DEFAULT FALSE,
+    weekly_report        BOOLEAN NOT NULL DEFAULT FALSE
+  );
 `;
 
 const SCHEMA_SQLITE = `
@@ -98,6 +105,12 @@ const SCHEMA_SQLITE = `
     resolved INTEGER NOT NULL DEFAULT 0
   );
   CREATE INDEX IF NOT EXISTS idx_anomalies_user ON anomalies(user_id);
+  CREATE TABLE IF NOT EXISTS user_settings (
+    user_id TEXT PRIMARY KEY, alert_after_hour INTEGER NOT NULL DEFAULT 22,
+    continuous_flow_min INTEGER NOT NULL DEFAULT 30,
+    daily_report INTEGER NOT NULL DEFAULT 0, weekly_report INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
 `;
 
 // ── Birleşik sorgu fonksiyonu ─────────────────────────────────

@@ -367,6 +367,32 @@ app.put('/api/anomalies/:id/resolve', requireAuth, async (req, res) => {
 
 // DELETE /api/readings kaldırıldı — veriler korunur
 
+// ── Kullanıcı Ayarları ────────────────────────────────────────
+app.get('/api/settings', requireAuth, async (req, res) => {
+  try {
+    let s = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    if (!s) s = { user_id: req.user.id, alert_after_hour: 22, continuous_flow_min: 30, daily_report: false, weekly_report: false };
+    res.json({ ok: true, settings: { alert_after_hour: s.alert_after_hour, continuous_flow_min: s.continuous_flow_min, daily_report: !!s.daily_report, weekly_report: !!s.weekly_report } });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+app.put('/api/settings', requireAuth, async (req, res) => {
+  try {
+    const { alert_after_hour, continuous_flow_min, daily_report, weekly_report } = req.body;
+    const hour = parseInt(alert_after_hour ?? 22);
+    const mins = parseInt(continuous_flow_min ?? 30);
+    if (hour < 0 || hour > 23) return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
+    if (mins < 5 || mins > 1440) return res.status(400).json({ error: 'Süre 5-1440 dk arasında olmalı' });
+    await db.queryRun(
+      `INSERT INTO user_settings (user_id,alert_after_hour,continuous_flow_min,daily_report,weekly_report)
+       VALUES ($1,$2,$3,$4,$5)
+       ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, continuous_flow_min=$3, daily_report=$4, weekly_report=$5`,
+      [req.user.id, hour, mins, daily_report ? 1 : 0, weekly_report ? 1 : 0]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
 // ── Sensör ────────────────────────────────────────────────────
 
 app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
@@ -396,17 +422,37 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     broadcastToUser(reading.user_id, { type: 'sensor_update', payload: reading });
 
     // ── Anomali tespiti ─────────────────────────────────────
-    const hour = new Date().getUTCHours() + 3; // TR saati (UTC+3)
-    const trHour = ((hour % 24) + 24) % 24;
+    const trHour = ((new Date().getUTCHours() + 3) % 24 + 24) % 24;
     const anomalies = [];
+
+    // Kullanıcı ayarlarını al
+    const settings = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [reading.user_id]);
+    const alertHour      = settings?.alert_after_hour     ?? 22;
+    const contFlowMin    = settings?.continuous_flow_min  ?? 30;
 
     // Gece akışı (00:00–05:00 arası flow > 0.1 L/dk)
     if (trHour >= 0 && trHour < 5 && reading.flow_lpm > 0.1) {
       anomalies.push({ type: 'gece-akis', detail: `${trHour}:00 saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
+    // Kullanıcının belirlediği saatten sonra akış
+    if (trHour >= alertHour && reading.flow_lpm > 0.1) {
+      anomalies.push({ type: 'saat-akis', detail: `${trHour}:00 saatinde (${alertHour}:00 sonrası) ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
+    }
     // Çok yüksek akış (>8 L/dk)
     if (reading.flow_lpm > 8) {
       anomalies.push({ type: 'yuksek-akis', detail: `Anlık akış ${reading.flow_lpm.toFixed(1)} L/dk — anormal yüksek` });
+    }
+    // Sürekli akış tespiti
+    if (reading.flow_lpm > 0.1) {
+      const cutoffCont = new Date(Date.now() - contFlowMin * 60 * 1000).toISOString();
+      const contRows = await db.queryAll(
+        `SELECT flow_lpm FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 ORDER BY ts DESC`,
+        [reading.user_id, reading.device_id, cutoffCont]
+      );
+      const minCount = Math.floor((contFlowMin * 60) / (2.5)); // ~her 2.5sn bir okuma
+      if (contRows.length >= minCount && contRows.every(r => r.flow_lpm > 0.1)) {
+        anomalies.push({ type: 'surekli-akis', detail: `${contFlowMin} dakikadır sürekli akış: ${reading.flow_lpm.toFixed(1)} L/dk — olası kaçak` });
+      }
     }
 
     for (const a of anomalies) {
@@ -766,9 +812,69 @@ wss.on('connection', async (ws, req) => {
   ws.on('error', err => console.error('[WS] Hata:', err.message));
 });
 
+// ── Günlük / Haftalık Email Raporu ───────────────────────────
+async function sendReports(type) {
+  try {
+    const field = type === 'daily' ? 'daily_report' : 'weekly_report';
+    const users = await db.queryAll(
+      `SELECT u.id, u.name, u.email FROM users u
+       INNER JOIN user_settings s ON s.user_id = u.id
+       WHERE s.${field} = 1 OR s.${field} = true`
+    );
+    for (const user of users) {
+      const cutoff = new Date(Date.now() - (type === 'daily' ? 86400000 : 7 * 86400000)).toISOString();
+      const anomCount = await db.queryOne(
+        `SELECT COUNT(*) as n FROM anomalies WHERE user_id=$1 AND ts>=$2`, [user.id, cutoff]
+      );
+      const flowData = await db.queryOne(
+        `SELECT SUM((flow_lpm/60.0)*2) as total FROM readings WHERE user_id=$1 AND ts>=$2`, [user.id, cutoff]
+      );
+      const totalL = parseFloat(flowData?.total || 0).toFixed(1);
+      const anomN = parseInt(anomCount?.n || 0);
+      const period = type === 'daily' ? 'günlük' : 'haftalık';
+      await sendMail({
+        to: user.email,
+        subject: `SuSayar — ${type === 'daily' ? 'Günlük' : 'Haftalık'} Rapor`,
+        html: mailHtml({ title: `${type === 'daily' ? 'Günlük' : 'Haftalık'} Özet`, body: `
+          <p style="font-size:16px;color:#1e293b;margin:0 0 16px">Merhaba <strong>${user.name}</strong>,</p>
+          <p style="font-size:14px;color:#475569;margin:0 0 24px">${type === 'daily' ? 'Bugünkü' : 'Bu haftaki'} su kullanım özetiniz:</p>
+          <table style="width:100%;border-collapse:collapse;margin:0 0 24px">
+            <tr><td style="padding:12px;background:#f8fafc;border-radius:8px;font-size:14px;color:#475569">Toplam Kullanım</td>
+                <td style="padding:12px;font-size:20px;font-weight:700;color:#0f172a;text-align:right">${totalL} L</td></tr>
+            <tr><td style="padding:12px;font-size:14px;color:#475569">Anomali Sayısı</td>
+                <td style="padding:12px;font-size:20px;font-weight:700;color:${anomN > 0 ? '#ef4444' : '#22c55e'};text-align:right">${anomN}</td></tr>
+          </table>
+          <div style="text-align:center">
+            <a href="https://www.susayar.com/susayar-dashboard.html" style="display:inline-block;background:#3bb5d4;color:white;padding:12px 32px;border-radius:10px;text-decoration:none;font-weight:700">Dashboard'ı Aç</a>
+          </div>
+        ` }),
+      });
+    }
+    console.log(`[RAPOR] ${type} raporu gönderildi (${users.length} kullanıcı)`);
+  } catch (e) { console.error('[RAPOR] Hata:', e.message); }
+}
+
+// Her gün sabah 08:00'de kontrol et
+function scheduleReports() {
+  const now = new Date();
+  const next8am = new Date();
+  next8am.setUTCHours(5, 0, 0, 0); // 08:00 TR (UTC+3)
+  if (next8am <= now) next8am.setUTCDate(next8am.getUTCDate() + 1);
+  setTimeout(() => {
+    sendReports('daily');
+    const dayOfWeek = new Date().getUTCDay(); // 1 = Pazartesi
+    if (dayOfWeek === 1) sendReports('weekly');
+    setInterval(() => {
+      sendReports('daily');
+      if (new Date().getUTCDay() === 1) sendReports('weekly');
+    }, 24 * 60 * 60 * 1000);
+  }, next8am - now);
+}
+
 // ── Başlat ────────────────────────────────────────────────────
 async function start() {
   await db.initSchema();
+  scheduleReports();
   server.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('  ╔══════════════════════════════════════════════╗');

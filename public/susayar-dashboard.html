@@ -774,6 +774,8 @@
 
     /* Cihaz ayarları */
     #page-cihaz-ayarlari .card > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    /* Uyarı ayarları settings grid */
+    #page-bildirimler .card div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
 
     /* Abonelik */
     #page-abonelik { padding: 0; }
@@ -1212,6 +1214,63 @@
 
     <!-- PAGE: BİLDİRİMLER -->
     <div class="page" id="page-bildirimler">
+
+      <!-- UYARI AYARLARI KARTI -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-head">
+          <div class="card-title">Uyarı Ayarları</div>
+          <span id="settings-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+          <div>
+            <div class="form-group">
+              <label class="form-label">Gece Akış Uyarısı — Saatten Sonra</label>
+              <select class="form-select" id="setting-alert-hour">
+                <option value="20">20:00'den sonra</option>
+                <option value="21">21:00'den sonra</option>
+                <option value="22" selected>22:00'den sonra</option>
+                <option value="23">23:00'den sonra</option>
+                <option value="0">00:00'dan sonra (gece yarısı)</option>
+              </select>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Seçilen saatten sonra su akışı varsa uyarı alırsınız.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sürekli Akış Uyarısı (dakika)</label>
+              <input type="number" class="form-input" id="setting-cont-flow" min="5" max="120" value="30" placeholder="30">
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Girilen dakika boyunca kesintisiz akış varsa uyarı alırsınız.</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem">Düzenli Raporlar</div>
+            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;margin-bottom:.6rem;border:1px solid var(--border)">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0">
+                <input type="checkbox" id="setting-daily" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <div class="slider-track" id="track-setting-daily" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-daily" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div>
+                <div style="font-size:.83rem;font-weight:600">Günlük Rapor</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her gün sabah 08:00'de e-posta ile özet.</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0">
+                <input type="checkbox" id="setting-weekly" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <div class="slider-track" id="track-setting-weekly" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-weekly" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div>
+                <div style="font-size:.83rem;font-weight:600">Haftalık Rapor</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her Pazartesi sabah haftalık özet e-postası.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+          <button class="btn-sm btn-primary" onclick="saveSettings()">Ayarları Kaydet</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-head">
           <div class="card-title">Bildirimler & Anomaliler</div>
@@ -1524,7 +1583,7 @@ navItems.forEach(item => {
 
     if (pageId === 'gunluk-rapor') loadDailyReport();
     if (pageId === 'aylik-analiz') loadMonthlyReport();
-    if (pageId === 'bildirimler') loadAnomalies();
+    if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); }
   });
 });
 
@@ -3031,6 +3090,70 @@ async function resolveAnomaly(id) {
   const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   await fetch(`${API}/api/anomalies/${id}/resolve`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
   loadAnomalies();
+}
+
+// ============================
+// UYARI AYARLARI
+// ============================
+function toggleSlider(checkbox) {
+  const id = checkbox.id;
+  const track = document.getElementById('track-' + id);
+  const thumb = document.getElementById('thumb-' + id);
+  if (!track || !thumb) return;
+  if (checkbox.checked) {
+    track.style.background = 'rgba(59,181,212,.35)';
+    track.style.borderColor = 'rgba(59,181,212,.5)';
+    thumb.style.transform = 'translateX(16px)';
+    thumb.style.background = 'var(--blue-lt)';
+  } else {
+    track.style.background = 'var(--bg3)';
+    track.style.borderColor = 'var(--border2)';
+    thumb.style.transform = 'translateX(0)';
+    thumb.style.background = 'var(--muted)';
+  }
+}
+
+async function loadSettings() {
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  try {
+    const r = await fetch(`${API}/api/settings`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return;
+    const { settings } = await r.json();
+    const hourEl = document.getElementById('setting-alert-hour');
+    const contEl = document.getElementById('setting-cont-flow');
+    const dailyEl = document.getElementById('setting-daily');
+    const weeklyEl = document.getElementById('setting-weekly');
+    if (hourEl) hourEl.value = String(settings.alert_after_hour ?? 22);
+    if (contEl) contEl.value = String(settings.continuous_flow_min ?? 30);
+    if (dailyEl) { dailyEl.checked = !!settings.daily_report; toggleSlider(dailyEl); }
+    if (weeklyEl) { weeklyEl.checked = !!settings.weekly_report; toggleSlider(weeklyEl); }
+  } catch { /* sessiz hata */ }
+}
+
+async function saveSettings() {
+  const token = localStorage.getItem('susayar_token') || '';
+  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const body = {
+    alert_after_hour: parseInt(document.getElementById('setting-alert-hour')?.value || '22', 10),
+    continuous_flow_min: parseInt(document.getElementById('setting-cont-flow')?.value || '30', 10),
+    daily_report: document.getElementById('setting-daily')?.checked || false,
+    weekly_report: document.getElementById('setting-weekly')?.checked || false,
+  };
+  try {
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) {
+      const chip = document.getElementById('settings-save-chip');
+      if (chip) { chip.style.display = ''; setTimeout(() => { chip.style.display = 'none'; }, 2500); }
+      showToast('✅ Uyarı ayarları kaydedildi');
+    } else {
+      showToast('❌ Kayıt başarısız');
+    }
+  } catch { showToast('❌ Bağlantı hatası'); }
 }
 
 // Sayfa yüklenince gerçek veri çek
