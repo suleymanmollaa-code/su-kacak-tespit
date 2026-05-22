@@ -903,6 +903,9 @@
   <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
     <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
   </div>
+  <div class="nav-item" data-page="sistem-ogreniyor" data-title="Sistem Öğreniyor">
+    <span class="nav-icon">&#x1F9E0;</span><span class="nav-label">Sistem Öğreniyor</span>
+  </div>
 
   <div class="nav-section">Ayarlar</div>
   <div class="nav-item" data-page="cihaz-ayarlari" data-title="Cihaz Ayarları">
@@ -1485,6 +1488,30 @@
 
     </div><!-- /page-bildirimler -->
 
+    <!-- PAGE: SİSTEM ÖĞRENİYOR -->
+    <div class="page" id="page-sistem-ogreniyor">
+      <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem">
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">🧠 Sistem Nasıl Öğreniyor?</div></div>
+          <p style="font-size:.8rem;color:var(--muted2);line-height:1.7;margin:0">
+            Bildirimler sayfasındaki anomali kartlarında <strong>✅ Gerçek</strong> veya <strong>❌ Normal</strong> butonlarına basarak sisteme geri bildirim verin.<br><br>
+            Aynı cihaz için aynı tür uyarı <strong>7 gün içinde 3 kez "Normal"</strong> işaretlenirse, sistem o uyarıyı artık tetiklemez. Bu sayede her kullanıcının alışkanlıklarına göre kişiselleşir.<br><br>
+            İstediğiniz zaman öğrenmeyi sıfırlayarak sistemi eski haline döndürebilirsiniz.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Öğrenme Durumu</div>
+            <button type="button" onclick="loadLearning(true)" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          </div>
+          <div id="learning-list-page"><div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div></div>
+        </div>
+
+      </div>
+    </div><!-- /page-sistem-ogreniyor -->
+
     <!-- PAGE: CİHAZ AYARLARI -->
     <div class="page" id="page-cihaz-ayarlari">
       <div class="card">
@@ -1782,6 +1809,7 @@ navItems.forEach(item => {
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); loadLearning(); }
+    if (pageId === 'sistem-ogreniyor') { loadLearning(true); }
   });
 });
 
@@ -3379,10 +3407,12 @@ const _ANOMALY_TYPE_LABELS = {
   'cihaz-offline': 'Cihaz Çevrimdışı'
 };
 
-async function loadLearning() {
+async function loadLearning(fullPage = false) {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const el = document.getElementById('learning-list');
+  const elCard = document.getElementById('learning-list');
+  const elPage = document.getElementById('learning-list-page');
+  const el = fullPage ? elPage : (elCard || elPage);
   if (!el) return;
   try {
     const r = await fetch(`${API}/api/learning`, { headers: { Authorization: `Bearer ${token}` } });
@@ -3432,7 +3462,7 @@ async function resetLearning(device, type) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ device, type }),
   });
-  if (r.ok) { showToast('↺ Öğrenme sıfırlandı'); loadLearning(); }
+  if (r.ok) { showToast('↺ Öğrenme sıfırlandı'); loadLearning(); loadLearning(true); }
 }
 
 async function setFeedback(id, feedback) {
