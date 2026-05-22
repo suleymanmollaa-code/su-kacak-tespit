@@ -1151,10 +1151,53 @@ function scheduleReports() {
   }, next8am - now);
 }
 
+// ── Cihaz Offline Kontrolü ────────────────────────────────────
+async function checkOfflineDevices() {
+  try {
+    const offlineThresh = new Date(Date.now() - 5 * 60 * 1000).toISOString();  // 5 dk veri yok = offline
+    const cooloffThresh = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // 60 dk cooldown
+    // last_seen 5+ dk önce olan cihazlar
+    const devices = await db.queryAll(
+      `SELECT d.id, d.device_id, d.name, d.user_id, d.last_seen
+       FROM devices d
+       WHERE d.last_seen IS NOT NULL AND d.last_seen < $1`,
+      [offlineThresh]
+    );
+    for (const dev of devices) {
+      // Son 60 dk içinde aynı cihaz için zaten offline anomalisi var mı?
+      const existing = await db.queryOne(
+        `SELECT id FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND ts>=$3`,
+        [dev.user_id, dev.device_id, cooloffThresh]
+      );
+      if (existing) continue;
+
+      const offlineSince = new Date(dev.last_seen).toLocaleString('tr-TR');
+      const detail = `${dev.name || dev.device_id} cihazından ${offlineSince} tarihinden beri veri gelmiyor`;
+      const anomId = Date.now();
+      await db.queryRun(
+        `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [anomId, dev.user_id, 'cihaz-offline', dev.device_id, detail, new Date().toISOString(), 0]
+      );
+      broadcastToUser(dev.user_id, { type: 'anomaly', payload: { id: anomId, type: 'cihaz-offline', device: dev.device_id, detail, ts: new Date().toISOString(), resolved: false } });
+
+      // Telegram bildirimi
+      const s = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [dev.user_id]);
+      if (s?.notify_telegram && s?.telegram_chat_id) {
+        await sendTelegram(s.telegram_chat_id.trim(),
+          `🔴 <b>Cihaz Bağlantısı Kesildi</b>\n\n📡 ${dev.name || dev.device_id}\n⏱ Son veri: ${offlineSince}\n\nCihazı kontrol edin.`
+        ).catch(() => {});
+      }
+      console.log(`[OFFLINE] ${dev.device_id} (user: ${dev.user_id})`);
+    }
+  } catch (e) { console.error('[OFFLINE CHECK]', e.message); }
+}
+
 // ── Başlat ────────────────────────────────────────────────────
 async function start() {
   await db.initSchema();
   scheduleReports();
+  // Her 2 dakikada cihaz offline kontrolü
+  setInterval(checkOfflineDevices, 2 * 60 * 1000);
   server.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('  ╔══════════════════════════════════════════════╗');

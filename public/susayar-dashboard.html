@@ -3239,6 +3239,7 @@ const _ANOMALY_META = {
   'yuksek-akis':  { icon: '⚠️', label: 'Yüksek Akış',   severity: 'critical', leftColor: '#ef4444' },
   'surekli-akis': { icon: '💧', label: 'Sürekli Akış',  severity: 'critical', leftColor: '#ef4444' },
   'kacak':        { icon: '🔴', label: 'Olası Kaçak',   severity: 'critical', leftColor: '#ef4444' },
+  'cihaz-offline':{ icon: '📡', label: 'Cihaz Çevrimdışı', severity: 'critical', leftColor: '#8b5cf6' },
 };
 // Eski icon map (dashboard mini + detay sayfası için)
 const _ANOMALY_ICONS = Object.fromEntries(
@@ -3374,7 +3375,8 @@ async function resolveAnomaly(id) {
 
 const _ANOMALY_TYPE_LABELS = {
   'gece-akis': 'Gece Akışı', 'saat-akis': 'Saat Uyarısı',
-  'yuksek-akis': 'Yüksek Akış', 'surekli-akis': 'Sürekli Akış', 'kacak': 'Sızıntı'
+  'yuksek-akis': 'Yüksek Akış', 'surekli-akis': 'Sürekli Akış', 'kacak': 'Sızıntı',
+  'cihaz-offline': 'Cihaz Çevrimdışı'
 };
 
 async function loadLearning() {
