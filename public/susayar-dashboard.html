@@ -1523,30 +1523,12 @@
 
     <!-- PAGE: SİSTEM ÖĞRENİYOR -->
     <div class="page" id="page-sistem-ogreniyor">
-      <div style="max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem">
-
-        <!-- ANOMALİ SINIFLANDIRMA -->
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title">🔔 Anomali Sınıflandırma</div>
-            <button type="button" onclick="loadAnomalies(false)"
-              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
-          </div>
-          <p style="font-size:.78rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
-            Her anomaliyi sınıflandırın. <strong style="color:var(--green)">✅ Gerçek</strong> = bildirim doğruydu,
-            <strong style="color:#f59e0b">❌ Normal</strong> = bu durum bizim için normal. Aynı tür uyarı
-            <strong>3 kez "Normal"</strong> işaretlenirse sistem o uyarıyı artık tetiklemez.
-          </p>
-          <div id="anomaly-learn-list">
-            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor…</div>
-          </div>
-        </div>
 
         <!-- UYARI TİPİ YÖNETİMİ -->
         <div class="card">
           <div class="card-head">
             <div class="card-title">⚙️ Uyarı Tipi Yönetimi</div>
-            <button type="button" onclick="loadLearning(true);loadAnomalyTypeSettings()"
+            <button type="button" onclick="loadAnomalyTypeSettings()"
               style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
 
@@ -1643,11 +1625,7 @@
             </div>
           </div>
 
-          <div style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Aktif / Baskılı (Cihaz Bazlı)</div>
-          <div id="learning-list-page"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.82rem">Yükleniyor…</div></div>
         </div>
-
-      </div>
     </div><!-- /page-sistem-ogreniyor -->
 
     <!-- PAGE: CİHAZ AYARLARI -->
@@ -1947,7 +1925,7 @@ navItems.forEach(item => {
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); loadLearning(); }
-    if (pageId === 'sistem-ogreniyor') { loadAnomalies(false); loadLearning(true); loadAnomalyTypeSettings(); }
+    if (pageId === 'sistem-ogreniyor') { loadAnomalyTypeSettings(); }
   });
 });
 
