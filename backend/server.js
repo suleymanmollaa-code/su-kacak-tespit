@@ -542,14 +542,22 @@ app.put('/api/settings', requireAuth, async (req, res) => {
         [req.user.id, device, hour, minute, mins]
       );
     } else {
-      const nsh = parseInt(night_start_hour  ?? 0);
-      const nsm = parseInt(night_start_minute ?? 0);
-      const neh = parseInt(night_end_hour    ?? 5);
-      const nem = parseInt(night_end_minute  ?? 0);
-      const hfl = parseFloat(high_flow_lpm   ?? 8);
-      const lfl = parseFloat(leak_flow_lpm   ?? 0.3);
-      const lcm = parseInt(leak_cont_min     ?? 30);
-      const orm = parseInt(offline_repeat_min ?? 60);
+      // Mevcut ayarları yükle — body'de gelmeyen alanlar için DB değerini koru
+      const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
+      const nsh = night_start_hour   !== undefined ? parseInt(night_start_hour)   : (cur.night_start_hour   ?? 0);
+      const nsm = night_start_minute !== undefined ? parseInt(night_start_minute) : (cur.night_start_minute ?? 0);
+      const neh = night_end_hour     !== undefined ? parseInt(night_end_hour)     : (cur.night_end_hour     ?? 5);
+      const nem = night_end_minute   !== undefined ? parseInt(night_end_minute)   : (cur.night_end_minute   ?? 0);
+      const hfl = high_flow_lpm      !== undefined ? parseFloat(high_flow_lpm)    : (cur.high_flow_lpm      ?? 8);
+      const lfl = leak_flow_lpm      !== undefined ? parseFloat(leak_flow_lpm)    : (cur.leak_flow_lpm      ?? 0.3);
+      const lcm = leak_cont_min      !== undefined ? parseInt(leak_cont_min)      : (cur.leak_cont_min      ?? 30);
+      const orm = offline_repeat_min !== undefined ? parseInt(offline_repeat_min) : (cur.offline_repeat_min ?? 60);
+      // Bildirim alanları da aynı şekilde koru
+      const nre = notify_realtime_email !== undefined ? notify_realtime_email : cur.notify_realtime_email;
+      const ntg = notify_telegram       !== undefined ? notify_telegram       : cur.notify_telegram;
+      const cid = telegram_chat_id      !== undefined ? telegram_chat_id      : cur.telegram_chat_id;
+      const dr  = daily_report          !== undefined ? daily_report          : cur.daily_report;
+      const wr  = weekly_report         !== undefined ? weekly_report         : cur.weekly_report;
       await db.queryRun(
         `INSERT INTO user_settings
            (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
@@ -563,9 +571,9 @@ app.put('/api/settings', requireAuth, async (req, res) => {
            night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
            high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17`,
         [req.user.id, hour, minute, mins,
-         daily_report ? 1 : 0, weekly_report ? 1 : 0,
-         notify_realtime_email ? 1 : 0, notify_telegram ? 1 : 0,
-         telegram_chat_id || null,
+         dr ? 1 : 0, wr ? 1 : 0,
+         nre ? 1 : 0, ntg ? 1 : 0,
+         cid || null,
          nsh, nsm, neh, nem, hfl, lfl, lcm, orm]
       );
     }
