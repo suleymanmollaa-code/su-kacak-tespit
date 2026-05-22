@@ -170,8 +170,11 @@
     box-shadow: 0 0 6px var(--green);
     animation: pulse 2.5s infinite;
   }
-  @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:.5;box-shadow:0 0 2px var(--green)} }
+  @keyframes pulse        { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:.5;box-shadow:0 0 2px var(--green)} }
+  @keyframes pulseRed     { 0%,100%{opacity:1;box-shadow:0 0 8px #ef4444}      50%{opacity:.3;box-shadow:0 0 2px #ef4444} }
+  @keyframes dotBlink     { 0%,100%{opacity:1} 50%{opacity:0} }
   .status-text { font-size: .76rem; color: var(--green); font-weight: 500; }
+  .status-text.offline { color: #ef4444; }
 
   .btn-sm {
     padding: .42rem .95rem;
@@ -1433,10 +1436,22 @@
             </label>
             <div id="telegram-chat-row" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
               <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">
-                1. <a href="https://t.me/SuSayarBot" target="_blank" style="color:var(--blue-lt)">@SuSayarBot</a>'a Telegram'dan /start yazın
-                &nbsp;·&nbsp; 2. Size gelen Chat ID'yi buraya girin:
+                Botunuza Telegram'dan /start yazın, ardından Chat ID'nizi girin.
               </div>
-              <input type="text" class="form-input" id="setting-telegram-chatid" placeholder="Örn: 123456789" style="font-family:monospace;font-size:.82rem">
+              <!-- Kayıtlı ID görünümü (maskeli) -->
+              <div id="chatid-saved-row" style="display:none;align-items:center;gap:.6rem;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:.55rem .75rem">
+                <span style="font-size:.8rem;font-family:monospace;flex:1" id="chatid-masked-display">****</span>
+                <button type="button" onclick="unlockChatId()" style="font-size:.7rem;padding:.2rem .55rem;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:5px;cursor:pointer">Değiştir</button>
+              </div>
+              <!-- Düzenleme alanı (başlangıçta gizli eğer kayıtlı ID varsa) -->
+              <div id="chatid-edit-row" style="display:none;flex-direction:column;gap:.4rem">
+                <input type="text" class="form-input" id="setting-telegram-chatid" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
+                <div style="font-size:.7rem;color:#f59e0b">⚠️ Mevcut Chat ID değiştirilecek. Kaydet butonuna basarak onaylayın.</div>
+              </div>
+              <!-- Hiç kayıt yoksa direkt input göster -->
+              <div id="chatid-new-row">
+                <input type="text" class="form-input" id="setting-telegram-chatid-new" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
+              </div>
             </div>
           </div>
         </div>
@@ -1860,16 +1875,24 @@ async function loadDashboardData() {
       fetch(`${API}/api/stats`,                                              { headers: { Authorization: `Bearer ${token}` } }),
     ]);
 
-    // Cihaz KPI
+    // Cihaz KPI — online/toplam
     if (statsRes.ok) {
       const stats = await statsRes.json();
-      const n = stats.active_devices || 0;
-      const devEl = document.getElementById('kpi-devices');
-      if (devEl) devEl.textContent = n;
-      const devSubEl = document.getElementById('kpi-devices-sub');
-      if (devSubEl) devSubEl.textContent = n === 0 ? 'Cihaz yok' : n === 1 ? '1 cihaz kayıtlı' : n + ' cihaz kayıtlı';
-      const devBarEl = document.getElementById('kpi-devices-bar');
-      if (devBarEl) devBarEl.style.width = Math.min(n * 25, 100) + '%';
+      const total = stats.active_devices || 0;
+      try {
+        const dr = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+        if (dr.ok) {
+          const { devices } = await dr.json();
+          const nowMs = Date.now();
+          const online = devices.filter(d => d.last_seen && (nowMs - new Date(d.last_seen).getTime()) < 5 * 60 * 1000).length;
+          const devEl = document.getElementById('kpi-devices');
+          if (devEl) { devEl.textContent = online; devEl.style.color = online > 0 ? 'var(--cyan)' : '#ef4444'; }
+          const devSubEl = document.getElementById('kpi-devices-sub');
+          if (devSubEl) devSubEl.textContent = `${online} online / ${devices.length} kayıtlı`;
+          const devBarEl = document.getElementById('kpi-devices-bar');
+          if (devBarEl) { devBarEl.style.width = devices.length ? Math.round((online / devices.length) * 100) + '%' : '0%'; devBarEl.style.background = online > 0 ? 'var(--cyan)' : '#ef4444'; }
+        }
+      } catch { /* sessiz */ }
     }
 
     // Anlık
@@ -2643,13 +2666,13 @@ function updateDeviceStatus() {
   const statusTextEl2 = document.getElementById('status-text');
   if (isOnline) {
     if (devStatusEl)   { devStatusEl.textContent = 'Çevrimiçi'; devStatusEl.style.color = 'var(--green)'; }
-    if (statusDotEl2)  statusDotEl2.style.background = 'var(--green)';
-    if (statusTextEl2) statusTextEl2.textContent = 'Cihaz Bağlı';
+    if (statusDotEl2)  { statusDotEl2.style.background = 'var(--green)'; statusDotEl2.style.animation = 'pulse 2.5s infinite'; }
+    if (statusTextEl2) { statusTextEl2.textContent = 'Cihaz Bağlı'; statusTextEl2.classList.remove('offline'); }
     setCihazBtn('connected');
   } else {
-    if (devStatusEl)   { devStatusEl.textContent = 'Çevrimdışı'; devStatusEl.style.color = 'var(--red)'; }
-    if (statusDotEl2)  statusDotEl2.style.background = 'var(--red)';
-    if (statusTextEl2) statusTextEl2.textContent = 'Cihaz Bağlı Değil';
+    if (devStatusEl)   { devStatusEl.textContent = 'Çevrimdışı'; devStatusEl.style.color = '#ef4444'; }
+    if (statusDotEl2)  { statusDotEl2.style.background = '#ef4444'; statusDotEl2.style.animation = 'pulseRed 1.2s infinite'; }
+    if (statusTextEl2) { statusTextEl2.textContent = 'Cihaz Bağlı Değil'; statusTextEl2.classList.add('offline'); }
     setCihazBtn('disconnected');
     // Cihaz offline — anlık akış göstergesini sıfırla
     const offlineGrad = 'conic-gradient(var(--border) 0deg 360deg)';
@@ -2759,10 +2782,10 @@ function setCihazBtn(state) {
     btn.style.color = '#f59e0b';
     btn.textContent = '⏳ Bağlanıyor...';
   } else {
-    btn.style.background = 'rgba(16,185,129,.15)';
-    btn.style.borderColor = 'rgba(16,185,129,.3)';
-    btn.style.color = '#10b981';
-    btn.innerHTML = '🔌 Cihaz Bağla';
+    btn.style.background = 'rgba(239,68,68,.15)';
+    btn.style.borderColor = 'rgba(239,68,68,.4)';
+    btn.style.color = '#ef4444';
+    btn.innerHTML = '📡 Cihazlarım';
   }
 }
 
@@ -3518,17 +3541,20 @@ async function loadDashDeviceCards() {
     </div>`;
     const cards = devs.map(d => {
       const online   = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
-      const dotColor = online ? 'var(--green)' : 'var(--muted)';
+      const dotColor = online ? 'var(--green)' : '#ef4444';
+      const dotAnim  = online ? '' : 'animation:dotBlink 1s infinite';
+      const cardBorder = online ? 'var(--border)' : 'rgba(239,68,68,.35)';
       const flowTxt  = (d.flow_lpm != null && online) ? (+d.flow_lpm).toFixed(1) + ' L/dk' : '—';
       const flowColor= (d.flow_lpm > 0.1 && online) ? 'var(--blue-lt)' : 'var(--muted)';
       return `<div class="dash-dev-card" id="dash-dev-card-${d.device_id}" onclick="selectDashDevice(${JSON.stringify(d)})"
-        style="cursor:pointer;padding:.65rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--bg2);min-width:130px;flex-shrink:0;transition:border-color .15s"
-        onmouseenter="this.style.borderColor='rgba(59,181,212,.3)'" onmouseleave="this.style.borderColor=''">
+        style="cursor:pointer;padding:.65rem 1rem;border-radius:10px;border:1px solid ${cardBorder};background:var(--bg2);min-width:130px;flex-shrink:0;transition:border-color .15s"
+        onmouseenter="this.style.borderColor='rgba(59,181,212,.3)'" onmouseleave="this.style.borderColor='${cardBorder}'">
         <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem">
-          <span style="font-size:.65rem;color:${dotColor}">${online ? '●' : '○'}</span>
+          <span style="font-size:.65rem;color:${dotColor};${dotAnim}">${online ? '●' : '●'}</span>
           <span style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${esc(d.name)}</span>
         </div>
         <div style="font-size:.8rem;font-weight:700;color:${flowColor}">${flowTxt}</div>
+        ${!online ? `<div style="font-size:.65rem;color:#ef4444;margin-top:.15rem">Çevrimdışı</div>` : ''}
       </div>`;
     }).join('');
     wrap.innerHTML = allCard + cards;
@@ -3901,7 +3927,7 @@ async function loadSettings() {
     const chatIdEl   = document.getElementById('setting-telegram-chatid');
     if (emailEl)    { emailEl.checked    = !!settings.notify_realtime_email; toggleSlider(emailEl); }
     if (telegramEl) { telegramEl.checked = !!settings.notify_telegram;       toggleSlider(telegramEl); }
-    if (chatIdEl) { chatIdEl.value = settings.telegram_chat_id || ''; chatIdEl.dataset.savedValue = settings.telegram_chat_id || ''; }
+    _applyChatIdUI(settings.telegram_chat_id || '');
     const chatRow = document.getElementById('telegram-chat-row');
     if (chatRow) chatRow.style.display = settings.notify_telegram ? '' : 'none';
   } catch { /* sessiz hata */ }
@@ -3972,17 +3998,62 @@ async function testTelegram() {
   finally { if (btn) btn.textContent = 'Test Gönder'; }
 }
 
+function _applyChatIdUI(savedId) {
+  const savedRow  = document.getElementById('chatid-saved-row');
+  const editRow   = document.getElementById('chatid-edit-row');
+  const newRow    = document.getElementById('chatid-new-row');
+  const masked    = document.getElementById('chatid-masked-display');
+  const editInput = document.getElementById('setting-telegram-chatid');
+  const newInput  = document.getElementById('setting-telegram-chatid-new');
+  if (savedId) {
+    // Maskeli göster
+    const mask = savedId.length > 4 ? '****' + savedId.slice(-4) : '****';
+    if (masked) masked.textContent = mask;
+    if (savedRow) savedRow.style.display = 'flex';
+    if (editRow)  editRow.style.display  = 'none';
+    if (newRow)   newRow.style.display   = 'none';
+    if (editInput) { editInput.value = ''; editInput.dataset.savedValue = savedId; }
+  } else {
+    if (savedRow) savedRow.style.display = 'none';
+    if (editRow)  editRow.style.display  = 'none';
+    if (newRow)   newRow.style.display   = '';
+    if (newInput) newInput.value = '';
+  }
+}
+
+function unlockChatId() {
+  const editRow = document.getElementById('chatid-edit-row');
+  const newRow  = document.getElementById('chatid-new-row');
+  const savedRow = document.getElementById('chatid-saved-row');
+  if (!confirm('Chat ID\'yi değiştirmek istediğinizden emin misiniz?')) return;
+  if (savedRow) savedRow.style.display = 'none';
+  if (editRow)  editRow.style.display  = 'flex';
+  if (newRow)   newRow.style.display   = 'none';
+  document.getElementById('setting-telegram-chatid')?.focus();
+}
+
+function _getChatIdValue() {
+  // Düzenleme açıksa oradan, yeni girişse yeni inputtan, kayıtlıysa dataset'ten al
+  const editRow  = document.getElementById('chatid-edit-row');
+  const newRow   = document.getElementById('chatid-new-row');
+  const editInput = document.getElementById('setting-telegram-chatid');
+  const newInput  = document.getElementById('setting-telegram-chatid-new');
+  if (editRow?.style.display !== 'none' && editInput?.value.trim()) return editInput.value.trim();
+  if (newRow?.style.display !== 'none' && newInput?.value.trim()) return newInput.value.trim();
+  // Değiştirilmemiş — mevcut kaydı koru
+  return editInput?.dataset.savedValue || null;
+}
+
 async function saveChannelSettings() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const chatIdEl = document.getElementById('setting-telegram-chatid');
-  const newChatId = chatIdEl?.value.trim() || null;
-  // Koruma: mevcut ID varken silinmeye çalışılıyorsa onay iste
-  const prevChatId = chatIdEl?.dataset.savedValue || '';
-  if (prevChatId && !newChatId) {
-    if (!confirm('Telegram Chat ID\'yi silmek istediğinizden emin misiniz? Telegram bildirimleri devre dışı kalacak.')) return;
-  } else if (prevChatId && newChatId && prevChatId !== newChatId) {
-    if (!confirm(`Chat ID değiştirilecek:\n${prevChatId} → ${newChatId}\n\nDevam etmek istiyor musunuz?`)) return;
+  const newChatId = _getChatIdValue();
+  const editInput = document.getElementById('setting-telegram-chatid');
+  const prevChatId = editInput?.dataset.savedValue || '';
+  // İki katmanlı onay: yeni/değişen ID için
+  const editRow = document.getElementById('chatid-edit-row');
+  if (editRow?.style.display !== 'none' && newChatId && newChatId !== prevChatId) {
+    if (!confirm(`Chat ID kaydedilecek.\n\nDevam etmek için tekrar onaylayın.`)) return;
   }
   const body = {
     notify_realtime_email: document.getElementById('setting-notify-email')?.checked  || false,
@@ -3996,7 +4067,7 @@ async function saveChannelSettings() {
       body: JSON.stringify(body),
     });
     if (r.ok) {
-      if (chatIdEl && newChatId) chatIdEl.dataset.savedValue = newChatId;
+      if (newChatId) _applyChatIdUI(newChatId);
       showToast('✅ Bildirim kanalları kaydedildi');
     } else {
       showToast('❌ Kayıt başarısız');
