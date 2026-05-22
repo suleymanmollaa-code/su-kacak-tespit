@@ -1433,6 +1433,7 @@
             <div>
               <div style="font-size:.83rem;font-weight:600">📧 Anlık E-posta</div>
               <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda kayıtlı e-postanıza anında bildirim gönderilir.</div>
+              <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem" id="email-channel-display"></div>
             </div>
           </label>
           <!-- Telegram -->
@@ -1532,9 +1533,10 @@
 
         <div class="card">
           <div class="card-head">
-            <div class="card-title">Öğrenme Durumu</div>
+            <div class="card-title">Anomali Tipi Yönetimi</div>
             <button type="button" onclick="loadLearning(true)" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
+          <p style="font-size:.76rem;color:var(--muted2);margin-bottom:1rem">Toggle kapatıldığında o tür uyarı artık tetiklenmez. Yeşil = aktif, kırmızı = baskılı.</p>
           <div id="learning-list-page"><div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div></div>
         </div>
 
@@ -3449,57 +3451,95 @@ async function loadLearning(fullPage = false) {
   const token = localStorage.getItem('susayar_token') || '';
   const elCard = document.getElementById('learning-list');
   const elPage = document.getElementById('learning-list-page');
-  const el = fullPage ? elPage : (elCard || elPage);
-  if (!el) return;
+  const targets = fullPage ? [elPage] : [elCard, elPage].filter(Boolean);
+  if (!targets.length) return;
   try {
     const r = await fetch(`${API}/api/learning`, { headers: { Authorization: `Bearer ${token}` } });
     if (!r.ok) return;
     const { learning } = await r.json();
-    if (!learning.length) {
-      el.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz geri bildirim yok — anomali kartlarındaki butonları kullanın.</div>`;
-      return;
+
+    // Cihaza göre grupla
+    const byDevice = {};
+    for (const item of learning) {
+      if (!byDevice[item.device]) byDevice[item.device] = { name: item.deviceName, items: [] };
+      byDevice[item.device].items.push(item);
     }
-    el.innerHTML = learning.map(item => {
-      const label  = _ANOMALY_TYPE_LABELS[item.type] || item.type;
-      const fp     = item.false_positive || 0;
-      const real   = item.real || 0;
-      const pct    = Math.min(100, Math.round((fp / 3) * 100));
-      const suppressed = item.suppressed;
-      const barColor = suppressed ? 'var(--red)' : fp >= 2 ? '#f59e0b' : 'var(--blue)';
-      const badge = suppressed
-        ? `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(239,68,68,.15);color:#ef4444;border-radius:4px;font-weight:700">Baskılandı</span>`
-        : `<span style="font-size:.65rem;padding:.1rem .45rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border-radius:4px">Öğreniyor ${fp}/3</span>`;
-      return `<div style="padding:.85rem;border:1px solid var(--border);border-radius:9px;background:var(--bg2);margin-bottom:.5rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
-          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-            <span style="font-size:.82rem;font-weight:700">${label}</span>
-            <span style="font-size:.72rem;color:var(--muted)">— ${esc(item.device)}</span>
-            ${badge}
+
+    const html = Object.entries(byDevice).map(([devId, devData]) => {
+      const rows = devData.items.map(item => {
+        const meta = _ANOMALY_META[item.type] || { icon: '🔔', leftColor: '#64748b' };
+        const label = _ANOMALY_TYPE_LABELS[item.type] || item.type;
+        const fp = item.false_positive || 0;
+        const sup = item.suppressed;
+        const trackBg = sup ? 'rgba(239,68,68,.4)' : 'rgba(16,185,129,.4)';
+        const trackBorder = sup ? 'rgba(239,68,68,.6)' : 'rgba(16,185,129,.6)';
+        const thumbLeft = sup ? '2px' : '18px';
+        const thumbBg = sup ? '#ef4444' : '#10b981';
+        const statusText = sup
+          ? `<span style="font-size:.65rem;color:#ef4444">Baskılı</span>`
+          : (fp > 0 ? `<span style="font-size:.65rem;color:#f59e0b">Öğreniyor ${fp}/3</span>` : `<span style="font-size:.65rem;color:var(--muted)">Aktif</span>`);
+        return `<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 0;border-bottom:1px solid var(--border)">
+          <div style="width:3px;height:28px;border-radius:2px;background:${meta.leftColor};flex-shrink:0"></div>
+          <span style="font-size:.95rem;flex-shrink:0">${meta.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.8rem;font-weight:600">${label}</div>
+            <div style="margin-top:.1rem">${statusText}</div>
           </div>
-          <button onclick="resetLearning('${esc(item.device)}','${item.type}')" style="font-size:.68rem;padding:.2rem .55rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:5px;cursor:pointer">↺ Sıfırla</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:.6rem">
-          <div style="flex:1;height:5px;background:var(--bg3);border-radius:99px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${barColor};border-radius:99px;transition:width .4s"></div>
+          <div onclick="toggleSuppression('${esc(devId)}','${item.type}',${sup})"
+            style="position:relative;width:36px;height:20px;flex-shrink:0;cursor:pointer;border-radius:999px;background:${trackBg};border:1px solid ${trackBorder};transition:background .2s">
+            <div style="position:absolute;top:2px;left:${thumbLeft};width:14px;height:14px;border-radius:50%;background:${thumbBg};transition:left .2s,background .2s"></div>
           </div>
-          <span style="font-size:.68rem;color:var(--muted);white-space:nowrap">${fp} yanlış / ${real} gerçek</span>
-        </div>
-        ${suppressed ? `<div style="font-size:.72rem;color:#ef4444;margin-top:.4rem">⚠️ Bu uyarı tipi artık tetiklenmiyor. Sıfırlamak için butona bas.</div>` : ''}
+        </div>`;
+      }).join('');
+      return `<div style="margin-bottom:1.25rem">
+        <div style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">📡 ${esc(devData.name)}</div>
+        ${rows}
       </div>`;
     }).join('');
+
+    targets.forEach(el => { if (el) el.innerHTML = html || `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Cihaz bulunamadı.</div>`; });
   } catch { /* sessiz */ }
 }
 
-async function resetLearning(device, type) {
-  if (!confirm(`"${_ANOMALY_TYPE_LABELS[type] || type}" öğrenmesi sıfırlanacak — ${device} cihazı için tüm geri bildirimler silinir. Devam?`)) return;
+async function toggleSuppression(device, type, currentlySuppressed) {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const r = await fetch(`${API}/api/learning`, {
-    method: 'DELETE',
+  const suppress = !currentlySuppressed;
+  const label = _ANOMALY_TYPE_LABELS[type] || type;
+  if (suppress) {
+    // Baskılamak istiyorsa onay
+    const answer = await customConfirm('Anomali Tipi Baskıla',
+      `<strong>${esc(label)}</strong> uyarıları <strong>artık tetiklenmeyecek</strong>.<br>Onaylamak için <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.`);
+    if (!answer) return;
+  }
+  const r = await fetch(`${API}/api/learning/suppress`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ device, type }),
+    body: JSON.stringify({ device, type, suppress }),
   });
-  if (r.ok) { showToast('↺ Öğrenme sıfırlandı'); loadLearning(); loadLearning(true); }
+  if (r.ok) {
+    showToast(suppress ? '🔕 Uyarı baskılandı' : '🔔 Uyarı etkinleştirildi');
+    loadLearning(); loadLearning(true);
+  }
+}
+
+// Site tasarımı ile uyumlu metin onay modalı
+function customConfirm(title, bodyHtml) {
+  return new Promise(resolve => {
+    openModal(title,
+      `<p style="font-size:.82rem;color:var(--muted2);margin-bottom:1.25rem;line-height:1.6">${bodyHtml}</p>
+      <input id="custom-confirm-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
+        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em"
+        oninput="document.getElementById('custom-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn-sm" onclick="window._customConfirmResolve(false);closeModal()">Vazgeç</button>
+        <button id="custom-confirm-btn" class="btn-sm btn-primary" disabled
+          onclick="window._customConfirmResolve(true);closeModal()">Onayla</button>
+      </div>`
+    );
+    window._customConfirmResolve = resolve;
+    setTimeout(() => document.getElementById('custom-confirm-input')?.focus(), 100);
+  });
 }
 
 async function setFeedback(id, feedback) {
@@ -4015,34 +4055,70 @@ async function testTelegram() {
   finally { if (btn) btn.textContent = 'Test Gönder'; }
 }
 
-// Maskeli e-posta göster
+// Maskeli e-posta göster (birden fazla yerde)
 (function showMaskedEmail() {
   try {
     const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
-    const el = document.getElementById('user-email-display');
-    if (el && user.email) {
-      const [local, domain] = user.email.split('@');
-      const masked = local.slice(0,2) + '***@' + domain;
-      el.textContent = '📬 ' + masked;
-    }
+    if (!user.email) return;
+    const [local, domain] = user.email.split('@');
+    const masked = local.slice(0,2) + '***@' + domain;
+    const el1 = document.getElementById('user-email-display');
+    const el2 = document.getElementById('email-channel-display');
+    if (el1) el1.textContent = '📬 ' + masked;
+    if (el2) el2.textContent = '📬 ' + masked;
   } catch {}
 })();
 
-// Yazılı onay gerektiren toggle
+// Yazılı onay gerektiren toggle — site modalı kullanır
 function guardedToggle(checkbox, label, afterFn) {
   toggleSlider(checkbox);
   if (afterFn) afterFn();
-  // Sadece kapatırken onay iste
   if (!checkbox.checked) {
-    const answer = prompt(`"${label}" kapatmak istediğinizden emin misiniz?\n\nOnaylamak için ONAYLA yazın:`);
-    if (answer?.trim().toUpperCase() !== 'ONAYLA') {
-      // Geri al
-      checkbox.checked = true;
-      toggleSlider(checkbox);
-      if (afterFn) afterFn();
-    }
+    // Kapatmaya çalışıyor — modal ile onay iste
+    openModal('Onay Gerekli',
+      `<p style="font-size:.83rem;color:var(--muted2);margin-bottom:1.25rem">
+        <strong style="color:var(--text)">${esc(label)}</strong> kapatmak istediğinizden emin misiniz?<br>
+        Onaylamak için aşağıya <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.
+      </p>
+      <input id="guarded-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
+        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em"
+        oninput="document.getElementById('guarded-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn-sm" onclick="guardedCancel(${JSON.stringify(checkbox.id)},${afterFn ? 'true' : 'false'})">Vazgeç</button>
+        <button id="guarded-confirm-btn" class="btn-sm btn-primary" disabled onclick="closeModal()">Kapat</button>
+      </div>`
+    );
+    setTimeout(() => document.getElementById('guarded-input')?.focus(), 100);
+    // Kullanıcı modalı X ile kapattıysa toggle'ı geri al — closeModal'a hook ekle
+    window._guardedCheckboxId  = checkbox.id;
+    window._guardedHasAfterFn  = !!afterFn;
+    window._guardedAfterFn     = afterFn;
   }
 }
+
+function guardedCancel(checkboxId, hasAfterFn) {
+  const cb = document.getElementById(checkboxId);
+  if (cb) { cb.checked = true; toggleSlider(cb); }
+  if (hasAfterFn && window._guardedAfterFn) window._guardedAfterFn();
+  window._guardedCheckboxId = null;
+  closeModal();
+}
+
+// closeModal override — eğer guarded modal açıksa ve onaylanmadıysa geri al
+const _origCloseModal = closeModal;
+closeModal = function() {
+  if (window._guardedCheckboxId) {
+    const input = document.getElementById('guarded-input');
+    if (input && input.value.trim().toUpperCase() !== 'ONAYLA') {
+      const cb = document.getElementById(window._guardedCheckboxId);
+      if (cb) { cb.checked = true; toggleSlider(cb); }
+      if (window._guardedAfterFn) window._guardedAfterFn();
+    }
+    window._guardedCheckboxId = null;
+    window._guardedAfterFn    = null;
+  }
+  _origCloseModal();
+};
 
 function _applyChatIdUI(savedId) {
   const savedRow  = document.getElementById('chatid-saved-row');

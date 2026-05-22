@@ -413,9 +413,14 @@ app.put('/api/anomalies/:id/feedback', requireAuth, async (req, res) => {
 });
 
 // ── Öğrenme istatistikleri ────────────────────────────────────
+const ALL_ANOMALY_TYPES = ['gece-akis','saat-akis','yuksek-akis','surekli-akis','kacak','cihaz-offline'];
+
 app.get('/api/learning', requireAuth, async (req, res) => {
   try {
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // Tüm cihazları al
+    const devices = await db.queryAll(`SELECT device_id, name FROM devices WHERE user_id=$1`, [req.user.id]);
+    // Feedback sayıları
     const rows = await db.queryAll(
       `SELECT type, device, feedback, COUNT(*) as cnt
        FROM anomalies
@@ -423,19 +428,50 @@ app.get('/api/learning', requireAuth, async (req, res) => {
        GROUP BY type, device, feedback`,
       [req.user.id, cutoff]
     );
-    // Pivot: { device+type -> { real, false_positive } }
     const map = {};
     for (const r of rows) {
       const key = `${r.device}||${r.type}`;
       if (!map[key]) map[key] = { device: r.device, type: r.type, real: 0, false_positive: 0 };
       map[key][r.feedback] = parseInt(r.cnt);
     }
-    const learning = Object.values(map).map(m => ({
-      ...m,
-      suppressed: m.false_positive >= 3,
-    }));
+    // Tüm cihaz+tip kombinasyonlarını oluştur
+    const learning = [];
+    for (const dev of devices) {
+      for (const type of ALL_ANOMALY_TYPES) {
+        const key = `${dev.device_id}||${type}`;
+        const m = map[key] || { real: 0, false_positive: 0 };
+        learning.push({
+          device: dev.device_id, deviceName: dev.name || dev.device_id,
+          type, real: m.real, false_positive: m.false_positive,
+          suppressed: m.false_positive >= 3,
+        });
+      }
+    }
     res.json({ learning });
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// Manuel baskılama (toggle)
+app.post('/api/learning/suppress', requireAuth, async (req, res) => {
+  try {
+    const { device, type, suppress } = req.body;
+    if (!device || !type) return res.status(400).json({ error: 'device ve type zorunlu' });
+    if (suppress) {
+      // 3 adet false_positive ekle — baskıla
+      const now = new Date().toISOString();
+      for (let i = 0; i < 3; i++) {
+        const id = Date.now() + i;
+        await db.queryRun(
+          `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved,feedback) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          [id, req.user.id, type, device, 'Manuel baskılama', now, 1, 'false_positive']
+        );
+      }
+    } else {
+      // Sıfırla — tüm feedback kaldır
+      await db.queryRun(`UPDATE anomalies SET feedback=NULL WHERE user_id=$1 AND device=$2 AND type=$3`, [req.user.id, device, type]);
+    }
+    res.json({ ok: true });
+  } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.delete('/api/learning', requireAuth, async (req, res) => {
