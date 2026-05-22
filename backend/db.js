@@ -191,6 +191,15 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS telegram_live_msg_id TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE anomalies ADD COLUMN IF NOT EXISTS feedback TEXT`).catch(() => {});
+    // Anomali eşik ayarları
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS night_start_hour INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS night_start_minute INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS night_end_hour INTEGER NOT NULL DEFAULT 5`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS night_end_minute INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS high_flow_lpm REAL NOT NULL DEFAULT 8`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS leak_flow_lpm REAL NOT NULL DEFAULT 0.3`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS leak_cont_min INTEGER NOT NULL DEFAULT 30`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS offline_repeat_min INTEGER NOT NULL DEFAULT 60`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -206,6 +215,15 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_chat_id TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN telegram_live_msg_id TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE anomalies ADD COLUMN feedback TEXT`); } catch {}
+    // Anomali eşik ayarları
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN night_start_hour INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN night_start_minute INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN night_end_hour INTEGER NOT NULL DEFAULT 5`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN night_end_minute INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN high_flow_lpm REAL NOT NULL DEFAULT 8`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN leak_flow_lpm REAL NOT NULL DEFAULT 0.3`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN leak_cont_min INTEGER NOT NULL DEFAULT 30`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN offline_repeat_min INTEGER NOT NULL DEFAULT 60`); } catch {}
   }
 }
 

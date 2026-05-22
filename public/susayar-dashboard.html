@@ -172,7 +172,7 @@
   }
   @keyframes pulse        { 0%,100%{opacity:1;box-shadow:0 0 6px var(--green)} 50%{opacity:.5;box-shadow:0 0 2px var(--green)} }
   @keyframes pulseRed     { 0%,100%{opacity:1;box-shadow:0 0 8px #ef4444}      50%{opacity:.3;box-shadow:0 0 2px #ef4444} }
-  @keyframes dotBlink     { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes dotBlink     { 0%,100%{opacity:1;box-shadow:0 0 5px #ef4444} 50%{opacity:.4;box-shadow:0 0 1px #ef4444} }
   .status-text { font-size: .76rem; color: var(--green); font-weight: 500; }
   .status-text.offline { color: #ef4444; }
 
@@ -530,6 +530,8 @@
   }
   .form-select option { background: var(--bg3); }
   .form-actions { display: flex; gap: .65rem; justify-content: flex-end; margin-top: 1.375rem; }
+  .at-input { width: 44px; padding: .28rem .35rem; font-size: .8rem; background: var(--bg3); color: var(--text); border: 1px solid var(--border2); border-radius: 6px; text-align: center; outline: none; }
+  .at-input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(59,181,212,.12); }
 
   /* ── TOAST ──────────────────────────────── */
   .toast {
@@ -1508,10 +1510,11 @@
       <div class="card">
         <div class="card-head">
           <div class="card-title">🧠 Sistem Öğreniyor</div>
-          <button type="button" onclick="loadLearning()" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          <button type="button" onclick="document.querySelector('.nav-item[data-page=\'sistem-ogreniyor\']')?.click()"
+            style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">Tümünü Gör →</button>
         </div>
         <p style="font-size:.76rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
-          Anomali kartlarında <strong>❌ Normal</strong> butonuna bastıkça sistem öğrenir. Aynı tür uyarı 3 kez "Normal" işaretlenirse artık tetiklenmez. Dilediğinizde öğrenmeyi sıfırlayabilirsiniz.
+          Her anomalinin altındaki <strong style="color:var(--green)">✅ Gerçek</strong> veya <strong style="color:#f59e0b">❌ Normal</strong> butonlarıyla sisteme geri bildirim verin. Aynı tür uyarı 3 kez "Normal" işaretlenirse artık tetiklenmez.
         </p>
         <div id="learning-list"><div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz geri bildirim yok — anomali kartlarındaki butonları kullanın.</div></div>
       </div>
@@ -1520,24 +1523,128 @@
 
     <!-- PAGE: SİSTEM ÖĞRENİYOR -->
     <div class="page" id="page-sistem-ogreniyor">
-      <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem">
+      <div style="max-width:740px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem">
 
-        <div class="card">
-          <div class="card-head"><div class="card-title">🧠 Sistem Nasıl Öğreniyor?</div></div>
-          <p style="font-size:.8rem;color:var(--muted2);line-height:1.7;margin:0">
-            Bildirimler sayfasındaki anomali kartlarında <strong>✅ Gerçek</strong> veya <strong>❌ Normal</strong> butonlarına basarak sisteme geri bildirim verin.<br><br>
-            Aynı cihaz için aynı tür uyarı <strong>7 gün içinde 3 kez "Normal"</strong> işaretlenirse, sistem o uyarıyı artık tetiklemez. Bu sayede her kullanıcının alışkanlıklarına göre kişiselleşir.<br><br>
-            İstediğiniz zaman öğrenmeyi sıfırlayarak sistemi eski haline döndürebilirsiniz.
-          </p>
-        </div>
-
+        <!-- ANOMALİ SINIFLANDIRMA -->
         <div class="card">
           <div class="card-head">
-            <div class="card-title">Anomali Tipi Yönetimi</div>
-            <button type="button" onclick="loadLearning(true)" style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+            <div class="card-title">🔔 Anomali Sınıflandırma</div>
+            <button type="button" onclick="loadAnomalies(false)"
+              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
-          <p style="font-size:.76rem;color:var(--muted2);margin-bottom:1rem">Toggle kapatıldığında o tür uyarı artık tetiklenmez. Yeşil = aktif, kırmızı = baskılı.</p>
-          <div id="learning-list-page"><div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div></div>
+          <p style="font-size:.78rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
+            Her anomaliyi sınıflandırın. <strong style="color:var(--green)">✅ Gerçek</strong> = bildirim doğruydu,
+            <strong style="color:#f59e0b">❌ Normal</strong> = bu durum bizim için normal. Aynı tür uyarı
+            <strong>3 kez "Normal"</strong> işaretlenirse sistem o uyarıyı artık tetiklemez.
+          </p>
+          <div id="anomaly-learn-list">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Yükleniyor…</div>
+          </div>
+        </div>
+
+        <!-- UYARI TİPİ YÖNETİMİ -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">⚙️ Uyarı Tipi Yönetimi</div>
+            <button type="button" onclick="loadLearning(true);loadAnomalyTypeSettings()"
+              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          </div>
+
+          <!-- EŞİK & ZAMANLAMA AYARLARI — statik form, JS sadece değerleri doldurur -->
+          <div style="margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:2px solid var(--border)">
+            <div style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem">Eşik &amp; Zamanlama Ayarları</div>
+            <div style="display:flex;flex-direction:column;gap:1rem">
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#818cf8;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">🌙</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Gece Akışı — Zaman Aralığı</div>
+                  <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+                    <span style="font-size:.72rem;color:var(--muted)">Başlangıç</span>
+                    <input id="at-night-start-h" type="number" min="0" max="23" value="0" class="at-input">
+                    <span style="color:var(--muted);padding:0 .1rem">:</span>
+                    <input id="at-night-start-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
+                    <span style="font-size:.72rem;color:var(--muted);margin:0 .2rem">→ Bitiş</span>
+                    <input id="at-night-end-h" type="number" min="0" max="23" value="5" class="at-input">
+                    <span style="color:var(--muted);padding:0 .1rem">:</span>
+                    <input id="at-night-end-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#f59e0b;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">🕐</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Saat Uyarısı — Bu saatten sonra akış</div>
+                  <div style="display:flex;align-items:center;gap:.4rem">
+                    <input id="at-alert-h" type="number" min="0" max="23" value="22" class="at-input">
+                    <span style="color:var(--muted);padding:0 .1rem">:</span>
+                    <input id="at-alert-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
+                    <span style="font-size:.72rem;color:var(--muted)">sonrası</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#ef4444;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">⚡</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Yüksek Akış — Alarm eşiği</div>
+                  <div style="display:flex;align-items:center;gap:.4rem">
+                    <input id="at-high-flow" type="number" min="1" max="50" step="0.5" value="8" class="at-input" style="width:62px">
+                    <span style="font-size:.72rem;color:var(--muted)">L/dk üzeri</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#3b82f6;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">💧</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Sürekli Akış — Alarm süresi</div>
+                  <div style="display:flex;align-items:center;gap:.4rem">
+                    <input id="at-cont-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px">
+                    <span style="font-size:.72rem;color:var(--muted)">dk sonra alarm</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#f43f5e;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">🔴</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Sızıntı — Düşük akış tespiti</div>
+                  <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+                    <input id="at-leak-flow" type="number" min="0.01" max="2" step="0.05" value="0.3" class="at-input" style="width:62px">
+                    <span style="font-size:.72rem;color:var(--muted)">L/dk altı,</span>
+                    <input id="at-leak-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px">
+                    <span style="font-size:.72rem;color:var(--muted)">dk sürekli</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div style="width:3px;min-height:32px;border-radius:2px;background:#8b5cf6;flex-shrink:0;margin-top:.2rem"></div>
+                <span style="font-size:.9rem;flex-shrink:0;margin-top:.1rem">📡</span>
+                <div style="flex:1">
+                  <div style="font-size:.78rem;font-weight:600;margin-bottom:.45rem">Cihaz Çevrimdışı — Tekrar bildirim</div>
+                  <div style="display:flex;align-items:center;gap:.4rem">
+                    <input id="at-offline-repeat" type="number" min="10" max="1440" step="10" value="60" class="at-input" style="width:70px">
+                    <span style="font-size:.72rem;color:var(--muted)">dk'da bir bildirim</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:1.1rem">
+              <button class="btn-sm btn-primary" onclick="saveAnomalyTypeSettings()">Kaydet</button>
+            </div>
+          </div>
+
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">Aktif / Baskılı (Cihaz Bazlı)</div>
+          <div id="learning-list-page"><div style="text-align:center;padding:1rem;color:var(--muted);font-size:.82rem">Yükleniyor…</div></div>
         </div>
 
       </div>
@@ -1840,7 +1947,7 @@ navItems.forEach(item => {
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'bildirimler') { loadAnomalies(); loadSettings(); loadLearning(); }
-    if (pageId === 'sistem-ogreniyor') { loadLearning(true); }
+    if (pageId === 'sistem-ogreniyor') { loadAnomalies(false); loadLearning(true); loadAnomalyTypeSettings(); }
   });
 });
 
@@ -1898,9 +2005,15 @@ async function loadDashboardData() {
       try {
         const dr = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
         if (dr.ok) {
-          const { devices } = await dr.json();
+          const devices = await dr.json(); // /api/devices düz array döndürür
+          if (!Array.isArray(devices)) throw new Error('unexpected');
           const nowMs = Date.now();
-          const online = devices.filter(d => d.last_seen && (nowMs - new Date(d.last_seen).getTime()) < 5 * 60 * 1000).length;
+          const online = devices.filter(d => {
+            const wsMs = _lastSensorByDevice[d.device_id] || 0;
+            return wsMs > 0
+              ? (nowMs - wsMs) < DEVICE_ONLINE_MS
+              : (d.last_seen && (nowMs - new Date(d.last_seen).getTime()) < 20 * 1000);
+          }).length;
           const devEl = document.getElementById('kpi-devices');
           if (devEl) { devEl.textContent = online; devEl.style.color = online > 0 ? 'var(--cyan)' : '#ef4444'; }
           const devSubEl = document.getElementById('kpi-devices-sub');
@@ -2674,6 +2787,7 @@ function startDemo() { /* simülasyon kaldırıldı */ }
 // ── Cihaz çevrimiçi eşiği: son 3 dakikada veri geldiyse online ──
 const DEVICE_ONLINE_MS = 10 * 1000; // 10 saniye — cihaz her 2sn veri gönderir
 let _lastSensorMs = 0;
+const _lastSensorByDevice = {}; // device_id → son veri ms (kart senkronizasyonu için)
 
 function updateDeviceStatus() {
   const isOnline = _lastSensorMs > 0 && (Date.now() - _lastSensorMs) < DEVICE_ONLINE_MS;
@@ -2690,6 +2804,8 @@ function updateDeviceStatus() {
     if (statusDotEl2)  { statusDotEl2.style.background = '#ef4444'; statusDotEl2.style.animation = 'pulseRed 1.2s infinite'; }
     if (statusTextEl2) { statusTextEl2.textContent = 'Cihaz Bağlı Değil'; statusTextEl2.classList.add('offline'); }
     setCihazBtn('disconnected');
+    // Kartları hemen yenile — 20s DB eşiğiyle artık offline gösterir
+    if (_lastSensorMs > 0) loadDashDeviceCards();
     // Cihaz offline — anlık akış göstergesini sıfırla
     const offlineGrad = 'conic-gradient(var(--border) 0deg 360deg)';
     const rEl = document.getElementById('flow-ring');    if (rEl) rEl.style.background = offlineGrad;
@@ -2700,8 +2816,32 @@ function updateDeviceStatus() {
     const subEl = document.getElementById('kpi-flow-sub'); if (subEl) subEl.textContent = 'Cihaz çevrimdışı';
     const luEl = document.getElementById('last-update');  if (luEl) luEl.textContent = _lastSensorMs ? 'Son: ' + new Date(_lastSensorMs).toLocaleTimeString('tr-TR') : '—';
   }
+  // Kart durumunu navbar ile senkron tut (WS state değişince kart da güncellenir)
+  _syncDeviceCards();
 }
 setInterval(updateDeviceStatus, 30000);
+
+// Mevcut WS durumunu dash kartlarına yansıt (API çağrısı yapmadan)
+function _syncDeviceCards() {
+  const now = Date.now();
+  document.querySelectorAll('[data-devid]').forEach(card => {
+    const devId = card.dataset.devid;
+    const wsMs  = _lastSensorByDevice[devId] || 0;
+    if (!wsMs) return; // WS verisi hiç görmediyse dokunma
+    const online = (now - wsMs) < DEVICE_ONLINE_MS;
+    const dot = card.querySelector('[data-dot]');
+    const lbl = card.querySelector('[data-label]');
+    if (dot) {
+      dot.style.color     = online ? 'var(--green)' : '#ef4444';
+      dot.style.animation = online ? '' : 'dotBlink 2.5s infinite';
+    }
+    if (lbl) {
+      lbl.textContent = online ? '● Online' : '● Çevrimdışı';
+      lbl.style.color = online ? 'var(--green)' : '#ef4444';
+    }
+    card.style.borderColor = online ? '' : 'rgba(239,68,68,.35)';
+  });
+}
 
 // ── Gerçek veri → dashboard DOM ─────────────────────────────
 function applyRealReading(data) {
@@ -3340,6 +3480,7 @@ async function loadAnomalies(showLoading = true) {
     _anomalyRows = rows;
     _renderAnomalyStats(rows, chipEl);
     _renderAnomalyList(_anomalyFilter);
+    _renderLearnList(rows);
   } catch {
     if (btnEl) btnEl.textContent = '↻ Yenile';
     listEl.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Bağlantı hatası.</div>';
@@ -3433,6 +3574,68 @@ function _renderAnomalyList(filter) {
   }).join('');
 }
 
+// ── Sistem Öğreniyor sayfası için sınıflandırma listesi ─────
+let _learningStats = {}; // device||type → { false_positive, suppressed }
+
+function _renderLearnList(rows) {
+  const el = document.getElementById('anomaly-learn-list');
+  if (!el) return;
+  // Aktif + son 7 günlük çözülmüş anomalileri göster
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const visible = rows.filter(a => !a.resolved || (a.ts && new Date(a.ts).getTime() > cutoff));
+  if (!visible.length) {
+    el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">✅ Son 7 günde anomali yok</div>';
+    return;
+  }
+  el.innerHTML = visible.map(a => {
+    const meta = _ANOMALY_META[a.type] || { icon: '🔔', label: a.type, severity: 'info', leftColor: '#64748b' };
+    const ts   = a.ts ? new Date(a.ts).toLocaleString('tr-TR') : '—';
+    const fb   = a.feedback;
+    const realActive = fb === 'real';
+    const fpActive   = fb === 'false_positive';
+    const dim  = a.resolved ? 'opacity:.6;' : '';
+    // Öğrenme ilerlemesi: bu cihaz+tip için kaç kez Normal işaretlendi
+    const statKey = `${a.device}||${a.type}`;
+    const fpCount = _learningStats[statKey]?.false_positive || 0;
+    const suppressed = _learningStats[statKey]?.suppressed || false;
+    const learnBadge = suppressed
+      ? `<span style="font-size:.64rem;padding:.1rem .4rem;background:rgba(239,68,68,.12);color:#ef4444;border-radius:4px;margin-left:.35rem">🔕 Baskılı</span>`
+      : fpCount > 0
+        ? `<span style="font-size:.64rem;padding:.1rem .4rem;background:rgba(245,158,11,.1);color:#f59e0b;border-radius:4px;margin-left:.35rem">Öğreniyor ${fpCount}/3</span>`
+        : '';
+    return `<div style="${dim}display:flex;gap:0;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);margin-bottom:.5rem">
+      <div style="width:3px;flex-shrink:0;background:${a.resolved ? 'var(--muted)' : meta.leftColor}"></div>
+      <div style="display:flex;gap:.75rem;padding:.85rem;flex:1;align-items:center">
+        <div style="font-size:1rem;flex-shrink:0">${meta.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;font-weight:700;margin-bottom:.15rem;display:flex;align-items:center;flex-wrap:wrap">
+            ${meta.label}${learnBadge}
+            ${a.resolved ? '<span style="font-size:.64rem;padding:.1rem .35rem;background:rgba(100,116,139,.12);color:var(--muted);border-radius:4px;margin-left:.35rem">Çözüldü</span>' : ''}
+          </div>
+          <div style="font-size:.74rem;color:var(--muted2);margin-bottom:.25rem;line-height:1.4">${esc(a.detail)}</div>
+          <div style="font-size:.67rem;color:var(--muted)">📡 ${esc(a.device||'—')} · 🕐 ${ts}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;flex-shrink:0;min-width:90px">
+          <button type="button" onclick="setFeedback(${a.id},'real')"
+            style="font-size:.76rem;padding:.35rem .7rem;border-radius:7px;cursor:pointer;white-space:nowrap;text-align:center;
+              border:1px solid ${realActive?'rgba(16,185,129,.55)':'var(--border2)'};
+              background:${realActive?'rgba(16,185,129,.15)':'var(--bg3)'};
+              color:${realActive?'var(--green)':'var(--text2)'}">
+            ✅ Gerçek
+          </button>
+          <button type="button" onclick="setFeedback(${a.id},'false_positive')"
+            style="font-size:.76rem;padding:.35rem .7rem;border-radius:7px;cursor:pointer;white-space:nowrap;text-align:center;
+              border:1px solid ${fpActive?'rgba(245,158,11,.55)':'var(--border2)'};
+              background:${fpActive?'rgba(245,158,11,.12)':'var(--bg3)'};
+              color:${fpActive?'#f59e0b':'var(--text2)'}">
+            ❌ Normal
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 async function resolveAnomaly(id) {
   const token = localStorage.getItem('susayar_token') || '';
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
@@ -3446,6 +3649,11 @@ const _ANOMALY_TYPE_LABELS = {
   'cihaz-offline': 'Cihaz Çevrimdışı'
 };
 
+function _timeInputs(hId, mId, hVal, mVal) {
+  const s = 'width:44px;padding:.28rem .35rem;font-size:.8rem;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:6px;text-align:center';
+  return `<input id="${hId}" type="number" min="0" max="23" value="${hVal}" style="${s}"><span style="color:var(--muted);padding:0 .15rem;font-size:.9rem">:</span><input id="${mId}" type="number" min="0" max="59" step="5" value="${mVal}" style="${s}">`;
+}
+
 async function loadLearning(fullPage = false) {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
@@ -3454,9 +3662,16 @@ async function loadLearning(fullPage = false) {
   const targets = fullPage ? [elPage] : [elCard, elPage].filter(Boolean);
   if (!targets.length) return;
   try {
-    const r = await fetch(`${API}/api/learning`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) return;
-    const { learning } = await r.json();
+    const lr = await fetch(`${API}/api/learning`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!lr.ok) return;
+    const { learning } = await lr.json();
+
+    // Learning stats önbelleğini güncelle (anomali kartlarında rozet için)
+    _learningStats = {};
+    for (const item of learning) {
+      _learningStats[`${item.device}||${item.type}`] = { false_positive: item.false_positive, suppressed: item.suppressed };
+    }
+    if (_anomalyRows.length) _renderLearnList(_anomalyRows); // rozetleri tazele
 
     // Cihaza göre grupla
     const byDevice = {};
@@ -3465,8 +3680,9 @@ async function loadLearning(fullPage = false) {
       byDevice[item.device].items.push(item);
     }
 
-    const html = Object.entries(byDevice).map(([devId, devData]) => {
+    const togglesHtml = Object.entries(byDevice).map(([devId, devData]) => {
       const rows = devData.items.map(item => {
+        const isOffline = item.type === 'cihaz-offline';
         const meta = _ANOMALY_META[item.type] || { icon: '🔔', leftColor: '#64748b' };
         const label = _ANOMALY_TYPE_LABELS[item.type] || item.type;
         const fp = item.false_positive || 0;
@@ -3475,9 +3691,19 @@ async function loadLearning(fullPage = false) {
         const trackBorder = sup ? 'rgba(239,68,68,.6)' : 'rgba(16,185,129,.6)';
         const thumbLeft = sup ? '2px' : '18px';
         const thumbBg = sup ? '#ef4444' : '#10b981';
-        const statusText = sup
+        const statusText = isOffline
+          ? `<span style="font-size:.65rem;color:var(--muted)">Kapatılamaz</span>`
+          : sup
           ? `<span style="font-size:.65rem;color:#ef4444">Baskılı</span>`
           : (fp > 0 ? `<span style="font-size:.65rem;color:#f59e0b">Öğreniyor ${fp}/3</span>` : `<span style="font-size:.65rem;color:var(--muted)">Aktif</span>`);
+        const toggleEl = isOffline
+          ? `<div style="position:relative;width:36px;height:20px;flex-shrink:0;border-radius:999px;background:rgba(16,185,129,.4);border:1px solid rgba(16,185,129,.6);opacity:.45;cursor:not-allowed">
+               <div style="position:absolute;top:2px;left:18px;width:14px;height:14px;border-radius:50%;background:#10b981"></div>
+             </div>`
+          : `<div onclick="toggleSuppression('${esc(devId)}','${item.type}',${sup})"
+               style="position:relative;width:36px;height:20px;flex-shrink:0;cursor:pointer;border-radius:999px;background:${trackBg};border:1px solid ${trackBorder};transition:background .2s">
+               <div style="position:absolute;top:2px;left:${thumbLeft};width:14px;height:14px;border-radius:50%;background:${thumbBg};transition:left .2s,background .2s"></div>
+             </div>`;
         return `<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 0;border-bottom:1px solid var(--border)">
           <div style="width:3px;height:28px;border-radius:2px;background:${meta.leftColor};flex-shrink:0"></div>
           <span style="font-size:.95rem;flex-shrink:0">${meta.icon}</span>
@@ -3485,10 +3711,7 @@ async function loadLearning(fullPage = false) {
             <div style="font-size:.8rem;font-weight:600">${label}</div>
             <div style="margin-top:.1rem">${statusText}</div>
           </div>
-          <div onclick="toggleSuppression('${esc(devId)}','${item.type}',${sup})"
-            style="position:relative;width:36px;height:20px;flex-shrink:0;cursor:pointer;border-radius:999px;background:${trackBg};border:1px solid ${trackBorder};transition:background .2s">
-            <div style="position:absolute;top:2px;left:${thumbLeft};width:14px;height:14px;border-radius:50%;background:${thumbBg};transition:left .2s,background .2s"></div>
-          </div>
+          ${toggleEl}
         </div>`;
       }).join('');
       return `<div style="margin-bottom:1.25rem">
@@ -3497,7 +3720,64 @@ async function loadLearning(fullPage = false) {
       </div>`;
     }).join('');
 
-    targets.forEach(el => { if (el) el.innerHTML = html || `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Cihaz bulunamadı.</div>`; });
+    if (!fullPage) {
+      targets.forEach(el => { if (el) el.innerHTML = togglesHtml || `<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.82rem">Cihaz bulunamadı.</div>`; });
+      return;
+    }
+
+    // Full page: sadece cihaz toggleları (#learning-list-page'e yazar; eşik formu statik HTML'de)
+    elPage.innerHTML = togglesHtml || `<div style="text-align:center;padding:1rem;color:var(--muted);font-size:.82rem">Cihaz bulunamadı.</div>`;
+  } catch { /* sessiz */ }
+}
+
+async function saveAnomalyTypeSettings() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const g = id => document.getElementById(id);
+  const body = {
+    alert_after_hour:    parseInt(g('at-alert-h')?.value        ?? 22),
+    alert_after_minute:  parseInt(g('at-alert-m')?.value        ?? 0),
+    continuous_flow_min: parseInt(g('at-cont-min')?.value       ?? 30),
+    night_start_hour:    parseInt(g('at-night-start-h')?.value  ?? 0),
+    night_start_minute:  parseInt(g('at-night-start-m')?.value  ?? 0),
+    night_end_hour:      parseInt(g('at-night-end-h')?.value    ?? 5),
+    night_end_minute:    parseInt(g('at-night-end-m')?.value    ?? 0),
+    high_flow_lpm:       parseFloat(g('at-high-flow')?.value    ?? 8),
+    leak_flow_lpm:       parseFloat(g('at-leak-flow')?.value    ?? 0.3),
+    leak_cont_min:       parseInt(g('at-leak-min')?.value       ?? 30),
+    offline_repeat_min:  parseInt(g('at-offline-repeat')?.value ?? 60),
+  };
+  try {
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) showToast('✅ Eşik ayarları kaydedildi');
+    else showToast('❌ Kayıt başarısız');
+  } catch { showToast('❌ Bağlantı hatası'); }
+}
+
+async function loadAnomalyTypeSettings() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r = await fetch(`${API}/api/settings`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return;
+    const { settings } = await r.json();
+    const s = settings || {};
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    set('at-night-start-h', s.night_start_hour   ?? 0);
+    set('at-night-start-m', s.night_start_minute ?? 0);
+    set('at-night-end-h',   s.night_end_hour     ?? 5);
+    set('at-night-end-m',   s.night_end_minute   ?? 0);
+    set('at-alert-h',       s.alert_after_hour   ?? 22);
+    set('at-alert-m',       s.alert_after_minute ?? 0);
+    set('at-high-flow',     s.high_flow_lpm      ?? 8);
+    set('at-cont-min',      s.continuous_flow_min ?? 30);
+    set('at-leak-flow',     s.leak_flow_lpm      ?? 0.3);
+    set('at-leak-min',      s.leak_cont_min      ?? 30);
+    set('at-offline-repeat',s.offline_repeat_min ?? 60);
   } catch { /* sessiz */ }
 }
 
@@ -3508,8 +3788,10 @@ async function toggleSuppression(device, type, currentlySuppressed) {
   const label = _ANOMALY_TYPE_LABELS[type] || type;
   if (suppress) {
     // Baskılamak istiyorsa onay
-    const answer = await customConfirm('Anomali Tipi Baskıla',
-      `<strong>${esc(label)}</strong> uyarıları <strong>artık tetiklenmeyecek</strong>.<br>Onaylamak için <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.`);
+    const answer = await customConfirm('Uyarı Tipi Baskıla',
+      `<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.7rem 1rem;font-size:.8rem;color:#ef4444">
+        🔕 <strong>${esc(label)}</strong> uyarıları artık tetiklenmeyecek.
+      </div>`);
     if (!answer) return;
   }
   const r = await fetch(`${API}/api/learning/suppress`, {
@@ -3527,9 +3809,12 @@ async function toggleSuppression(device, type, currentlySuppressed) {
 function customConfirm(title, bodyHtml) {
   return new Promise(resolve => {
     openModal(title,
-      `<p style="font-size:.82rem;color:var(--muted2);margin-bottom:1.25rem;line-height:1.6">${bodyHtml}</p>
+      `<div style="font-size:.82rem;color:var(--muted2);margin-bottom:1.1rem;line-height:1.6">${bodyHtml}</div>
+      <p style="font-size:.78rem;color:var(--muted2);margin-bottom:.75rem">
+        Onaylamak için <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.
+      </p>
       <input id="custom-confirm-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
-        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em"
+        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600"
         oninput="document.getElementById('custom-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
       <div style="display:flex;gap:.5rem;justify-content:flex-end">
         <button class="btn-sm" onclick="window._customConfirmResolve(false);closeModal()">Vazgeç</button>
@@ -3554,6 +3839,7 @@ async function setFeedback(id, feedback) {
     if (feedback === 'false_positive') showToast('🧠 Sistem öğrendi — bu tür uyarı azaltılacak');
     else showToast('✅ Gerçek sorun olarak işaretlendi');
     loadAnomalies(false);
+    loadLearning(); loadLearning(true);
   }
 }
 
@@ -3594,21 +3880,25 @@ async function loadDashDeviceCards() {
       <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">${devs.length} cihaz</div>
     </div>`;
     const cards = devs.map(d => {
-      const online   = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
+      // WS verisi varsa ona güven (10s), yoksa DB last_seen'e bak (20s — ESP32 her 2sn veri gönderir)
+      const wsMs   = _lastSensorByDevice[d.device_id] || 0;
+      const online = wsMs > 0
+        ? (now - wsMs) < DEVICE_ONLINE_MS
+        : (d.last_seen && (now - new Date(d.last_seen).getTime()) < 20 * 1000);
       const dotColor = online ? 'var(--green)' : '#ef4444';
-      const dotAnim  = online ? '' : 'animation:dotBlink 1s infinite';
+      const dotAnim  = online ? '' : 'animation:dotBlink 2.5s infinite';
       const cardBorder = online ? 'var(--border)' : 'rgba(239,68,68,.35)';
       const flowTxt  = (d.flow_lpm != null && online) ? (+d.flow_lpm).toFixed(1) + ' L/dk' : '—';
       const flowColor= (d.flow_lpm > 0.1 && online) ? 'var(--blue-lt)' : 'var(--muted)';
-      return `<div class="dash-dev-card" id="dash-dev-card-${d.device_id}" onclick="selectDashDevice(${JSON.stringify(d)})"
+      return `<div class="dash-dev-card" id="dash-dev-card-${d.device_id}" data-devid="${esc(d.device_id)}" onclick="selectDashDevice(${JSON.stringify(d)})"
         style="cursor:pointer;padding:.65rem 1rem;border-radius:10px;border:1px solid ${cardBorder};background:var(--bg2);min-width:130px;flex-shrink:0;transition:border-color .15s"
-        onmouseenter="this.style.borderColor='rgba(59,181,212,.3)'" onmouseleave="this.style.borderColor='${cardBorder}'">
+        onmouseenter="this.style.borderColor='rgba(59,181,212,.3)'" onmouseleave="this.style.borderColor=''">
         <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem">
-          <span style="font-size:.65rem;color:${dotColor};${dotAnim}">${online ? '●' : '●'}</span>
+          <span data-dot style="font-size:.65rem;color:${dotColor};${dotAnim}">●</span>
           <span style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${esc(d.name)}</span>
         </div>
         <div style="font-size:.8rem;font-weight:700;color:${flowColor}">${flowTxt}</div>
-        ${!online ? `<div style="font-size:.65rem;color:#ef4444;margin-top:.15rem">Çevrimdışı</div>` : ''}
+        <div data-label style="font-size:.65rem;color:${online ? 'var(--green)' : '#ef4444'};margin-top:.1rem">${online ? '● Online' : '● Çevrimdışı'}</div>
       </div>`;
     }).join('');
     wrap.innerHTML = allCard + cards;
@@ -3670,7 +3960,7 @@ async function loadDevicesPage() {
     const now = Date.now();
     grid.innerHTML = devs.map(d => {
       const lastSeenMs = d.last_seen ? new Date(d.last_seen).getTime() : 0;
-      const online = lastSeenMs && (now - lastSeenMs) < 30000;
+      const online = lastSeenMs && (now - lastSeenMs) < 5 * 60 * 1000;
       const statusColor = online ? 'var(--green)' : 'var(--muted)';
       const statusBg    = online ? 'rgba(16,185,129,.12)' : 'rgba(100,116,139,.1)';
       const statusBorder= online ? 'rgba(16,185,129,.3)'  : 'rgba(100,116,139,.25)';
@@ -3753,7 +4043,7 @@ function loadCihazAyarlari() {
   if (!d) return;
 
   const now    = Date.now();
-  const online = d.last_seen && (now - new Date(d.last_seen).getTime()) < 30000;
+  const online = d.last_seen && (now - new Date(d.last_seen).getTime()) < 5 * 60 * 1000;
 
   document.getElementById('cihaz-ayar-name').value  = d.name;
   document.getElementById('cihaz-ayar-devid').value = d.device_id;
@@ -3809,7 +4099,7 @@ function openDeviceDetail(d) {
   // Online durumu
   const now        = Date.now();
   const lastSeenMs = d.last_seen ? new Date(d.last_seen).getTime() : 0;
-  const online     = lastSeenMs && (now - lastSeenMs) < 30000;
+  const online     = lastSeenMs && (now - lastSeenMs) < 5 * 60 * 1000;
   const badge      = document.getElementById('detay-status-badge');
   if (badge) {
     badge.textContent = online ? '● Çevrimiçi' : '○ Çevrimdışı';
@@ -4075,16 +4365,18 @@ function guardedToggle(checkbox, label, afterFn) {
   if (afterFn) afterFn();
   if (!checkbox.checked) {
     // Kapatmaya çalışıyor — modal ile onay iste
-    openModal('Onay Gerekli',
-      `<p style="font-size:.83rem;color:var(--muted2);margin-bottom:1.25rem">
-        <strong style="color:var(--text)">${esc(label)}</strong> kapatmak istediğinizden emin misiniz?<br>
+    openModal('Bildirimi Kapat',
+      `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.1rem;font-size:.78rem;color:#f59e0b">
+        ⚠️ <strong>${esc(label)}</strong> kapatıyorsunuz. Artık bu kanaldan bildirim gelmeyecek.
+      </div>
+      <p style="font-size:.8rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
         Onaylamak için aşağıya <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.
       </p>
       <input id="guarded-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
-        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em"
+        style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600"
         oninput="document.getElementById('guarded-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
       <div style="display:flex;gap:.5rem;justify-content:flex-end">
-        <button class="btn-sm" onclick="guardedCancel(${JSON.stringify(checkbox.id)},${afterFn ? 'true' : 'false'})">Vazgeç</button>
+        <button class="btn-sm" onclick="guardedCancel('${checkbox.id}',${afterFn ? 'true' : 'false'})">Vazgeç</button>
         <button id="guarded-confirm-btn" class="btn-sm btn-primary" disabled onclick="closeModal()">Kapat</button>
       </div>`
     );
@@ -4202,6 +4494,9 @@ setTimeout(loadDashboardData, 500);
 setTimeout(loadDashAnomalies, 800);
 setTimeout(loadDashDeviceCards, 600);
 
+// Cihaz kartlarını her 60sn'de yenile (online/offline senkronizasyonu)
+setInterval(loadDashDeviceCards, 60 * 1000);
+
 // ── WebSocket bağlantısı ─────────────────────────────────────
 function connectRealBackend(url) {
   if (window._ws && window._ws.readyState < 2) return; // zaten bağlı/bağlanıyor
@@ -4222,12 +4517,16 @@ function connectRealBackend(url) {
     try {
       const msg = JSON.parse(e.data);
       if (msg.type === 'sensor_update' && msg.payload) {
-        _lastSensorMs = Date.now(); // canlı veri geldi → online say
+        const nowMs = Date.now();
+        _lastSensorMs = nowMs;
+        if (msg.payload.device_id) _lastSensorByDevice[msg.payload.device_id] = nowMs;
         updateDeviceStatus();
         applyRealReading(msg.payload);
         renderSonOlcumler([msg.payload], true);
       } else if (msg.type === 'anomaly' && msg.payload) {
         loadAnomalies();
+        loadLearning(); loadLearning(true);
+        loadDashDeviceCards();
       }
     } catch {}
   };

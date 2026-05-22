@@ -525,13 +525,15 @@ app.put('/api/settings', requireAuth, async (req, res) => {
   try {
     const device = req.query.device;
     const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report,
-            notify_realtime_email, notify_telegram, telegram_chat_id } = req.body;
+            notify_realtime_email, notify_telegram, telegram_chat_id,
+            night_start_hour, night_start_minute, night_end_hour, night_end_minute,
+            high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min } = req.body;
     const hour   = parseInt(alert_after_hour   ?? 22);
     const minute = parseInt(alert_after_minute ?? 0);
     const mins   = parseInt(continuous_flow_min ?? 30);
-    if (hour < 0 || hour > 23)  return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
+    if (hour < 0 || hour > 23)    return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
     if (minute < 0 || minute > 59) return res.status(400).json({ error: 'Dakika 0-59 arasında olmalı' });
-    if (mins < 5 || mins > 1440) return res.status(400).json({ error: 'Süre 5-1440 dk arasında olmalı' });
+    if (mins < 5 || mins > 1440)  return res.status(400).json({ error: 'Süre 5-1440 dk arasında olmalı' });
     if (device) {
       await db.queryRun(
         `INSERT INTO device_alert_settings (user_id,device_id,alert_after_hour,alert_after_minute,continuous_flow_min)
@@ -540,14 +542,31 @@ app.put('/api/settings', requireAuth, async (req, res) => {
         [req.user.id, device, hour, minute, mins]
       );
     } else {
+      const nsh = parseInt(night_start_hour  ?? 0);
+      const nsm = parseInt(night_start_minute ?? 0);
+      const neh = parseInt(night_end_hour    ?? 5);
+      const nem = parseInt(night_end_minute  ?? 0);
+      const hfl = parseFloat(high_flow_lpm   ?? 8);
+      const lfl = parseFloat(leak_flow_lpm   ?? 0.3);
+      const lcm = parseInt(leak_cont_min     ?? 30);
+      const orm = parseInt(offline_repeat_min ?? 60);
       await db.queryRun(
-        `INSERT INTO user_settings (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,notify_realtime_email,notify_telegram,telegram_chat_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-         ON CONFLICT (user_id) DO UPDATE SET alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4, daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9`,
+        `INSERT INTO user_settings
+           (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
+            notify_realtime_email,notify_telegram,telegram_chat_id,
+            night_start_hour,night_start_minute,night_end_hour,night_end_minute,
+            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+         ON CONFLICT (user_id) DO UPDATE SET
+           alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4,
+           daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9,
+           night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
+           high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17`,
         [req.user.id, hour, minute, mins,
          daily_report ? 1 : 0, weekly_report ? 1 : 0,
          notify_realtime_email ? 1 : 0, notify_telegram ? 1 : 0,
-         telegram_chat_id || null]
+         telegram_chat_id || null,
+         nsh, nsm, neh, nem, hfl, lfl, lcm, orm]
       );
     }
     res.json({ ok: true });
@@ -615,6 +634,36 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     );
     broadcastToUser(reading.user_id, { type: 'sensor_update', payload: reading });
 
+    // ── Yeniden bağlantı tespiti ─────────────────────────────
+    const openOffline = await db.queryOne(
+      `SELECT id FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND NOT resolved`,
+      [reading.user_id, reading.device_id]
+    );
+    if (openOffline) {
+      const resolvedVal = db.isPg ? true : 1;
+      await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedVal, openOffline.id]);
+      broadcastToUser(reading.user_id, { type: 'anomaly', payload: { id: openOffline.id, type: 'cihaz-offline', device: reading.device_id, resolved: true } });
+      const devName = req.device.name || reading.device_id;
+      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [reading.user_id]);
+      const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [reading.user_id]);
+      const reconnMsg = `🟢 <b>Cihaz Yeniden Bağlandı</b>\n\n📡 ${devName}\n⏱ ${new Date().toLocaleString('tr-TR')}\n\nBağlantı yeniden kuruldu.`;
+      if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
+        await sendTelegram(s.telegram_chat_id.trim(), reconnMsg).catch(() => {});
+      }
+      if (user?.email) {
+        sendMail({
+          to: user.email,
+          subject: `🟢 SuSayar — ${devName} yeniden bağlandı`,
+          html: mailHtml({ title: '🟢 Cihaz Yeniden Bağlandı', body: `
+            <p>Merhaba <strong>${user.name}</strong>,</p>
+            <p><strong>${devName}</strong> cihazı yeniden bağlandı.</p>
+            <p>Bağlantı başarıyla yeniden kuruldu.</p>
+          ` }),
+        }).catch(() => {});
+      }
+      console.log(`[RECONNECT] ${reading.device_id} (user: ${reading.user_id})`);
+    }
+
     // ── Anomali tespiti ─────────────────────────────────────
     const now = new Date();
     const trHour   = ((now.getUTCHours()   + 3) % 24 + 24) % 24;
@@ -630,8 +679,18 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     const contFlowMin = devSettings?.continuous_flow_min ?? settings?.continuous_flow_min ?? 30;
     const alertTotalMin = alertHour * 60 + alertMinute;
 
-    // Gece akışı (00:00–05:00 arası flow > 0.1 L/dk)
-    if (trHour >= 0 && trHour < 5 && reading.flow_lpm > 0.1) {
+    // Gece akışı (yapılandırılabilir saat aralığı, varsayılan 00:00–05:00)
+    const nightStartH = settings?.night_start_hour   ?? 0;
+    const nightStartM = settings?.night_start_minute ?? 0;
+    const nightEndH   = settings?.night_end_hour     ?? 5;
+    const nightEndM   = settings?.night_end_minute   ?? 0;
+    const nightStartTotalMin = nightStartH * 60 + nightStartM;
+    const nightEndTotalMin   = nightEndH   * 60 + nightEndM;
+    // Gece aralığı gece yarısını geçebilir (ör. 22:00–06:00)
+    const isNight = nightStartTotalMin <= nightEndTotalMin
+      ? (trTotalMin >= nightStartTotalMin && trTotalMin < nightEndTotalMin)
+      : (trTotalMin >= nightStartTotalMin || trTotalMin < nightEndTotalMin);
+    if (isNight && reading.flow_lpm > 0.1) {
       anomalies.push({ type: 'gece-akis', detail: `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')} saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
     // Kullanıcının belirlediği saatten sonra akış
@@ -640,9 +699,10 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       const nowStr   = `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')}`;
       anomalies.push({ type: 'saat-akis', detail: `${nowStr} saatinde (${alertStr} sonrası) ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
-    // Çok yüksek akış (>8 L/dk)
-    if (reading.flow_lpm > 8) {
-      anomalies.push({ type: 'yuksek-akis', detail: `Anlık akış ${reading.flow_lpm.toFixed(1)} L/dk — anormal yüksek` });
+    // Çok yüksek akış (yapılandırılabilir eşik, varsayılan 8 L/dk)
+    const highFlowLpm = settings?.high_flow_lpm ?? 8;
+    if (reading.flow_lpm > highFlowLpm) {
+      anomalies.push({ type: 'yuksek-akis', detail: `Anlık akış ${reading.flow_lpm.toFixed(1)} L/dk — anormal yüksek (eşik: ${highFlowLpm} L/dk)` });
     }
     // Sürekli akış tespiti
     if (reading.flow_lpm > 0.1) {
@@ -651,9 +711,23 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
         `SELECT flow_lpm FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 ORDER BY ts DESC`,
         [reading.user_id, reading.device_id, cutoffCont]
       );
-      const minCount = Math.floor((contFlowMin * 60) / (2.5)); // ~her 2.5sn bir okuma
+      const minCount = Math.floor((contFlowMin * 60) / 2.5);
       if (contRows.length >= minCount && contRows.every(r => r.flow_lpm > 0.1)) {
         anomalies.push({ type: 'surekli-akis', detail: `${contFlowMin} dakikadır sürekli akış: ${reading.flow_lpm.toFixed(1)} L/dk — olası kaçak` });
+      }
+    }
+    // Sızıntı tespiti (düşük sürekli akış)
+    const leakFlowLpm = settings?.leak_flow_lpm ?? 0.3;
+    const leakContMin = settings?.leak_cont_min  ?? 30;
+    if (reading.flow_lpm > 0 && reading.flow_lpm <= leakFlowLpm) {
+      const cutoffLeak = new Date(Date.now() - leakContMin * 60 * 1000).toISOString();
+      const leakRows = await db.queryAll(
+        `SELECT flow_lpm FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 ORDER BY ts DESC`,
+        [reading.user_id, reading.device_id, cutoffLeak]
+      );
+      const minLeakCount = Math.floor((leakContMin * 60) / 2.5);
+      if (leakRows.length >= minLeakCount && leakRows.every(r => r.flow_lpm > 0 && r.flow_lpm <= leakFlowLpm)) {
+        anomalies.push({ type: 'kacak', detail: `${leakContMin} dakikadır düşük sürekli akış: ort. ${reading.flow_lpm.toFixed(2)} L/dk — sızıntı şüphesi` });
       }
     }
 
@@ -677,9 +751,10 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       );
       if (!existing) {
         const anomId = Date.now();
+        const resolvedFalse = db.isPg ? false : 0;
         await db.queryRun(
           `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-          [anomId, reading.user_id, a.type, reading.device_id, a.detail, reading.ts, 0]
+          [anomId, reading.user_id, a.type, reading.device_id, a.detail, reading.ts, resolvedFalse]
         );
         const anomPayload = { id: anomId, ...a, device: reading.device_id, ts: reading.ts, resolved: false };
         broadcastToUser(reading.user_id, { type: 'anomaly', payload: anomPayload });
@@ -1211,8 +1286,7 @@ function scheduleReports() {
 // ── Cihaz Offline Kontrolü ────────────────────────────────────
 async function checkOfflineDevices() {
   try {
-    const offlineThresh = new Date(Date.now() - 5 * 60 * 1000).toISOString();  // 5 dk veri yok = offline
-    const cooloffThresh = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // 60 dk cooldown
+    const offlineThresh = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 dk veri yok = offline
     // last_seen 5+ dk önce olan cihazlar
     const devices = await db.queryAll(
       `SELECT d.id, d.device_id, d.name, d.user_id, d.last_seen
@@ -1221,19 +1295,27 @@ async function checkOfflineDevices() {
       [offlineThresh]
     );
     for (const dev of devices) {
-      // Son 60 dk içinde aynı cihaz için zaten offline anomalisi var mı?
+      const usrSettings = await db.queryOne(`SELECT offline_repeat_min FROM user_settings WHERE user_id=$1`, [dev.user_id]);
+      const offlineRepeatMin = usrSettings?.offline_repeat_min ?? 60;
       const existing = await db.queryOne(
-        `SELECT id FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND ts>=$3`,
-        [dev.user_id, dev.device_id, cooloffThresh]
+        `SELECT id, ts FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND NOT resolved`,
+        [dev.user_id, dev.device_id]
       );
-      if (existing) continue;
+      if (existing) {
+        const msSinceNotif = Date.now() - new Date(existing.ts).getTime();
+        if (msSinceNotif < offlineRepeatMin * 60 * 1000) continue; // tekrar bildirim aralığı dolmadı
+        // Tekrar bildirim zamanı geldi: eski anomaliyi çöz, yeni oluştur
+        const resolvedTrue = db.isPg ? true : 1;
+        await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedTrue, existing.id]);
+      }
 
       const offlineSince = new Date(dev.last_seen).toLocaleString('tr-TR');
       const detail = `${dev.name || dev.device_id} cihazından ${offlineSince} tarihinden beri veri gelmiyor`;
       const anomId = Date.now();
+      const resolvedFalse = db.isPg ? false : 0;
       await db.queryRun(
         `INSERT INTO anomalies (id,user_id,type,device,detail,ts,resolved) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [anomId, dev.user_id, 'cihaz-offline', dev.device_id, detail, new Date().toISOString(), 0]
+        [anomId, dev.user_id, 'cihaz-offline', dev.device_id, detail, new Date().toISOString(), resolvedFalse]
       );
       broadcastToUser(dev.user_id, { type: 'anomaly', payload: { id: anomId, type: 'cihaz-offline', device: dev.device_id, detail, ts: new Date().toISOString(), resolved: false } });
 
@@ -1265,7 +1347,8 @@ async function checkOfflineDevices() {
 async function start() {
   await db.initSchema();
   scheduleReports();
-  // Her 2 dakikada cihaz offline kontrolü
+  // Cihaz offline kontrolü: başlangıçta + her 2 dakikada
+  setTimeout(checkOfflineDevices, 10 * 1000); // sunucu açılışından 10sn sonra ilk kontrol
   setInterval(checkOfflineDevices, 2 * 60 * 1000);
   server.listen(PORT, '0.0.0.0', () => {
     console.log('');
