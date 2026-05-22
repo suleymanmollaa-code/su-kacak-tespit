@@ -1409,10 +1409,24 @@
           <span id="channels-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:.6rem">
+
+          <!-- Bağlantı Bildirimleri — kilitli, her zaman açık -->
+          <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:rgba(139,92,246,.07);border-radius:9px;border:1px solid rgba(139,92,246,.25)">
+            <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem;opacity:.7;pointer-events:none">
+              <div class="slider-track" style="position:absolute;inset:0;border-radius:999px;background:rgba(139,92,246,.5);border:1px solid rgba(139,92,246,.6)"></div>
+              <div class="slider-thumb" style="position:absolute;top:2px;left:18px;width:14px;height:14px;border-radius:50%;background:#fff"></div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.83rem;font-weight:600">📡 Bağlantı Bildirimleri <span style="font-size:.65rem;padding:.1rem .4rem;background:rgba(139,92,246,.2);color:#a78bfa;border-radius:4px;margin-left:.3rem">Zorunlu</span></div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Cihaz bağlantısı kopunca e-posta ve Telegram ile anında bildirim gönderilir. Devre dışı bırakılamaz.</div>
+              <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem" id="user-email-display"></div>
+            </div>
+          </div>
+
           <!-- E-posta -->
           <label style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
             <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
-              <input type="checkbox" id="setting-notify-email" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+              <input type="checkbox" id="setting-notify-email" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Anlık e-posta bildirimlerini')">
               <div class="slider-track" id="track-setting-notify-email" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
               <div class="slider-thumb" id="thumb-setting-notify-email" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
             </div>
@@ -1425,7 +1439,7 @@
           <div style="padding:.85rem;background:var(--bg3);border-radius:9px;border:1px solid var(--border)">
             <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
               <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
-                <input type="checkbox" id="setting-notify-telegram" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);document.getElementById('telegram-chat-row').style.display=this.checked?'':'none'">
+                <input type="checkbox" id="setting-notify-telegram" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Telegram bildirimlerini',()=>{ document.getElementById('telegram-chat-row').style.display=this.checked?'':'none'; })">
                 <div class="slider-track" id="track-setting-notify-telegram" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                 <div class="slider-thumb" id="thumb-setting-notify-telegram" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
               </div>
@@ -3987,15 +4001,47 @@ async function testTelegram() {
   const btn = document.getElementById('btn-test-telegram');
   if (btn) btn.textContent = 'Gönderiliyor...';
   try {
-    const r = await fetch(`${API}/api/test-telegram`, {
+    const r = await fetch(`${API}/api/test-notify`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await r.json();
-    if (r.ok) showToast('✅ Telegram mesajı gönderildi');
-    else showToast('❌ ' + (data.error || 'Gönderilemedi'));
+    const data = await r.json().catch(() => ({}));
+    if (r.ok) {
+      const tg = data.results?.telegram === 'ok' ? '✅ Telegram' : ('⚠️ Telegram: ' + (data.results?.telegram || '?'));
+      const em = data.results?.email   === 'ok' ? '✅ E-posta'  : ('⚠️ E-posta: '  + (data.results?.email   || '?'));
+      showToast(tg + ' · ' + em);
+    } else showToast('❌ ' + (data.error || 'Gönderilemedi'));
   } catch { showToast('❌ Bağlantı hatası'); }
   finally { if (btn) btn.textContent = 'Test Gönder'; }
+}
+
+// Maskeli e-posta göster
+(function showMaskedEmail() {
+  try {
+    const user = JSON.parse(localStorage.getItem('susayar_user') || '{}');
+    const el = document.getElementById('user-email-display');
+    if (el && user.email) {
+      const [local, domain] = user.email.split('@');
+      const masked = local.slice(0,2) + '***@' + domain;
+      el.textContent = '📬 ' + masked;
+    }
+  } catch {}
+})();
+
+// Yazılı onay gerektiren toggle
+function guardedToggle(checkbox, label, afterFn) {
+  toggleSlider(checkbox);
+  if (afterFn) afterFn();
+  // Sadece kapatırken onay iste
+  if (!checkbox.checked) {
+    const answer = prompt(`"${label}" kapatmak istediğinizden emin misiniz?\n\nOnaylamak için ONAYLA yazın:`);
+    if (answer?.trim().toUpperCase() !== 'ONAYLA') {
+      // Geri al
+      checkbox.checked = true;
+      toggleSlider(checkbox);
+      if (afterFn) afterFn();
+    }
+  }
 }
 
 function _applyChatIdUI(savedId) {

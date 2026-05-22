@@ -519,16 +519,37 @@ app.put('/api/settings', requireAuth, async (req, res) => {
 });
 
 // ── Telegram test ─────────────────────────────────────────────
-app.post('/api/test-telegram', requireAuth, async (req, res) => {
+app.post('/api/test-notify', requireAuth, async (req, res) => {
   try {
-    const s = await db.queryOne(`SELECT telegram_chat_id, notify_telegram FROM user_settings WHERE user_id=$1`, [req.user.id]);
-    if (!s?.telegram_chat_id) return res.status(400).json({ error: 'Chat ID ayarlı değil' });
-    if (!process.env.TELEGRAM_BOT_TOKEN) return res.status(500).json({ error: 'Bot token sunucuda tanımlı değil' });
-    const result = await sendTelegram(s.telegram_chat_id.trim(), '✅ <b>SuSayar test mesajı</b>\n\nTelegram bildirimleri çalışıyor!');
-    if (!result?.ok) return res.status(500).json({ error: result?.description || 'Telegram hatası' });
-    res.json({ ok: true });
+    const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [req.user.id]);
+    const s    = await db.queryOne(`SELECT notify_realtime_email, notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    const results = { email: null, telegram: null };
+
+    // Telegram
+    if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
+      const r = await sendTelegram(s.telegram_chat_id.trim(), '✅ <b>SuSayar test mesajı</b>\n\nBildirimler çalışıyor!');
+      results.telegram = r?.ok ? 'ok' : (r?.description || 'hata');
+    } else {
+      results.telegram = 'ayarlı değil';
+    }
+
+    // E-posta
+    if (user?.email) {
+      const sent = await sendMail({
+        to: user.email,
+        subject: '✅ SuSayar — Bildirim Testi',
+        html: mailHtml({ title: '✅ Test Bildirimi', body: `<p>Merhaba <strong>${user.name}</strong>,</p><p>SuSayar e-posta bildirimleri çalışıyor!</p>` }),
+      });
+      results.email = sent ? 'ok' : 'gönderilemedi';
+    }
+
+    const errors = Object.entries(results).filter(([,v]) => v && v !== 'ok' && v !== 'ayarlı değil').map(([k]) => k);
+    if (errors.length) return res.status(500).json({ error: `${errors.join(', ')} hatası`, results });
+    res.json({ ok: true, results });
   } catch (e) { res.status(500).json({ error: 'Gönderilemedi' }); }
 });
+// Geriye dönük uyumluluk
+app.post('/api/test-telegram', requireAuth, (req, res) => res.redirect(307, '/api/test-notify'));
 
 // ── Sensör ────────────────────────────────────────────────────
 
@@ -1180,12 +1201,24 @@ async function checkOfflineDevices() {
       );
       broadcastToUser(dev.user_id, { type: 'anomaly', payload: { id: anomId, type: 'cihaz-offline', device: dev.device_id, detail, ts: new Date().toISOString(), resolved: false } });
 
-      // Telegram bildirimi
-      const s = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [dev.user_id]);
-      if (s?.notify_telegram && s?.telegram_chat_id) {
-        await sendTelegram(s.telegram_chat_id.trim(),
-          `🔴 <b>Cihaz Bağlantısı Kesildi</b>\n\n📡 ${dev.name || dev.device_id}\n⏱ Son veri: ${offlineSince}\n\nCihazı kontrol edin.`
-        ).catch(() => {});
+      // Telegram + E-posta bildirimi (her zaman gönderilir)
+      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [dev.user_id]);
+      const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [dev.user_id]);
+      const offlineMsg = `🔴 <b>Cihaz Bağlantısı Kesildi</b>\n\n📡 ${dev.name || dev.device_id}\n⏱ Son veri: ${offlineSince}\n\nCihazı kontrol edin.`;
+      if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
+        await sendTelegram(s.telegram_chat_id.trim(), offlineMsg).catch(() => {});
+      }
+      if (user?.email) {
+        sendMail({
+          to: user.email,
+          subject: `🔴 SuSayar — ${dev.name || dev.device_id} bağlantısı kesildi`,
+          html: mailHtml({ title: '🔴 Cihaz Çevrimdışı', body: `
+            <p>Merhaba <strong>${user.name}</strong>,</p>
+            <p><strong>${dev.name || dev.device_id}</strong> cihazından bağlantı kesildi.</p>
+            <p>Son veri: <strong>${offlineSince}</strong></p>
+            <p>Cihazı kontrol edin.</p>
+          ` }),
+        }).catch(() => {});
       }
       console.log(`[OFFLINE] ${dev.device_id} (user: ${dev.user_id})`);
     }
