@@ -626,6 +626,9 @@ app.get('/api/settings', requireAuth, async (req, res) => {
         notify_realtime_email:  !!s.notify_realtime_email,
         notify_telegram:        !!s.notify_telegram,
         telegram_chat_id:       s.telegram_chat_id || '',
+        ai_auto_manage:         !!(s.ai_auto_manage),
+        ai_last_action:         s.ai_last_action || null,
+        ai_last_action_ts:      s.ai_last_action_ts || null,
       }});
     }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -637,7 +640,8 @@ app.put('/api/settings', requireAuth, async (req, res) => {
     const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report,
             notify_realtime_email, notify_telegram, telegram_chat_id,
             night_start_hour, night_start_minute, night_end_hour, night_end_minute,
-            high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min } = req.body;
+            high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min,
+            ai_auto_manage } = req.body;
     const hour   = parseInt(alert_after_hour   ?? 22);
     const minute = parseInt(alert_after_minute ?? 0);
     const mins   = parseInt(continuous_flow_min ?? 30);
@@ -668,23 +672,26 @@ app.put('/api/settings', requireAuth, async (req, res) => {
       const cid = telegram_chat_id      !== undefined ? telegram_chat_id      : cur.telegram_chat_id;
       const dr  = daily_report          !== undefined ? daily_report          : cur.daily_report;
       const wr  = weekly_report         !== undefined ? weekly_report         : cur.weekly_report;
+      const aam = ai_auto_manage        !== undefined ? ai_auto_manage        : cur.ai_auto_manage;
       await db.queryRun(
         `INSERT INTO user_settings
            (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
             notify_realtime_email,notify_telegram,telegram_chat_id,
             night_start_hour,night_start_minute,night_end_hour,night_end_minute,
-            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min,ai_auto_manage)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
          ON CONFLICT (user_id) DO UPDATE SET
            alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4,
            daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9,
            night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
-           high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17`,
+           high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17,
+           ai_auto_manage=$18`,
         [req.user.id, hour, minute, mins,
          dr ? 1 : 0, wr ? 1 : 0,
          nre ? 1 : 0, ntg ? 1 : 0,
          cid || null,
-         nsh, nsm, neh, nem, hfl, lfl, lcm, orm]
+         nsh, nsm, neh, nem, hfl, lfl, lcm, orm,
+         aam ? 1 : 0]
       );
     }
     res.json({ ok: true });
@@ -1461,13 +1468,209 @@ async function checkOfflineDevices() {
   } catch (e) { console.error('[OFFLINE CHECK]', e.message); }
 }
 
+// ── AI Otomatik Analiz (her 10 dk) ───────────────────────────
+const _aiAnalysisCooldown = {}; // userId → lastSentMs
+
+async function runAIAutoAnalysis() {
+  const ai = getAI();
+  if (!ai) return;
+  try {
+    const users = await db.queryAll(
+      `SELECT u.id, s.telegram_chat_id
+       FROM users u JOIN user_settings s ON s.user_id = u.id
+       WHERE (s.notify_telegram = TRUE OR s.notify_telegram = 1)
+         AND s.telegram_chat_id IS NOT NULL AND s.telegram_chat_id != ''`
+    );
+    for (const user of users) {
+      await _aiAnalyzeUser(ai, user.id, user.telegram_chat_id).catch(e =>
+        console.error(`[AI-AUTO] user ${user.id}:`, e.message)
+      );
+    }
+  } catch (e) { console.error('[AI-AUTO]', e.message); }
+}
+
+async function _aiAnalyzeUser(ai, userId, chatId) {
+  const COOLDOWN_MS = 30 * 60 * 1000; // aynı kullanıcıya en az 30 dk ara
+  if (_aiAnalysisCooldown[userId] && Date.now() - _aiAnalysisCooldown[userId] < COOLDOWN_MS) return;
+
+  const cutoff = new Date(Date.now() - 12 * 60 * 1000).toISOString();
+  const readings = await db.queryAll(
+    `SELECT flow_lpm, device_id, ts FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts DESC LIMIT 30`,
+    [userId, cutoff]
+  );
+  if (readings.length === 0) return; // cihaz veri göndermiyorsa atla
+
+  const anomalies = await db.queryAll(
+    `SELECT type, detail, device FROM anomalies WHERE user_id=$1 AND resolved=FALSE ORDER BY ts DESC LIMIT 5`,
+    [userId]
+  );
+  const settings = await db.queryOne(`SELECT high_flow_lpm, leak_flow_lpm, leak_cont_min FROM user_settings WHERE user_id=$1`, [userId]);
+
+  const readingSummary = readings.slice(0, 8)
+    .map(r => `${r.device_id}: ${(r.flow_lpm || 0).toFixed(2)} L/dk`)
+    .join(' | ');
+
+  const prompt = `Su izleme sistemi AI asistanısın. Son 10 dakikalık veriyi değerlendir.
+
+Ölçümler: ${readingSummary}
+Aktif anomaliler: ${anomalies.length === 0 ? 'yok' : anomalies.map(a => a.detail).join('; ')}
+Eşikler: yüksek=${settings?.high_flow_lpm || 8} L/dk, sızıntı=${settings?.leak_flow_lpm || 0.3} L/dk
+
+Eğer dikkat çekici bir durum varsa 2-3 cümle Türkçe yaz. Her şey normaldeyse tam olarak sadece NORMAL yaz.`;
+
+  const msg = await ai.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 150,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  const text = (msg.content[0]?.text || '').trim();
+  if (!text || text.startsWith('NORMAL')) return;
+
+  await sendTelegram(chatId.trim(),
+    `🤖 <b>SuSayar AI • ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</b>\n\n${text}`
+  ).catch(() => {});
+  _aiAnalysisCooldown[userId] = Date.now();
+  console.log(`[AI-AUTO] Bildirim gönderildi → user ${userId}`);
+}
+
+// ── AI Otonom Eşik Yöneticisi (günde bir) ────────────────────
+async function runAIThresholdManager() {
+  const ai = getAI();
+  if (!ai) return;
+  try {
+    const users = await db.queryAll(
+      `SELECT user_id FROM user_settings WHERE ai_auto_manage = TRUE OR ai_auto_manage = 1`
+    );
+    for (const row of users) {
+      await _aiAutoUpdateThresholds(ai, row.user_id).catch(e =>
+        console.error(`[AI-THRESH] user ${row.user_id}:`, e.message)
+      );
+    }
+  } catch (e) { console.error('[AI-THRESH]', e.message); }
+}
+
+async function _aiAutoUpdateThresholds(ai, userId) {
+  const cutoff14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  // İstatistikler (SQLite ve PG uyumlu)
+  const rows = await db.queryAll(
+    `SELECT flow_lpm FROM readings WHERE user_id=$1 AND ts > $2 AND flow_lpm > 0 ORDER BY flow_lpm`,
+    [userId, cutoff14]
+  );
+  if (rows.length < 50) return; // yetersiz veri
+
+  const flows = rows.map(r => r.flow_lpm);
+  const avg   = flows.reduce((a, b) => a + b, 0) / flows.length;
+  const max   = flows[flows.length - 1];
+  const p95   = flows[Math.floor(flows.length * 0.95)];
+
+  const fpPatterns = await db.queryAll(
+    `SELECT type, COUNT(*) as cnt FROM anomalies
+     WHERE user_id=$1 AND feedback='false_positive'
+     GROUP BY type HAVING COUNT(*) >= 2`,
+    [userId]
+  );
+
+  const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [userId]);
+  if (!cur) return;
+
+  const prompt = `Su yönetim sistemi AI yöneticisisin. Kullanıcı ayarlarını veriye göre optimize et.
+
+Son 14 gün istatistik:
+- Ortalama akış: ${avg.toFixed(2)} L/dk
+- Maksimum akış: ${max.toFixed(2)} L/dk
+- 95. yüzdelik: ${p95.toFixed(2)} L/dk
+- Ölçüm sayısı: ${flows.length}
+
+Yanlış pozitif uyarılar: ${fpPatterns.length === 0 ? 'yok' : fpPatterns.map(p => `${p.type}(${p.cnt}x)`).join(', ')}
+
+Mevcut ayarlar:
+- Yüksek akış eşiği: ${cur.high_flow_lpm} L/dk
+- Sızıntı eşiği: ${cur.leak_flow_lpm} L/dk
+- Sürekli akış süresi: ${cur.leak_cont_min} dk
+- Gece: ${cur.night_start_hour}:00 – ${cur.night_end_hour}:00
+
+Yalnızca değişmesi gereken ayarları JSON formatında döndür:
+{"high_flow_lpm":X,"leak_flow_lpm":X,"leak_cont_min":X,"night_start_hour":X,"night_end_hour":X,"reason":"kısa Türkçe açıklama"}
+
+Değişiklik gerekmiyorsa: {}
+Kural: yüksek akış = p95 × 1.8 civarı mantıklı. Sızıntı eşiği çok yanlış pozitif varsa %20 artır. Min değerler: high≥2, leak≥0.05, cont≥10.`;
+
+  const aiMsg = await ai.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 250,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const text = aiMsg.content[0]?.text || '';
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return;
+
+  const updates = JSON.parse(jsonMatch[0]);
+  const reason  = updates.reason || 'Veri analizi';
+  delete updates.reason;
+
+  const ALLOWED = { high_flow_lpm: [2, 50], leak_flow_lpm: [0.05, 5], leak_cont_min: [10, 120], night_start_hour: [18, 23], night_end_hour: [0, 10] };
+  const safe = Object.entries(updates).filter(([k, v]) => {
+    if (!ALLOWED[k]) return false;
+    const [min, max] = ALLOWED[k];
+    return typeof v === 'number' && v >= min && v <= max;
+  });
+  if (safe.length === 0) return;
+
+  const setClauses = safe.map(([k], i) => `${k}=$${i + 2}`).join(', ');
+  const actionTs   = new Date().toISOString();
+  const actionDesc = safe.map(([k, v]) => {
+    const labels = { high_flow_lpm: 'Yüksek akış', leak_flow_lpm: 'Sızıntı eşiği', leak_cont_min: 'Sürekli akış', night_start_hour: 'Gece başlangıç', night_end_hour: 'Gece bitiş' };
+    return `${labels[k] || k}→${v}`;
+  }).join(', ');
+
+  await db.queryRun(
+    `UPDATE user_settings SET ${setClauses}, ai_last_action=$${safe.length + 2}, ai_last_action_ts=$${safe.length + 3} WHERE user_id=$1`,
+    [userId, ...safe.map(([, v]) => v), actionDesc, actionTs]
+  );
+
+  // Telegram bildirimi
+  const s = await db.queryOne(`SELECT telegram_chat_id, notify_telegram FROM user_settings WHERE user_id=$1`, [userId]);
+  if (s?.telegram_chat_id && (s.notify_telegram === true || s.notify_telegram === 1)) {
+    const lines = safe.map(([k, v]) => {
+      const labels = { high_flow_lpm: 'Yüksek akış eşiği', leak_flow_lpm: 'Sızıntı eşiği', leak_cont_min: 'Sürekli akış süresi', night_start_hour: 'Gece başlangıç saati', night_end_hour: 'Gece bitiş saati' };
+      return `• ${labels[k] || k}: <b>${v}</b>`;
+    }).join('\n');
+    await sendTelegram(s.telegram_chat_id.trim(),
+      `🤖 <b>AI Ayarları Güncelledi</b>\n\n${lines}\n\n💡 <i>${reason}</i>`
+    ).catch(() => {});
+  }
+
+  console.log(`[AI-THRESH] user ${userId}: ${actionDesc} — ${reason}`);
+}
+
+// Manuel tetikleme endpoint'i
+app.post('/api/ai/auto-manage', requireAuth, async (req, res) => {
+  try {
+    const ai = getAI();
+    if (!ai) return res.status(503).json({ error: 'AI servisi yapılandırılmamış (ANTHROPIC_API_KEY eksik)' });
+    await _aiAutoUpdateThresholds(ai, req.user.id);
+    const s = await db.queryOne(`SELECT ai_last_action, ai_last_action_ts FROM user_settings WHERE user_id=$1`, [req.user.id]);
+    res.json({ ok: true, last_action: s?.ai_last_action, last_action_ts: s?.ai_last_action_ts });
+  } catch (e) {
+    console.error('[AI-MANAGE]', e.message);
+    res.status(500).json({ error: 'AI yönetim hatası' });
+  }
+});
+
 // ── Başlat ────────────────────────────────────────────────────
 async function start() {
   await db.initSchema();
   scheduleReports();
   // Cihaz offline kontrolü: başlangıçta + her 2 dakikada
-  setTimeout(checkOfflineDevices, 10 * 1000); // sunucu açılışından 10sn sonra ilk kontrol
+  setTimeout(checkOfflineDevices, 10 * 1000);
   setInterval(checkOfflineDevices, 2 * 60 * 1000);
+  // AI otomatik analiz: her 10 dakikada
+  setInterval(runAIAutoAnalysis, 10 * 60 * 1000);
+  // AI eşik yöneticisi: her 24 saatte + açılıştan 5 dk sonra ilk çalışma
+  setTimeout(runAIThresholdManager, 5 * 60 * 1000);
+  setInterval(runAIThresholdManager, 24 * 60 * 60 * 1000);
   server.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('  ╔══════════════════════════════════════════════╗');

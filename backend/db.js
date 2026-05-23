@@ -200,6 +200,9 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS leak_flow_lpm REAL NOT NULL DEFAULT 0.3`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS leak_cont_min INTEGER NOT NULL DEFAULT 30`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS offline_repeat_min INTEGER NOT NULL DEFAULT 60`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_auto_manage BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action_ts TEXT`).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -224,6 +227,9 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN leak_flow_lpm REAL NOT NULL DEFAULT 0.3`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN leak_cont_min INTEGER NOT NULL DEFAULT 30`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN offline_repeat_min INTEGER NOT NULL DEFAULT 60`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_auto_manage INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action_ts TEXT`); } catch {}
   }
 }
 

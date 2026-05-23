@@ -1439,7 +1439,7 @@
       <div class="split-divider" data-split="bildirimler"></div>
 
       <!-- SAĞ: ANOMALİLER -->
-      <div class="split-col">
+      <div class="split-col" style="overflow:hidden">
       <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
         <div class="card-head">
           <div class="card-title">Anomaliler</div>
@@ -1654,9 +1654,35 @@
               </div>
 
             </div>
-            <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.1rem">
-              <button id="ai-analyze-btn" type="button" onclick="analyzeThresholds()"
-                style="font-size:.72rem;padding:.3rem .75rem;background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.3);border-radius:6px;cursor:pointer;font-weight:600">🤖 Analiz Et</button>
+            <!-- AI Oto-Yönetim -->
+            <div style="margin-top:1.25rem;padding:1rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+                <div style="display:flex;align-items:center;gap:.5rem">
+                  <span style="font-size:1rem">🤖</span>
+                  <span style="font-size:.8rem;font-weight:700;color:#c4b5fd">AI Oto-Yönetim</span>
+                  <span style="font-size:.65rem;padding:.1rem .4rem;background:rgba(139,92,246,.2);color:#a78bfa;border-radius:4px">BETA</span>
+                </div>
+                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">
+                  <input type="checkbox" id="ai-auto-manage-toggle" onchange="saveAnomalyTypeSettings()"
+                    style="width:15px;height:15px;accent-color:#8b5cf6;cursor:pointer">
+                  <span style="font-size:.72rem;color:var(--muted2)">Aktif</span>
+                </label>
+              </div>
+              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;margin-bottom:.75rem">
+                AI her gün eşikleri otomatik analiz eder ve günceller. Her 10 dakikada anormal durum varsa Telegram'a bildirir.
+              </div>
+              <div id="ai-last-action-info" style="display:none;font-size:.7rem;color:var(--muted2);background:var(--bg3);border-radius:6px;padding:.5rem .65rem;margin-bottom:.6rem;line-height:1.5">
+                <span style="color:#a78bfa">Son güncelleme:</span> <span id="ai-last-action-text"></span>
+              </div>
+              <div style="display:flex;gap:.5rem">
+                <button id="ai-analyze-btn" type="button" onclick="analyzeThresholds()"
+                  style="font-size:.7rem;padding:.3rem .65rem;background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25);border-radius:6px;cursor:pointer">🔍 Öneri Al</button>
+                <button id="ai-auto-manage-btn" type="button" onclick="aiAutoManage()"
+                  style="font-size:.7rem;padding:.3rem .65rem;background:rgba(139,92,246,.18);color:#c4b5fd;border:1px solid rgba(139,92,246,.35);border-radius:6px;cursor:pointer;font-weight:600">⚡ Şimdi Uygula</button>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
               <button class="btn-sm btn-primary" onclick="saveAnomalyTypeSettings()">Kaydet</button>
             </div>
           </div>
@@ -3763,6 +3789,7 @@ async function saveAnomalyTypeSettings() {
     leak_flow_lpm:       parseFloat(g('at-leak-flow')?.value    ?? 0.3),
     leak_cont_min:       parseInt(g('at-leak-min')?.value       ?? 30),
     offline_repeat_min:  parseInt(g('at-offline-repeat')?.value ?? 60),
+    ai_auto_manage:      !!(g('ai-auto-manage-toggle')?.checked),
   };
   try {
     const r = await fetch(`${API}/api/settings`, {
@@ -3795,6 +3822,16 @@ async function loadAnomalyTypeSettings() {
     set('at-leak-flow',     s.leak_flow_lpm      ?? 0.3);
     set('at-leak-min',      s.leak_cont_min      ?? 30);
     set('at-offline-repeat',s.offline_repeat_min ?? 60);
+    // AI Oto-Yönetim
+    const toggle = document.getElementById('ai-auto-manage-toggle');
+    if (toggle) toggle.checked = !!(s.ai_auto_manage);
+    const infoEl  = document.getElementById('ai-last-action-info');
+    const textEl  = document.getElementById('ai-last-action-text');
+    if (infoEl && textEl && s.ai_last_action) {
+      const ts = s.ai_last_action_ts ? new Date(s.ai_last_action_ts).toLocaleString('tr-TR') : '';
+      textEl.textContent = `${s.ai_last_action}${ts ? ' · ' + ts : ''}`;
+      infoEl.style.display = '';
+    }
   } catch { /* sessiz */ }
 }
 
@@ -4666,7 +4703,39 @@ async function analyzeThresholds() {
       showToast('❌ ' + (data.error || 'AI analiz hatası'));
     }
   } catch { showToast('❌ Bağlantı hatası'); }
-  finally { if (btn) { btn.disabled = false; btn.textContent = '🤖 Analiz Et'; } }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '🔍 Öneri Al'; } }
+}
+
+async function aiAutoManage() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const btn   = document.getElementById('ai-auto-manage-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⚡ Analiz ediliyor...'; }
+  try {
+    const r = await fetch(`${API}/api/ai/auto-manage`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await r.json();
+    if (r.ok) {
+      if (data.last_action) {
+        const ts = data.last_action_ts ? new Date(data.last_action_ts).toLocaleString('tr-TR') : '';
+        const infoEl = document.getElementById('ai-last-action-info');
+        const textEl = document.getElementById('ai-last-action-text');
+        if (infoEl && textEl) {
+          textEl.textContent = `${data.last_action}${ts ? ' · ' + ts : ''}`;
+          infoEl.style.display = '';
+        }
+        showToast('🤖 AI ayarları güncelledi: ' + data.last_action);
+        loadAnomalyTypeSettings(); // formu yenile
+      } else {
+        showToast('🤖 Yeterli veri yok veya değişiklik gerekmedi');
+      }
+    } else {
+      showToast('❌ ' + (data.error || 'AI yönetim hatası'));
+    }
+  } catch { showToast('❌ Bağlantı hatası'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '⚡ Şimdi Uygula'; } }
 }
 
 async function explainAnomaly(id) {
