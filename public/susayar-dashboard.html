@@ -37,7 +37,8 @@
     background: var(--bg);
     color: var(--text);
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     font-size: 14px;
     line-height: 1.5;
   }
@@ -200,11 +201,15 @@
   .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.04); }
 
   /* ── CONTENT ────────────────────────────── */
-  .content { flex: 1; overflow-y: auto; padding: 1.75rem; }
+  .content { flex: 1; overflow: hidden; padding: 1.75rem; display: flex; flex-direction: column; min-height: 0; }
 
   /* ── PAGE SYSTEM ────────────────────────── */
   .page { display: none; animation: fadeIn .2s ease; }
-  .page.active { display: block; }
+  .page.active { display: flex; flex-direction: column; flex: 1; overflow-y: auto; min-height: 0; }
+  /* Split panel layout (Bildirimler, Uyarı Ayarları) */
+  .page-split.active { flex-direction: row; overflow: hidden; gap: 1.25rem; }
+  .split-col { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.25rem; min-height: 0; }
+  .split-col-sm { flex: none; width: 360px; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes tatilPulse { 0%,100%{border-color:var(--red)} 50%{border-color:rgba(239,68,68,.25)} }
   @keyframes alertShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
@@ -798,6 +803,12 @@
 
     /* Sidebar footer */
     .sidebar-footer { padding: 1rem; }
+
+    /* Split panel → dikey stack mobilde */
+    .page-split.active { flex-direction: column; overflow-y: auto; }
+    .split-col, .split-col-sm { flex: none !important; width: 100% !important; overflow-y: visible; }
+    .split-col .card[style*="flex:1"] { flex: none !important; }
+    #anomaly-list { overflow-y: visible !important; }
   }
 
   @media (max-width: 400px) {
@@ -1327,7 +1338,10 @@
     </div><!-- /page-cihazlarim -->
 
     <!-- PAGE: BİLDİRİMLER -->
-    <div class="page" id="page-bildirimler">
+    <div class="page page-split" id="page-bildirimler">
+
+      <!-- SOL: BİLDİRİM KANALLARI -->
+      <div class="split-col split-col-sm">
 
       <!-- BİLDİRİM KANALLARI KARTI -->
       <div class="card" style="margin-bottom:1.25rem">
@@ -1403,8 +1417,11 @@
         </div>
       </div>
 
-      <!-- ANOMALİLER KARTI -->
-      <div class="card">
+      </div><!-- /split-col-sm -->
+
+      <!-- SAĞ: ANOMALİLER -->
+      <div class="split-col">
+      <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
         <div class="card-head">
           <div class="card-title">Anomaliler</div>
           <div style="display:flex;gap:.5rem;align-items:center">
@@ -1428,13 +1445,17 @@
           <button type="button" class="anomaly-filter-btn" data-filter="resolved"
             onclick="filterAnomalies('resolved')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Çözüldü</button>
         </div>
-        <div id="anomaly-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
+        <div id="anomaly-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;min-height:0"></div>
       </div>
+      </div><!-- /split-col -->
 
     </div><!-- /page-bildirimler -->
 
     <!-- PAGE: UYARI AYARLARI (eski: SİSTEM ÖĞRENİYOR) -->
-    <div class="page" id="page-sistem-ogreniyor">
+    <div class="page page-split" id="page-sistem-ogreniyor">
+
+      <!-- SOL: UYARI AYARLARI -->
+      <div class="split-col" style="flex:1">
 
         <!-- UYARI AYARLARI KARTI -->
         <div class="card" style="margin-bottom:1.25rem">
@@ -1510,6 +1531,11 @@
             <button class="btn-sm btn-primary" onclick="saveSettings()">Ayarları Kaydet</button>
           </div>
         </div>
+
+      </div><!-- /split-col sol -->
+
+      <!-- SAĞ: UYARI YÖNETİMİ -->
+      <div class="split-col" style="flex:1">
 
         <!-- UYARI TİPİ YÖNETİMİ -->
         <div class="card">
@@ -1615,6 +1641,7 @@
           </div>
 
         </div>
+      </div><!-- /split-col sağ -->
     </div><!-- /page-sistem-ogreniyor -->
 
     <!-- PAGE: CİHAZ AYARLARI -->
