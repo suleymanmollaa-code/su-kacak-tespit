@@ -1718,6 +1718,55 @@
           </div>
 
         </div>
+
+        <!-- TATİL MODU KARTI -->
+        <div class="card" style="margin-top:1.25rem">
+          <div class="card-head">
+            <div class="card-title">🧳 Tatil / Uzak Mod</div>
+            <div id="tatil-status-badge" style="font-size:.68rem;padding:.18rem .55rem;border-radius:5px;font-weight:700;background:rgba(100,116,139,.12);color:var(--muted);border:1px solid var(--border2)">PASİF</div>
+          </div>
+          <div style="font-size:.77rem;color:var(--muted2);line-height:1.55;margin-bottom:1rem">
+            Aktifken herhangi bir su akışı <strong style="color:var(--text)">kritik alarm</strong> olarak işaretlenir ve anında bildirim gönderilir. Eve izinsiz giriş veya kaçak için idealdir.
+          </div>
+
+          <!-- Aktif değilken: form -->
+          <div id="tatil-form-area">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.85rem">
+              <div>
+                <label class="form-label">Süre</label>
+                <select class="form-select" id="tatil-gun-select">
+                  <option value="2">2 gün</option>
+                  <option value="5" selected>5 gün</option>
+                  <option value="10">10 gün</option>
+                  <option value="14">14 gün</option>
+                  <option value="0">Dönene kadar</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Yetkili kişi (opsiyonel)</label>
+                <input type="text" class="form-input" id="tatil-yetkili-input" placeholder="örn: Komşu Ayşe">
+              </div>
+            </div>
+            <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:.65rem .85rem;font-size:.72rem;color:var(--muted);margin-bottom:.85rem">
+              ⚠️ Aktif bırakırsanız kendi kullanımınız da alarm tetikler. Ayarladığınız süre sonunda otomatik kapanır.
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn-sm" style="background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)" onclick="activateTatilModu()">🧳 Tatil Modunu Aktif Et</button>
+            </div>
+          </div>
+
+          <!-- Aktifken: durum -->
+          <div id="tatil-active-area" style="display:none">
+            <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:.85rem 1rem;margin-bottom:.85rem">
+              <div style="font-size:.82rem;font-weight:700;color:#ef4444;margin-bottom:.3rem">🚨 Tatil Modu Aktif</div>
+              <div style="font-size:.75rem;color:var(--muted2)" id="tatil-detail-text">—</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn-sm btn-primary" onclick="deactivateTatilModuBackend()">🏠 Eve Döndük — Kapat</button>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /split-col sağ -->
     </div><!-- /page-sistem-ogreniyor -->
 
@@ -2618,6 +2667,71 @@ function deactivateTatilModu() {
   clearTimeout(tatilSimTimer);
   renderToggles();
   showToast('&#x1F3E0; Tatil modu kapatıldı — hoş geldiniz!');
+}
+
+async function activateTatilModu() {
+  const API     = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token   = localStorage.getItem('susayar_token') || '';
+  const gun     = parseInt(document.getElementById('tatil-gun-select')?.value ?? '5', 10);
+  const yetkili = document.getElementById('tatil-yetkili-input')?.value?.trim() || '';
+  let until = null;
+  if (gun > 0) {
+    const d = new Date();
+    d.setDate(d.getDate() + gun);
+    until = d.toISOString();
+  }
+  try {
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tatil_modu: true, tatil_modu_until: until, tatil_yetkili: yetkili }),
+    });
+    if (!r.ok) { showToast('&#x274C; Kayıt hatası'); return; }
+    showToast('&#x1F9F3; Tatil modu aktif edildi');
+    _updateTatilUI({ tatil_modu: true, tatil_modu_until: until, tatil_yetkili: yetkili });
+  } catch { showToast('&#x274C; Bağlantı hatası'); }
+}
+
+async function deactivateTatilModuBackend() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tatil_modu: false, tatil_modu_until: null, tatil_yetkili: '' }),
+    });
+    if (!r.ok) { showToast('&#x274C; Kayıt hatası'); return; }
+    showToast('&#x1F3E0; Tatil modu kapatıldı — hoş geldiniz!');
+    _updateTatilUI({ tatil_modu: false, tatil_modu_until: null, tatil_yetkili: '' });
+  } catch { showToast('&#x274C; Bağlantı hatası'); }
+}
+
+function _updateTatilUI(s) {
+  const active   = !!s.tatil_modu;
+  const badge    = document.getElementById('tatil-status-badge');
+  const formEl   = document.getElementById('tatil-form-area');
+  const activeEl = document.getElementById('tatil-active-area');
+  const detailEl = document.getElementById('tatil-detail-text');
+  if (badge) {
+    badge.textContent      = active ? 'AKTİF' : 'PASİF';
+    badge.style.background = active ? 'rgba(239,68,68,.15)'         : 'rgba(100,116,139,.12)';
+    badge.style.color      = active ? '#ef4444'                     : 'var(--muted)';
+    badge.style.border     = active ? '1px solid rgba(239,68,68,.3)': '1px solid var(--border2)';
+  }
+  if (formEl)   formEl.style.display   = active ? 'none' : '';
+  if (activeEl) activeEl.style.display = active ? ''     : 'none';
+  if (detailEl && active) {
+    let detail = '';
+    if (s.tatil_modu_until) {
+      const d = new Date(s.tatil_modu_until);
+      detail += 'Bitiş: ' + d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    } else {
+      detail += 'Süre: Dönene kadar';
+    }
+    if (s.tatil_yetkili) detail += ' · Yetkili: ' + s.tatil_yetkili;
+    detailEl.textContent = detail;
+  }
 }
 
 // Feedback butonlari — askiya alma akisini tetikler
@@ -3858,6 +3972,7 @@ async function loadAnomalyTypeSettings() {
     set('at-leak-flow',     s.leak_flow_lpm      ?? 0.3);
     set('at-leak-min',      s.leak_cont_min      ?? 30);
     set('at-offline-repeat',s.offline_repeat_min ?? 60);
+    _updateTatilUI(s);
   } catch { /* sessiz */ }
 }
 

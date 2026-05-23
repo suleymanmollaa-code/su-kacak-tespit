@@ -629,6 +629,9 @@ app.get('/api/settings', requireAuth, async (req, res) => {
         ai_auto_manage:         !!(s.ai_auto_manage),
         ai_last_action:         s.ai_last_action || null,
         ai_last_action_ts:      s.ai_last_action_ts || null,
+        tatil_modu:             !!(s.tatil_modu),
+        tatil_modu_until:       s.tatil_modu_until || null,
+        tatil_yetkili:          s.tatil_yetkili || '',
       }});
     }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -641,7 +644,8 @@ app.put('/api/settings', requireAuth, async (req, res) => {
             notify_realtime_email, notify_telegram, telegram_chat_id,
             night_start_hour, night_start_minute, night_end_hour, night_end_minute,
             high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min,
-            ai_auto_manage } = req.body;
+            ai_auto_manage,
+            tatil_modu, tatil_modu_until, tatil_yetkili } = req.body;
     const hour   = parseInt(alert_after_hour   ?? 22);
     const minute = parseInt(alert_after_minute ?? 0);
     const mins   = parseInt(continuous_flow_min ?? 30);
@@ -673,25 +677,30 @@ app.put('/api/settings', requireAuth, async (req, res) => {
       const dr  = daily_report          !== undefined ? daily_report          : cur.daily_report;
       const wr  = weekly_report         !== undefined ? weekly_report         : cur.weekly_report;
       const aam = ai_auto_manage        !== undefined ? ai_auto_manage        : cur.ai_auto_manage;
+      const tm  = tatil_modu            !== undefined ? tatil_modu            : cur.tatil_modu;
+      const tmu = tatil_modu_until      !== undefined ? tatil_modu_until      : cur.tatil_modu_until;
+      const tmy = tatil_yetkili         !== undefined ? tatil_yetkili         : cur.tatil_yetkili;
       await db.queryRun(
         `INSERT INTO user_settings
            (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
             notify_realtime_email,notify_telegram,telegram_chat_id,
             night_start_hour,night_start_minute,night_end_hour,night_end_minute,
-            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min,ai_auto_manage)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min,ai_auto_manage,
+            tatil_modu,tatil_modu_until,tatil_yetkili)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
          ON CONFLICT (user_id) DO UPDATE SET
            alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4,
            daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9,
            night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
            high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17,
-           ai_auto_manage=$18`,
+           ai_auto_manage=$18, tatil_modu=$19, tatil_modu_until=$20, tatil_yetkili=$21`,
         [req.user.id, hour, minute, mins,
          dr ? 1 : 0, wr ? 1 : 0,
          nre ? 1 : 0, ntg ? 1 : 0,
          cid || null,
          nsh, nsm, neh, nem, hfl, lfl, lcm, orm,
-         aam ? 1 : 0]
+         aam ? 1 : 0,
+         tm ? 1 : 0, tmu || null, tmy || null]
       );
     }
     res.json({ ok: true });
@@ -854,6 +863,21 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       if (leakRows.length >= minLeakCount && leakRows.every(r => r.flow_lpm > 0 && r.flow_lpm <= leakFlowLpm)) {
         anomalies.push({ type: 'kacak', detail: `${leakContMin} dakikadır düşük sürekli akış: ort. ${reading.flow_lpm.toFixed(2)} L/dk — sızıntı şüphesi` });
       }
+    }
+
+    // ── Tatil modu ───────────────────────────────────────────────
+    const tatilActive  = !!settings?.tatil_modu;
+    const tatilUntil   = settings?.tatil_modu_until;
+    const tatilExpired = tatilUntil && new Date(tatilUntil) < new Date();
+    if (tatilActive && tatilExpired) {
+      // Süre doldu, otomatik kapat
+      await db.queryRun(
+        `UPDATE user_settings SET tatil_modu=$1, tatil_modu_until=NULL WHERE user_id=$2`,
+        [db.isPg ? false : 0, reading.user_id]
+      ).catch(() => {});
+    } else if (tatilActive && !tatilExpired && reading.flow_lpm > 0.1) {
+      const yetkiliNote = settings.tatil_yetkili ? ` · Yetkili: ${settings.tatil_yetkili}` : '';
+      anomalies.push({ type: 'tatil-akis', detail: `Tatil modunda akış: ${reading.flow_lpm.toFixed(1)} L/dk — yetkisiz giriş veya boru kaçağı şüphesi${yetkiliNote}` });
     }
 
     // Cooldown: surekli-akis için 30dk, diğerleri için 60dk (cihaz bazlı)

@@ -203,6 +203,9 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_auto_manage BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action_ts TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_modu BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_modu_until TEXT`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_yetkili TEXT`).catch(() => {});
     await _pool.query(`
       CREATE TABLE IF NOT EXISTS ai_action_log (
         id         SERIAL PRIMARY KEY,
@@ -240,6 +243,9 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_auto_manage INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action_ts TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_modu INTEGER NOT NULL DEFAULT 0`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_modu_until TEXT`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_yetkili TEXT`); } catch {}
     try { _db.exec(`CREATE TABLE IF NOT EXISTS ai_action_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL,
       action TEXT NOT NULL, detail TEXT, ts TEXT NOT NULL
