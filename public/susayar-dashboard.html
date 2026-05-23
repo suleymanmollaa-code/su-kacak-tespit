@@ -207,9 +207,26 @@
   .page { display: none; animation: fadeIn .2s ease; }
   .page.active { display: flex; flex-direction: column; flex: 1; overflow-y: auto; min-height: 0; }
   /* Split panel layout (Bildirimler, Uyarı Ayarları) */
-  .page-split.active { flex-direction: row; overflow: hidden; gap: 1.25rem; }
+  .page-split.active { flex-direction: row; overflow: hidden; gap: 0; }
   .split-col { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.25rem; min-height: 0; }
   .split-col-sm { flex: none; width: 360px; }
+  /* Resize divider */
+  .split-divider {
+    width: 6px; flex-shrink: 0; cursor: col-resize;
+    background: transparent; position: relative; z-index: 10;
+    transition: background .15s;
+    margin: 0 .3rem;
+  }
+  .split-divider::after {
+    content: '';
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 2px; height: 48px; border-radius: 2px;
+    background: var(--border2);
+    transition: background .15s, height .15s;
+  }
+  .split-divider:hover::after, .split-divider.dragging::after {
+    background: var(--blue); height: 64px;
+  }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes tatilPulse { 0%,100%{border-color:var(--red)} 50%{border-color:rgba(239,68,68,.25)} }
   @keyframes alertShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
@@ -1419,6 +1436,8 @@
 
       </div><!-- /split-col-sm -->
 
+      <div class="split-divider" data-split="bildirimler"></div>
+
       <!-- SAĞ: ANOMALİLER -->
       <div class="split-col">
       <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
@@ -1533,6 +1552,8 @@
         </div>
 
       </div><!-- /split-col sol -->
+
+      <div class="split-divider" data-split="sistem-ogreniyor"></div>
 
       <!-- SAĞ: UYARI YÖNETİMİ -->
       <div class="split-col" style="flex:1">
@@ -4564,6 +4585,48 @@ async function pollLatest() {
   } catch {}
 }
 setInterval(pollLatest, 3000);
+
+// ── Split Panel Resize ────────────────────────────────────────
+(function() {
+  function initSplitResize(divider) {
+    const splitId = divider.dataset.split;
+    const page    = divider.closest('.page-split');
+    const left    = divider.previousElementSibling;
+    const right   = divider.nextElementSibling;
+    if (!left || !right) return;
+
+    // Kaydedilmiş genişliği yükle
+    const saved = localStorage.getItem('split_w_' + splitId);
+    if (saved) { left.style.flex = 'none'; left.style.width = saved + 'px'; }
+
+    divider.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      divider.classList.add('dragging');
+      const startX     = e.clientX;
+      const startWidth = left.getBoundingClientRect().width;
+
+      function onMove(e) {
+        const pageW  = page.getBoundingClientRect().width;
+        const newW   = Math.max(220, Math.min(pageW - 220, startWidth + e.clientX - startX));
+        left.style.flex  = 'none';
+        left.style.width = newW + 'px';
+      }
+      function onUp() {
+        divider.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        localStorage.setItem('split_w_' + splitId, left.getBoundingClientRect().width);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  // Sayfa yüklenince tüm divider'ları başlat
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.split-divider').forEach(initSplitResize);
+  });
+})();
 
 // ── AI Fonksiyonları ──────────────────────────────────────────
 function _showAiModal(title, content) {
