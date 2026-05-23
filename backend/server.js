@@ -15,6 +15,7 @@ const bcrypt            = require('bcryptjs');
 const jwt               = require('jsonwebtoken');
 const { randomUUID }    = require('crypto');
 const { Resend }        = require('resend');
+const Anthropic         = require('@anthropic-ai/sdk');
 const db                = require('./db');
 
 // ── E-posta ───────────────────────────────────────────────────
@@ -410,6 +411,115 @@ app.put('/api/anomalies/:id/feedback', requireAuth, async (req, res) => {
     await db.queryRun(`UPDATE anomalies SET feedback=$1 WHERE id=$2 AND user_id=$3`, [feedback, req.params.id, req.user.id]);
     res.json({ ok: true });
   } catch { res.status(500).json({ error: 'Sunucu hatası' }); }
+});
+
+// ── AI Endpoints ──────────────────────────────────────────────
+function getAI() {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return null;
+  return new Anthropic({ apiKey: key });
+}
+
+// Eşik öneri analizi (son 30 günlük veri → Claude)
+app.post('/api/ai/analyze-thresholds', requireAuth, async (req, res) => {
+  try {
+    const ai = getAI();
+    if (!ai) return res.status(503).json({ error: 'AI servisi yapılandırılmamış (ANTHROPIC_API_KEY eksik)' });
+
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const readings = await db.queryAll(
+      `SELECT flow_lpm, ts FROM readings WHERE user_id=$1 AND ts>=$2 ORDER BY ts DESC LIMIT 2000`,
+      [req.user.id, cutoff]
+    );
+    if (readings.length < 20) return res.status(400).json({ error: 'Yeterli veri yok (en az 20 okuma gerekli)' });
+
+    const settings = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
+    const flows = readings.map(r => r.flow_lpm).filter(f => f > 0).sort((a, b) => a - b);
+    const avg = flows.reduce((a, b) => a + b, 0) / flows.length;
+    const max = flows[flows.length - 1];
+    const p95 = flows[Math.floor(flows.length * 0.95)];
+    const nightFlows = readings.filter(r => { const h = new Date(r.ts).getHours(); return h >= 0 && h < 6 && r.flow_lpm > 0; });
+    const nightAvg = nightFlows.length
+      ? (nightFlows.reduce((a, b) => a + b.flow_lpm, 0) / nightFlows.length).toFixed(2)
+      : '0.00';
+
+    const prompt = `Sen bir su tüketimi analiz uzmanısın. Kullanıcının sensör verilerine bakarak uyarı eşikleri için öneri sun.
+
+VERİ ÖZETİ (son 30 gün, ${readings.length} okuma):
+- Ortalama akış (>0): ${avg.toFixed(2)} L/dk
+- Maksimum akış: ${max.toFixed(2)} L/dk
+- %95 persentil: ${p95?.toFixed(2) ?? 'N/A'} L/dk
+- Gece (00-06) akış sayısı: ${nightFlows.length} | ortalama: ${nightAvg} L/dk
+
+MEVCUT AYARLAR:
+- Gece aralığı: ${settings.night_start_hour ?? 0}:${String(settings.night_start_minute ?? 0).padStart(2,'0')} – ${settings.night_end_hour ?? 5}:${String(settings.night_end_minute ?? 0).padStart(2,'0')}
+- Yüksek akış eşiği: ${settings.high_flow_lpm ?? 8} L/dk
+- Sürekli akış alarm süresi: ${settings.continuous_flow_min ?? 30} dk
+- Sızıntı eşiği: ${settings.leak_flow_lpm ?? 0.3} L/dk, ${settings.leak_cont_min ?? 30} dk
+- Cihaz offline tekrar: ${settings.offline_repeat_min ?? 60} dk
+
+Kısa, net ve Türkçe öneri ver. Veriye dayalı ol. Mevcut ayar zaten uygunsa bunu da belirt. Maksimum 5 madde, her madde 1-2 cümle.`;
+
+    const msg = await ai.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    res.json({ ok: true, analysis: msg.content[0]?.text || '' });
+  } catch (e) {
+    console.error('[AI] analyze-thresholds:', e.message);
+    res.status(500).json({ error: 'AI analiz hatası' });
+  }
+});
+
+// Anomali açıklama
+app.post('/api/ai/explain-anomaly/:id', requireAuth, async (req, res) => {
+  try {
+    const ai = getAI();
+    if (!ai) return res.status(503).json({ error: 'AI servisi yapılandırılmamış (ANTHROPIC_API_KEY eksik)' });
+
+    const anomaly = await db.queryOne(
+      `SELECT * FROM anomalies WHERE id=$1 AND user_id=$2`, [req.params.id, req.user.id]
+    );
+    if (!anomaly) return res.status(404).json({ error: 'Anomali bulunamadı' });
+
+    const from = new Date(new Date(anomaly.ts).getTime() - 2 * 60 * 60 * 1000).toISOString();
+    const to   = new Date(new Date(anomaly.ts).getTime() + 30 * 60 * 1000).toISOString();
+    const readings = await db.queryAll(
+      `SELECT flow_lpm, ts FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 AND ts<=$4 ORDER BY ts ASC LIMIT 60`,
+      [req.user.id, anomaly.device, from, to]
+    );
+
+    const TYPE_LABELS = { 'yuksek-akis':'Yüksek Akış','surekli-akis':'Sürekli Akış','kacak':'Sızıntı Tespiti','gece-akis':'Gece Akışı','saat-akis':'Saat Uyarısı','cihaz-offline':'Cihaz Çevrimdışı' };
+    const sample = readings.slice(0, 15).map(r => `${new Date(r.ts).toLocaleTimeString('tr-TR')} → ${r.flow_lpm.toFixed(2)} L/dk`).join('\n');
+
+    const prompt = `Sen bir su tüketimi analiz uzmanısın. Aşağıdaki anomaliyi Türkçe, kısa ve anlaşılır biçimde açıkla.
+
+ANOMALİ:
+- Tip: ${TYPE_LABELS[anomaly.type] || anomaly.type}
+- Zaman: ${new Date(anomaly.ts).toLocaleString('tr-TR')}
+- Detay: ${anomaly.detail}
+
+YAKIN ZAMANLI OKUMALAR:
+${sample || '(veri yok)'}
+
+Lütfen şunları açıkla:
+1. Bu anomali muhtemelen ne anlama geliyor? (Gerçek hayattan örnek: çamaşır makinesi, bahçe sulama, musluk sızıntısı vb.)
+2. Tehlikeli mi yoksa normal mi?
+3. Kullanıcı ne yapmalı?
+
+Maksimum 4 cümle. Sade ve net.`;
+
+    const msg = await ai.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    res.json({ ok: true, explanation: msg.content[0]?.text || '' });
+  } catch (e) {
+    console.error('[AI] explain-anomaly:', e.message);
+    res.status(500).json({ error: 'AI açıklama hatası' });
+  }
 });
 
 // ── Öğrenme istatistikleri ────────────────────────────────────
