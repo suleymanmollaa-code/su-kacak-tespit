@@ -1561,54 +1561,16 @@
     <!-- PAGE: UYARI AYARLARI (eski: SİSTEM ÖĞRENİYOR) -->
     <div class="page page-split" id="page-sistem-ogreniyor">
 
-      <!-- SOL: UYARI AYARLARI -->
+      <!-- SOL: RAPOR AYARLARI -->
       <div class="split-col" style="flex:1">
 
-        <!-- UYARI AYARLARI KARTI -->
+        <!-- RAPOR AYARLARI KARTI -->
         <div class="card" style="margin-bottom:1.25rem">
           <div class="card-head">
-            <div class="card-title">Uyarı Ayarları</div>
+            <div class="card-title">Rapor Ayarları</div>
             <span id="settings-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
           </div>
-          <!-- CİHAZ SEÇİCİ -->
-          <div class="form-group" style="margin-bottom:1.25rem">
-            <label class="form-label">Ayar Uygulanacak Cihaz</label>
-            <select class="form-select" id="setting-device" onchange="onSettingDeviceChange()">
-              <option value="">Tüm Cihazlar (varsayılan)</option>
-            </select>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Her cihaz için ayrı uyarı saati ve süre ayarlayabilirsiniz.</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
-            <div>
-              <div class="form-group">
-                <label class="form-label">Uyarı Başlangıç Saati</label>
-                <div style="display:flex;gap:.5rem;align-items:center">
-                  <select class="form-select" id="setting-alert-hour" style="flex:1">
-                    <option value="0">00</option><option value="1">01</option><option value="2">02</option>
-                    <option value="3">03</option><option value="4">04</option><option value="5">05</option>
-                    <option value="6">06</option><option value="7">07</option><option value="8">08</option>
-                    <option value="9">09</option><option value="10">10</option><option value="11">11</option>
-                    <option value="12">12</option><option value="13">13</option><option value="14">14</option>
-                    <option value="15">15</option><option value="16">16</option><option value="17">17</option>
-                    <option value="18">18</option><option value="19">19</option><option value="20">20</option>
-                    <option value="21">21</option><option value="22" selected>22</option><option value="23">23</option>
-                  </select>
-                  <span style="color:var(--muted);font-weight:700;flex-shrink:0">:</span>
-                  <select class="form-select" id="setting-alert-minute" style="flex:1">
-                    <option value="0">00</option><option value="5">05</option><option value="10">10</option>
-                    <option value="15">15</option><option value="20">20</option><option value="25">25</option>
-                    <option value="30">30</option><option value="45">45</option>
-                  </select>
-                </div>
-                <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Bu saatten sonra su akışı varsa uyarı alırsınız.</div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Sürekli Akış Uyarısı (dakika)</label>
-                <input type="number" class="form-input" id="setting-cont-flow" min="5" max="120" value="30" placeholder="30">
-                <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Kesintisiz akış bu süreyi aşarsa uyarı alırsınız.</div>
-              </div>
-            </div>
-            <div>
+          <div>
               <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem">Düzenli Raporlar</div>
               <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;margin-bottom:.6rem;border:1px solid var(--border)">
                 <div style="position:relative;width:36px;height:20px;flex-shrink:0">
@@ -1633,9 +1595,8 @@
                 </div>
               </label>
             </div>
-          </div>
           <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
-            <button class="btn-sm btn-primary" onclick="saveSettings()">Ayarları Kaydet</button>
+            <button class="btn-sm btn-primary" onclick="saveSettings()">Kaydet</button>
           </div>
         </div>
 
@@ -1652,6 +1613,15 @@
             <div class="card-title">⚙️ Uyarı Yönetimi</div>
             <button type="button" onclick="loadAnomalyTypeSettings()"
               style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          </div>
+
+          <!-- CİHAZ SEÇİCİ (per-device eşik ayarı için) -->
+          <div class="form-group" style="margin-bottom:1.25rem">
+            <label class="form-label">Ayar Uygulanacak Cihaz</label>
+            <select class="form-select" id="at-device" onchange="loadAnomalyTypeSettings()">
+              <option value="">Tüm Cihazlar (varsayılan)</option>
+            </select>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Her cihaz için ayrı eşik ve zamanlama ayarlayabilirsiniz.</div>
           </div>
 
           <!-- EŞİK & ZAMANLAMA AYARLARI — statik form, JS sadece değerleri doldurur -->
@@ -2050,7 +2020,7 @@ navItems.forEach(item => {
     if (pageId === 'anomaliler')      { loadAnomalies(); }
     if (pageId === 'bildirimler')     { loadSettings(); }
     if (pageId === 'ai-yonetim')      { loadAiInsights(); }
-    if (pageId === 'sistem-ogreniyor') { loadSettings(); loadAnomalyTypeSettings(); }
+    if (pageId === 'sistem-ogreniyor') { loadSettings(); loadAnomalyTypeSettings(); } // loadSettings for reports, loadAnomalyTypeSettings for thresholds+device-list
   });
 });
 
@@ -3836,8 +3806,9 @@ async function loadLearning(fullPage = false) {
 }
 
 async function saveAnomalyTypeSettings() {
-  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-  const token = localStorage.getItem('susayar_token') || '';
+  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token  = localStorage.getItem('susayar_token') || '';
+  const device = document.getElementById('at-device')?.value || '';
   const g = id => document.getElementById(id);
   const body = {
     alert_after_hour:    parseInt(g('at-alert-h')?.value        ?? 22),
@@ -3852,22 +3823,26 @@ async function saveAnomalyTypeSettings() {
     leak_cont_min:       parseInt(g('at-leak-min')?.value       ?? 30),
     offline_repeat_min:  parseInt(g('at-offline-repeat')?.value ?? 60),
   };
+  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
   try {
-    const r = await fetch(`${API}/api/settings`, {
+    const r = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
-    if (r.ok) showToast('✅ Eşik ayarları kaydedildi');
+    if (r.ok) showToast(device ? `✅ ${device} cihaz eşikleri kaydedildi` : '✅ Eşik ayarları kaydedildi');
     else showToast('❌ Kayıt başarısız');
   } catch { showToast('❌ Bağlantı hatası'); }
 }
 
 async function loadAnomalyTypeSettings() {
-  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-  const token = localStorage.getItem('susayar_token') || '';
+  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token  = localStorage.getItem('susayar_token') || '';
+  await loadSettingsDeviceList();
+  const device = document.getElementById('at-device')?.value || '';
+  const url    = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
   try {
-    const r = await fetch(`${API}/api/settings`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!r.ok) return;
     const { settings } = await r.json();
     const s = settings || {};
@@ -4336,13 +4311,12 @@ function toggleSlider(checkbox) {
 async function loadSettingsDeviceList() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const sel   = document.getElementById('setting-device');
+  const sel   = document.getElementById('at-device');
   if (!sel) return;
   try {
     const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
     const devs = await r.json();
     if (!r.ok || !Array.isArray(devs)) return;
-    // Mevcut seçimi koru
     const current = sel.value;
     sel.innerHTML = `<option value="">Tüm Cihazlar (varsayılan)</option>` +
       devs.map(d => `<option value="${d.device_id}">${esc(d.name)}</option>`).join('');
@@ -4353,21 +4327,13 @@ async function loadSettingsDeviceList() {
 async function loadSettings() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  await loadSettingsDeviceList();
-  const device = document.getElementById('setting-device')?.value || '';
-  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
+  const url = `${API}/api/settings`;
   try {
     const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!r.ok) return;
     const { settings } = await r.json();
-    const hourEl   = document.getElementById('setting-alert-hour');
-    const minEl    = document.getElementById('setting-alert-minute');
-    const contEl   = document.getElementById('setting-cont-flow');
     const dailyEl  = document.getElementById('setting-daily');
     const weeklyEl = document.getElementById('setting-weekly');
-    if (hourEl)   hourEl.value  = String(settings.alert_after_hour   ?? 22);
-    if (minEl)    minEl.value   = String(settings.alert_after_minute ?? 0);
-    if (contEl)   contEl.value  = String(settings.continuous_flow_min ?? 30);
     if (dailyEl)  { dailyEl.checked  = !!settings.daily_report;  toggleSlider(dailyEl); }
     if (weeklyEl) { weeklyEl.checked = !!settings.weekly_report; toggleSlider(weeklyEl); }
     // Bildirim kanalları (global, cihaza bağlı değil)
@@ -4382,37 +4348,15 @@ async function loadSettings() {
   } catch { /* sessiz hata */ }
 }
 
-async function onSettingDeviceChange() {
-  // Cihaz değişince o cihazın ayarlarını yükle
-  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-  const token = localStorage.getItem('susayar_token') || '';
-  const device = document.getElementById('setting-device')?.value || '';
-  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
-  try {
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) return;
-    const { settings } = await r.json();
-    const hourEl = document.getElementById('setting-alert-hour');
-    const minEl  = document.getElementById('setting-alert-minute');
-    const contEl = document.getElementById('setting-cont-flow');
-    if (hourEl) hourEl.value = String(settings.alert_after_hour   ?? 22);
-    if (minEl)  minEl.value  = String(settings.alert_after_minute ?? 0);
-    if (contEl) contEl.value = String(settings.continuous_flow_min ?? 30);
-  } catch { /* sessiz */ }
-}
 
 async function saveSettings() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
-  const device = document.getElementById('setting-device')?.value || '';
   const body = {
-    alert_after_hour:   parseInt(document.getElementById('setting-alert-hour')?.value   || '22', 10),
-    alert_after_minute: parseInt(document.getElementById('setting-alert-minute')?.value || '0',  10),
-    continuous_flow_min: parseInt(document.getElementById('setting-cont-flow')?.value   || '30', 10),
     daily_report:  document.getElementById('setting-daily')?.checked  || false,
     weekly_report: document.getElementById('setting-weekly')?.checked || false,
   };
-  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
+  const url = `${API}/api/settings`;
   try {
     const r = await fetch(url, {
       method: 'PUT',
