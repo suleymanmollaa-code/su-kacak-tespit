@@ -203,6 +203,16 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_auto_manage BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_last_action_ts TEXT`).catch(() => {});
+    await _pool.query(`
+      CREATE TABLE IF NOT EXISTS ai_action_log (
+        id         SERIAL PRIMARY KEY,
+        user_id    TEXT NOT NULL,
+        action     TEXT NOT NULL,
+        detail     TEXT,
+        ts         TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_ai_log_user ON ai_action_log(user_id);
+    `).catch(() => {});
   } else {
     _db.exec(SCHEMA_SQLITE);
     try { _db.exec(`ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'starter'`); } catch {}
@@ -230,6 +240,11 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_auto_manage INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN ai_last_action_ts TEXT`); } catch {}
+    try { _db.exec(`CREATE TABLE IF NOT EXISTS ai_action_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL,
+      action TEXT NOT NULL, detail TEXT, ts TEXT NOT NULL
+    )`); } catch {}
+    try { _db.exec(`CREATE INDEX IF NOT EXISTS idx_ai_log_user ON ai_action_log(user_id)`); } catch {}
   }
 }
 

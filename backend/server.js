@@ -1628,6 +1628,7 @@ async function runAIThresholdManager() {
 async function _aiAutoUpdateThresholds(ai, userId) {
   const cutoff14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
   const cutoff7  = new Date(Date.now() -  7 * 24 * 60 * 60 * 1000).toISOString();
+  const cutoff90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
   // Akış dağılımı
   const flowRows = await db.queryAll(
@@ -1709,22 +1710,47 @@ async function _aiAutoUpdateThresholds(ai, userId) {
     if (a.feedback === 'real')           realByType[a.type] = (realByType[a.type] || 0) + parseInt(a.cnt);
   }
 
+  // Aylık tüketim (son 3 ay — prompt bağlamı için)
+  const monthMap = {};
+  const monthAllRows = await db.queryAll(
+    `SELECT ts, total_liters FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+    [userId, cutoff90]
+  );
+  for (const r of monthAllRows) {
+    const m = r.ts.slice(0, 7); // "2025-05"
+    if (!monthMap[m]) monthMap[m] = { min: r.total_liters, max: r.total_liters };
+    monthMap[m].max = Math.max(monthMap[m].max, r.total_liters);
+    monthMap[m].min = Math.min(monthMap[m].min, r.total_liters);
+  }
+  const monthlyTotals = Object.entries(monthMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([m, v]) => ({ month: m, total: Math.max(0, v.max - v.min) }));
+  const monthlyStr = monthlyTotals.map(r => `${r.month}: ${r.total.toFixed(0)}L`).join(', ');
+  const monthlyTrend = monthlyTotals.length >= 2
+    ? (() => {
+        const last  = monthlyTotals[monthlyTotals.length - 1].total;
+        const prev  = monthlyTotals[monthlyTotals.length - 2].total;
+        const diff  = prev > 0 ? ((last - prev) / prev * 100).toFixed(0) : 0;
+        return diff > 0 ? `+${diff}% artış` : `${diff}% düşüş`;
+      })()
+    : 'yetersiz veri';
+
   const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [userId]);
   if (!cur) return;
 
   const prompt = `Su yönetim sistemi AI yöneticisisin. Tüm verileri analiz edip ayarları optimize et.
 
 AKIŞ İSTATİSTİKLERİ (14 gün, ${flowRows.length} ölçüm):
-- Ortalama: ${avg.toFixed(2)} L/dk
-- Maksimum: ${max.toFixed(2)} L/dk
-- 95. yüzdelik: ${p95.toFixed(2)} L/dk
-- 99. yüzdelik: ${p99.toFixed(2)} L/dk
+- Ortalama: ${avg.toFixed(2)} L/dk | Maks: ${max.toFixed(2)} L/dk
+- 95. yüzdelik: ${p95.toFixed(2)} L/dk | 99. yüzdelik: ${p99.toFixed(2)} L/dk
 
-GÜNLÜK TÜKETİM:
-- Günlük ortalama: ${dailyAvg.toFixed(0)} L
-- Günlük maksimum: ${dailyMax.toFixed(0)} L
-- Trend: ${trend}
-- Günlük dağılım: ${dailyTotals.slice(-7).map(r => r.day.slice(5) + ':' + r.total.toFixed(0) + 'L').join(', ')}
+GÜNLÜK TÜKETİM (14 gün):
+- Ortalama: ${dailyAvg.toFixed(0)} L | Maks: ${dailyMax.toFixed(0)} L | Trend: ${trend}
+- Son 7 gün: ${dailyTotals.slice(-7).map(r => r.day.slice(5) + ':' + r.total.toFixed(0) + 'L').join(', ')}
+
+AYLIK TÜKETİM (son 3 ay):
+${monthlyStr || 'veri yok'}
+Aylık trend: ${monthlyTrend}
 
 KULLANIM PATERNİ:
 - En aktif saatler: ${activeHours.join(', ')}
@@ -1744,7 +1770,8 @@ KARAR KURALLARI:
 - Yüksek akış eşiği: p99 × 1.3 iyi başlangıç. Çok yanlış pozitif varsa artır.
 - Sızıntı eşiği: düşük akış ortalamasının 3 katı mantıklı. "kacak" tipi yanlış pozitifler varsa artır.
 - Gece aralığı: kullanım paterni verisine göre gerçekten düşük aktiviteli saatler.
-- Sürekli akış: günlük tüketim yüksekse (>500L) artır, düşükse azalt.
+- Sürekli akış: aylık tüketim yüksekse (>1000L/ay) artır, düşükse azalt.
+- Aylık artış trendi varsa eşikleri %10 gevşet; belirgin düşüş varsa sıkılaştır.
 
 Yalnızca değişmesi gereken ayarları JSON döndür:
 {"high_flow_lpm":X,"leak_flow_lpm":X,"leak_cont_min":X,"night_start_hour":X,"night_end_hour":X,"reason":"kısa Türkçe açıklama"}
@@ -1785,6 +1812,10 @@ Min değerler: high≥2, leak≥0.05, cont≥10.`;
     `UPDATE user_settings SET ${setClauses}, ai_last_action=$${safe.length + 2}, ai_last_action_ts=$${safe.length + 3} WHERE user_id=$1`,
     [userId, ...safe.map(([, v]) => v), actionDesc, actionTs]
   );
+  await db.queryRun(
+    `INSERT INTO ai_action_log (user_id, action, detail, ts) VALUES ($1, $2, $3, $4)`,
+    [userId, actionDesc, reason, actionTs]
+  ).catch(() => {});
 
   // Telegram bildirimi
   const s = await db.queryOne(`SELECT telegram_chat_id, notify_telegram FROM user_settings WHERE user_id=$1`, [userId]);
@@ -1800,6 +1831,77 @@ Min değerler: high≥2, leak≥0.05, cont≥10.`;
 
   console.log(`[AI-THRESH] user ${userId}: ${actionDesc} — ${reason}`);
 }
+
+// AI Yönetim sayfası için insights endpoint'i
+app.get('/api/ai/insights', requireAuth, async (req, res) => {
+  try {
+    const userId   = req.user.id;
+    const cutoff90 = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Son 6 aylık tüketim
+    const allRows = await db.queryAll(
+      `SELECT ts, total_liters FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+      [userId, cutoff90]
+    );
+    const monthMap = {};
+    for (const r of allRows) {
+      const m = r.ts.slice(0, 7);
+      if (!monthMap[m]) monthMap[m] = { min: r.total_liters, max: r.total_liters };
+      monthMap[m].max = Math.max(monthMap[m].max, r.total_liters);
+      monthMap[m].min = Math.min(monthMap[m].min, r.total_liters);
+    }
+    const monthly = Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, v]) => ({ month, total: Math.max(0, v.max - v.min) }));
+
+    // Son 30 günlük günlük tüketim
+    const cutoff30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const dayRows  = await db.queryAll(
+      `SELECT ts, total_liters FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+      [userId, cutoff30]
+    );
+    const dayMap = {};
+    for (const r of dayRows) {
+      const d = r.ts.slice(0, 10);
+      if (!dayMap[d]) dayMap[d] = { min: r.total_liters, max: r.total_liters };
+      dayMap[d].max = Math.max(dayMap[d].max, r.total_liters);
+      dayMap[d].min = Math.min(dayMap[d].min, r.total_liters);
+    }
+    const daily = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, v]) => ({ day, total: Math.max(0, v.max - v.min) }));
+
+    // Aylık anomali sayısı
+    const anomMonthly = await db.queryAll(
+      `SELECT ts, resolved FROM anomalies WHERE user_id=$1 AND ts > $2`,
+      [userId, cutoff90]
+    );
+    const anomByMonth = {};
+    for (const a of anomMonthly) {
+      const m = a.ts.slice(0, 7);
+      if (!anomByMonth[m]) anomByMonth[m] = { total: 0, resolved: 0 };
+      anomByMonth[m].total++;
+      if (a.resolved === true || a.resolved === 1) anomByMonth[m].resolved++;
+    }
+
+    // AI log (son 20)
+    const log = await db.queryAll(
+      `SELECT action, detail, ts FROM ai_action_log WHERE user_id=$1 ORDER BY ts DESC LIMIT 20`,
+      [userId]
+    );
+
+    // AI ayarları
+    const settings = await db.queryOne(
+      `SELECT ai_auto_manage, ai_last_action, ai_last_action_ts FROM user_settings WHERE user_id=$1`,
+      [userId]
+    );
+
+    res.json({ ok: true, monthly, daily, anomByMonth, log, settings });
+  } catch (e) {
+    console.error('[AI-INSIGHTS]', e.message);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
 
 // Manuel tetikleme endpoint'i
 app.post('/api/ai/auto-manage', requireAuth, async (req, res) => {

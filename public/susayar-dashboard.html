@@ -933,6 +933,9 @@
     <span class="nav-icon">&#x1F4E1;</span><span class="nav-label">Cihazlarım</span>
   </div>
   <div class="nav-section">Bildirimler</div>
+  <div class="nav-item" data-page="ai-yonetim" data-title="AI Yönetim">
+    <span class="nav-icon">🤖</span><span class="nav-label">AI Yönetim</span>
+  </div>
   <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
     <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
   </div>
@@ -1353,6 +1356,89 @@
         <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);font-size:.85rem">Yükleniyor...</div>
       </div>
     </div><!-- /page-cihazlarim -->
+
+    <!-- PAGE: AI YÖNETİM -->
+    <div class="page" id="page-ai-yonetim">
+
+      <!-- ÖZET KARTI SATIRI -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem" id="ai-kpi-row">
+        <div class="card" style="padding:1.1rem 1.25rem">
+          <div style="font-size:.67rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Bu Ay</div>
+          <div id="ai-kpi-thismonth" style="font-size:1.6rem;font-weight:800;color:var(--cyan)">—</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">litre</div>
+        </div>
+        <div class="card" style="padding:1.1rem 1.25rem">
+          <div style="font-size:.67rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Geçen Ay</div>
+          <div id="ai-kpi-lastmonth" style="font-size:1.6rem;font-weight:800;color:var(--blue-lt)">—</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">litre</div>
+        </div>
+        <div class="card" style="padding:1.1rem 1.25rem">
+          <div style="font-size:.67rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Aylık Ortalama</div>
+          <div id="ai-kpi-avgmonth" style="font-size:1.6rem;font-weight:800;color:var(--text)">—</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">litre</div>
+        </div>
+        <div class="card" style="padding:1.1rem 1.25rem">
+          <div style="font-size:.67rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Aylık Trend</div>
+          <div id="ai-kpi-trend" style="font-size:1.6rem;font-weight:800">—</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">önceki aya göre</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+
+        <!-- AYLIK TÜKETİM GRAFİĞİ -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📊 Aylık Tüketim</div>
+          </div>
+          <div id="ai-monthly-chart" style="display:flex;align-items:flex-end;gap:6px;height:140px;padding:.25rem 0"></div>
+          <div id="ai-monthly-labels" style="display:flex;gap:6px;margin-top:.4rem"></div>
+        </div>
+
+        <!-- 30 GÜNLÜK GRAFİK -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📈 Son 30 Gün</div>
+          </div>
+          <div id="ai-daily-chart" style="display:flex;align-items:flex-end;gap:2px;height:140px;padding:.25rem 0"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:.65rem;color:var(--muted)">
+            <span id="ai-daily-start">—</span><span id="ai-daily-end">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+
+        <!-- AI DURUMU -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🤖 AI Durumu</div>
+            <button type="button" onclick="loadAiInsights()"
+              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          </div>
+          <div id="ai-status-block" style="display:flex;flex-direction:column;gap:.75rem">
+            <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
+          </div>
+          <div style="display:flex;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+            <button type="button" onclick="analyzeThresholds()"
+              style="flex:1;font-size:.75rem;padding:.45rem;background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.25);border-radius:7px;cursor:pointer">🔍 Öneri Al</button>
+            <button type="button" onclick="aiAutoManage()"
+              style="flex:1;font-size:.75rem;padding:.45rem;background:rgba(139,92,246,.18);color:#c4b5fd;border:1px solid rgba(139,92,246,.35);border-radius:7px;cursor:pointer;font-weight:600">⚡ Şimdi Uygula</button>
+          </div>
+        </div>
+
+        <!-- AI AKSİYON LOGU -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📋 AI Aksiyon Geçmişi</div>
+          </div>
+          <div id="ai-log-list" style="display:flex;flex-direction:column;gap:.5rem;max-height:260px;overflow-y:auto">
+            <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /page-ai-yonetim -->
 
     <!-- PAGE: BİLDİRİMLER -->
     <div class="page page-split" id="page-bildirimler">
@@ -1987,6 +2073,7 @@ navItems.forEach(item => {
     if (pageId === 'aylik-analiz') loadMonthlyReport();
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
+    if (pageId === 'ai-yonetim') { loadAiInsights(); }
     if (pageId === 'bildirimler') { loadAnomalies(); }
     if (pageId === 'sistem-ogreniyor') { loadSettings(); loadAnomalyTypeSettings(); }
   });
@@ -4736,6 +4823,120 @@ async function aiAutoManage() {
     }
   } catch { showToast('❌ Bağlantı hatası'); }
   finally { if (btn) { btn.disabled = false; btn.textContent = '⚡ Şimdi Uygula'; } }
+}
+
+async function loadAiInsights() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r    = await fetch(`${API}/api/ai/insights`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await r.json();
+    if (!r.ok) return;
+
+    const { monthly, daily, anomByMonth, log, settings } = data;
+
+    // KPI kartları
+    const now  = new Date();
+    const curM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevM = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    const curEntry  = monthly.find(m => m.month === curM);
+    const prevEntry = monthly.find(m => m.month === prevM);
+    const avgTotal  = monthly.length ? monthly.reduce((s, m) => s + m.total, 0) / monthly.length : 0;
+    const trendPct  = prevEntry?.total > 0 ? ((curEntry?.total || 0) - prevEntry.total) / prevEntry.total * 100 : null;
+
+    const g = id => document.getElementById(id);
+    if (g('ai-kpi-thismonth')) g('ai-kpi-thismonth').textContent = curEntry ? curEntry.total.toFixed(0) : '—';
+    if (g('ai-kpi-lastmonth')) g('ai-kpi-lastmonth').textContent = prevEntry ? prevEntry.total.toFixed(0) : '—';
+    if (g('ai-kpi-avgmonth'))  g('ai-kpi-avgmonth').textContent  = avgTotal > 0 ? avgTotal.toFixed(0) : '—';
+    if (g('ai-kpi-trend') && trendPct !== null) {
+      const el = g('ai-kpi-trend');
+      el.textContent = (trendPct >= 0 ? '+' : '') + trendPct.toFixed(0) + '%';
+      el.style.color = trendPct > 10 ? 'var(--red)' : trendPct < -10 ? 'var(--green)' : 'var(--yellow)';
+    }
+
+    // Aylık bar chart
+    const mChart = g('ai-monthly-chart');
+    const mLabels = g('ai-monthly-labels');
+    if (mChart && monthly.length) {
+      const mMax = Math.max(...monthly.map(m => m.total), 1);
+      mChart.innerHTML = monthly.map(m => {
+        const h   = Math.max(4, Math.round((m.total / mMax) * 130));
+        const col = m.month === curM ? 'var(--cyan)' : m.month === prevM ? 'var(--blue-lt)' : 'var(--bg3)';
+        const anom = anomByMonth[m.month];
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;justify-content:flex-end" title="${m.month}: ${m.total.toFixed(0)}L${anom ? ', ' + anom.total + ' anomali' : ''}">
+          ${anom?.total ? `<div style="font-size:.6rem;color:var(--red)">${anom.total}</div>` : ''}
+          <div style="width:100%;height:${h}px;background:${col};border-radius:3px 3px 0 0;transition:height .3s"></div>
+        </div>`;
+      }).join('');
+      if (mLabels) mLabels.innerHTML = monthly.map(m => {
+        const [, mo] = m.month.split('-');
+        const names = ['','Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+        return `<div style="flex:1;text-align:center;font-size:.6rem;color:${m.month === curM ? 'var(--cyan)' : 'var(--muted)'}">${names[parseInt(mo)]}</div>`;
+      }).join('');
+    }
+
+    // 30 günlük bar chart
+    const dChart = g('ai-daily-chart');
+    if (dChart && daily.length) {
+      const dMax = Math.max(...daily.map(d => d.total), 1);
+      dChart.innerHTML = daily.map(d => {
+        const h   = Math.max(2, Math.round((d.total / dMax) * 130));
+        const isToday = d.day === new Date().toISOString().slice(0, 10);
+        return `<div style="flex:1;height:${h}px;background:${isToday ? 'var(--cyan)' : 'rgba(59,181,212,.35)'};border-radius:2px 2px 0 0" title="${d.day}: ${d.total.toFixed(0)}L"></div>`;
+      }).join('');
+      const startEl = g('ai-daily-start');
+      const endEl   = g('ai-daily-end');
+      if (startEl) startEl.textContent = daily[0]?.day?.slice(5) || '';
+      if (endEl)   endEl.textContent   = daily[daily.length - 1]?.day?.slice(5) || '';
+    }
+
+    // AI Durumu
+    const statusEl = g('ai-status-block');
+    if (statusEl) {
+      const autoOn = settings?.ai_auto_manage;
+      const lastTs = settings?.ai_last_action_ts ? new Date(settings.ai_last_action_ts).toLocaleString('tr-TR') : null;
+      statusEl.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .75rem;background:var(--bg3);border-radius:8px">
+          <span style="font-size:.78rem;color:var(--muted2)">Oto-Yönetim</span>
+          <span style="font-size:.78rem;font-weight:700;color:${autoOn ? 'var(--green)' : 'var(--muted)'}">${autoOn ? '✅ Aktif' : '⏸ Pasif'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .75rem;background:var(--bg3);border-radius:8px">
+          <span style="font-size:.78rem;color:var(--muted2)">Otomatik Analiz</span>
+          <span style="font-size:.78rem;font-weight:700;color:var(--blue-lt)">Her 10 dk</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.65rem .75rem;background:var(--bg3);border-radius:8px">
+          <span style="font-size:.78rem;color:var(--muted2)">Eşik Güncelleme</span>
+          <span style="font-size:.78rem;font-weight:700;color:var(--blue-lt)">Günde bir</span>
+        </div>
+        ${lastTs ? `<div style="padding:.65rem .75rem;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px">
+          <div style="font-size:.67rem;color:#a78bfa;margin-bottom:.25rem">Son AI Güncellemesi</div>
+          <div style="font-size:.75rem;color:var(--text2)">${esc(settings.ai_last_action)}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:.2rem">${lastTs}</div>
+        </div>` : `<div style="padding:.65rem .75rem;background:var(--bg3);border-radius:8px;font-size:.75rem;color:var(--muted)">Henüz otomatik güncelleme yapılmadı</div>`}
+      `;
+    }
+
+    // AI Log
+    const logEl = g('ai-log-list');
+    if (logEl) {
+      if (!log?.length) {
+        logEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Henüz AI aksiyonu yok</div>';
+      } else {
+        logEl.innerHTML = log.map(l => {
+          const ts = new Date(l.ts).toLocaleString('tr-TR');
+          return `<div style="padding:.6rem .75rem;background:var(--bg3);border-radius:8px;border-left:3px solid rgba(139,92,246,.5)">
+            <div style="font-size:.75rem;color:var(--text2);margin-bottom:.2rem">${esc(l.action)}</div>
+            ${l.detail ? `<div style="font-size:.68rem;color:#a78bfa;margin-bottom:.15rem">${esc(l.detail)}</div>` : ''}
+            <div style="font-size:.64rem;color:var(--muted)">${ts}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+  } catch (e) {
+    console.error('[AI-INSIGHTS]', e);
+  }
 }
 
 async function explainAnomaly(id) {
