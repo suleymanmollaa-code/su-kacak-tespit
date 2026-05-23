@@ -825,7 +825,6 @@
     .page-split.active { flex-direction: column; overflow-y: auto; }
     .split-col, .split-col-sm { flex: none !important; width: 100% !important; overflow-y: visible; }
     .split-col .card[style*="flex:1"] { flex: none !important; }
-    #anomaly-list { overflow-y: visible !important; }
   }
 
   @media (max-width: 400px) {
@@ -932,15 +931,18 @@
   <div class="nav-item" data-page="cihazlarim" data-title="Cihazlarım">
     <span class="nav-icon">&#x1F4E1;</span><span class="nav-label">Cihazlarım</span>
   </div>
-  <div class="nav-section">Bildirimler</div>
-  <div class="nav-item" data-page="ai-yonetim" data-title="AI Yönetim">
-    <span class="nav-icon">🤖</span><span class="nav-label">AI Yönetim</span>
+  <div class="nav-section">İzleme & Uyarı</div>
+  <div class="nav-item" data-page="anomaliler" data-title="Anomaliler">
+    <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Anomaliler</span>
   </div>
   <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
-    <span class="nav-icon">&#x1F514;</span><span class="nav-label">Bildirimler</span>
+    <span class="nav-icon">&#x1F4E8;</span><span class="nav-label">Bildirimler</span>
   </div>
   <div class="nav-item" data-page="sistem-ogreniyor" data-title="Uyarı Ayarları">
     <span class="nav-icon">&#x2699;&#xFE0F;</span><span class="nav-label">Uyarı Ayarları</span>
+  </div>
+  <div class="nav-item" data-page="ai-yonetim" data-title="AI Yönetim">
+    <span class="nav-icon">🤖</span><span class="nav-label">AI Yönetim</span>
   </div>
 
   <div class="nav-section">Ayarlar</div>
@@ -1416,13 +1418,25 @@
             <button type="button" onclick="loadAiInsights()"
               style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
-          <div id="ai-status-block" style="display:flex;flex-direction:column;gap:.75rem">
+          <!-- AI Oto-Yönetim toggle -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);border-radius:9px;margin-bottom:.75rem">
+            <div>
+              <div style="font-size:.8rem;font-weight:600;color:#c4b5fd;margin-bottom:.15rem">AI Oto-Yönetim <span style="font-size:.62rem;background:rgba(139,92,246,.2);color:#a78bfa;padding:.1rem .35rem;border-radius:3px;margin-left:.3rem">BETA</span></div>
+              <div style="font-size:.68rem;color:var(--muted);line-height:1.4">Günlük eşik optimizasyonu + 10 dk'da bir akıllı analiz</div>
+            </div>
+            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;flex-shrink:0;margin-left:.75rem">
+              <input type="checkbox" id="ai-auto-manage-toggle" onchange="saveAiAutoManage()"
+                style="width:16px;height:16px;accent-color:#8b5cf6;cursor:pointer">
+              <span style="font-size:.72rem;color:var(--muted2);white-space:nowrap">Aktif</span>
+            </label>
+          </div>
+          <div id="ai-status-block" style="display:flex;flex-direction:column;gap:.6rem">
             <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem">Yükleniyor...</div>
           </div>
           <div style="display:flex;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-            <button type="button" onclick="analyzeThresholds()"
+            <button id="ai-analyze-btn" type="button" onclick="analyzeThresholds()"
               style="flex:1;font-size:.75rem;padding:.45rem;background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.25);border-radius:7px;cursor:pointer">🔍 Öneri Al</button>
-            <button type="button" onclick="aiAutoManage()"
+            <button id="ai-auto-manage-btn" type="button" onclick="aiAutoManage()"
               style="flex:1;font-size:.75rem;padding:.45rem;background:rgba(139,92,246,.18);color:#c4b5fd;border:1px solid rgba(139,92,246,.35);border-radius:7px;cursor:pointer;font-weight:600">⚡ Şimdi Uygula</button>
           </div>
         </div>
@@ -1440,14 +1454,36 @@
       </div>
     </div><!-- /page-ai-yonetim -->
 
-    <!-- PAGE: BİLDİRİMLER -->
-    <div class="page page-split" id="page-bildirimler">
+    <!-- PAGE: ANOMALİLER -->
+    <div class="page" id="page-anomaliler" style="overflow:hidden">
+      <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="card-head">
+          <div class="card-title">Anomaliler</div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <span id="anomaly-count-chip" style="display:none" class="chip chip-red"></span>
+            <button type="button" id="anomaly-refresh-btn" onclick="loadAnomalies(false)"
+              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
+          </div>
+        </div>
+        <div id="anomaly-stats" style="display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);margin-bottom:.75rem;flex-wrap:wrap"></div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem">
+          <button type="button" class="anomaly-filter-btn active" data-filter="all"
+            onclick="filterAnomalies('all')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.12);color:var(--blue-lt)">Tümü</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="active"
+            onclick="filterAnomalies('active')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Aktif</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="critical"
+            onclick="filterAnomalies('critical')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Kritik</button>
+          <button type="button" class="anomaly-filter-btn" data-filter="resolved"
+            onclick="filterAnomalies('resolved')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Çözüldü</button>
+        </div>
+        <div id="anomaly-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;min-height:0"></div>
+      </div>
+    </div><!-- /page-anomaliler -->
 
-      <!-- SOL: BİLDİRİM KANALLARI -->
-      <div class="split-col split-col-sm">
+    <!-- PAGE: BİLDİRİMLER (sadece kanallar) -->
+    <div class="page" id="page-bildirimler">
 
-      <!-- BİLDİRİM KANALLARI KARTI -->
-      <div class="card" style="margin-bottom:1.25rem">
+      <div class="card" style="max-width:520px">
         <div class="card-head">
           <div class="card-title">Bildirim Kanalları</div>
           <span id="channels-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
@@ -1520,40 +1556,7 @@
         </div>
       </div>
 
-      </div><!-- /split-col-sm -->
-
-      <div class="split-divider" data-split="bildirimler"></div>
-
-      <!-- SAĞ: ANOMALİLER -->
-      <div class="split-col" style="overflow:hidden">
-      <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
-        <div class="card-head">
-          <div class="card-title">Anomaliler</div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <span id="anomaly-count-chip" style="display:none" class="chip chip-red"></span>
-            <button type="button" id="anomaly-refresh-btn" onclick="loadAnomalies(false)"
-              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">
-              ↻ Yenile
-            </button>
-          </div>
-        </div>
-        <!-- İstatistik satırı -->
-        <div id="anomaly-stats" style="display:flex;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);margin-bottom:.75rem;flex-wrap:wrap"></div>
-        <!-- Filtreler -->
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem">
-          <button type="button" class="anomaly-filter-btn active" data-filter="all"
-            onclick="filterAnomalies('all')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid rgba(59,181,212,.5);background:rgba(59,181,212,.12);color:var(--blue-lt)">Tümü</button>
-          <button type="button" class="anomaly-filter-btn" data-filter="active"
-            onclick="filterAnomalies('active')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Aktif</button>
-          <button type="button" class="anomaly-filter-btn" data-filter="critical"
-            onclick="filterAnomalies('critical')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Kritik</button>
-          <button type="button" class="anomaly-filter-btn" data-filter="resolved"
-            onclick="filterAnomalies('resolved')" style="font-size:.72rem;padding:.2rem .65rem;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted)">Çözüldü</button>
-        </div>
-        <div id="anomaly-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;min-height:0"></div>
-      </div>
-      </div><!-- /split-col -->
-
+      </div><!-- /card -->
     </div><!-- /page-bildirimler -->
 
     <!-- PAGE: UYARI AYARLARI (eski: SİSTEM ÖĞRENİYOR) -->
@@ -1740,35 +1743,7 @@
               </div>
 
             </div>
-            <!-- AI Oto-Yönetim -->
-            <div style="margin-top:1.25rem;padding:1rem;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:10px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-                <div style="display:flex;align-items:center;gap:.5rem">
-                  <span style="font-size:1rem">🤖</span>
-                  <span style="font-size:.8rem;font-weight:700;color:#c4b5fd">AI Oto-Yönetim</span>
-                  <span style="font-size:.65rem;padding:.1rem .4rem;background:rgba(139,92,246,.2);color:#a78bfa;border-radius:4px">BETA</span>
-                </div>
-                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">
-                  <input type="checkbox" id="ai-auto-manage-toggle" onchange="saveAnomalyTypeSettings()"
-                    style="width:15px;height:15px;accent-color:#8b5cf6;cursor:pointer">
-                  <span style="font-size:.72rem;color:var(--muted2)">Aktif</span>
-                </label>
-              </div>
-              <div style="font-size:.72rem;color:var(--muted);line-height:1.5;margin-bottom:.75rem">
-                AI her gün eşikleri otomatik analiz eder ve günceller. Her 10 dakikada anormal durum varsa Telegram'a bildirir.
-              </div>
-              <div id="ai-last-action-info" style="display:none;font-size:.7rem;color:var(--muted2);background:var(--bg3);border-radius:6px;padding:.5rem .65rem;margin-bottom:.6rem;line-height:1.5">
-                <span style="color:#a78bfa">Son güncelleme:</span> <span id="ai-last-action-text"></span>
-              </div>
-              <div style="display:flex;gap:.5rem">
-                <button id="ai-analyze-btn" type="button" onclick="analyzeThresholds()"
-                  style="font-size:.7rem;padding:.3rem .65rem;background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25);border-radius:6px;cursor:pointer">🔍 Öneri Al</button>
-                <button id="ai-auto-manage-btn" type="button" onclick="aiAutoManage()"
-                  style="font-size:.7rem;padding:.3rem .65rem;background:rgba(139,92,246,.18);color:#c4b5fd;border:1px solid rgba(139,92,246,.35);border-radius:6px;cursor:pointer;font-weight:600">⚡ Şimdi Uygula</button>
-              </div>
-            </div>
-
-            <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+            <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.1rem">
               <button class="btn-sm btn-primary" onclick="saveAnomalyTypeSettings()">Kaydet</button>
             </div>
           </div>
@@ -2073,8 +2048,9 @@ navItems.forEach(item => {
     if (pageId === 'aylik-analiz') loadMonthlyReport();
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
-    if (pageId === 'ai-yonetim') { loadAiInsights(); }
-    if (pageId === 'bildirimler') { loadAnomalies(); }
+    if (pageId === 'anomaliler')      { loadAnomalies(); }
+    if (pageId === 'bildirimler')     { loadSettings(); }
+    if (pageId === 'ai-yonetim')      { loadAiInsights(); }
     if (pageId === 'sistem-ogreniyor') { loadSettings(); loadAnomalyTypeSettings(); }
   });
 });
@@ -3242,7 +3218,7 @@ function _connectRealBackendLegacy(wsUrl) {
         const cfg = _ANOMALY_ICONS[msg.payload.type] || { icon: '🔔', label: 'Uyarı' };
         showToast(cfg.icon + ' ' + esc(cfg.label) + ': ' + esc(msg.payload.detail));
         // Bildirimler sayfası açıksa yenile
-        if (document.getElementById('page-bildirimler')?.classList.contains('active')) loadAnomalies();
+        if (document.getElementById('page-anomaliler')?.classList.contains('active')) loadAnomalies();
       }
     } catch { /* ignore */ }
   };
@@ -3876,7 +3852,6 @@ async function saveAnomalyTypeSettings() {
     leak_flow_lpm:       parseFloat(g('at-leak-flow')?.value    ?? 0.3),
     leak_cont_min:       parseInt(g('at-leak-min')?.value       ?? 30),
     offline_repeat_min:  parseInt(g('at-offline-repeat')?.value ?? 60),
-    ai_auto_manage:      !!(g('ai-auto-manage-toggle')?.checked),
   };
   try {
     const r = await fetch(`${API}/api/settings`, {
@@ -3909,16 +3884,6 @@ async function loadAnomalyTypeSettings() {
     set('at-leak-flow',     s.leak_flow_lpm      ?? 0.3);
     set('at-leak-min',      s.leak_cont_min      ?? 30);
     set('at-offline-repeat',s.offline_repeat_min ?? 60);
-    // AI Oto-Yönetim
-    const toggle = document.getElementById('ai-auto-manage-toggle');
-    if (toggle) toggle.checked = !!(s.ai_auto_manage);
-    const infoEl  = document.getElementById('ai-last-action-info');
-    const textEl  = document.getElementById('ai-last-action-text');
-    if (infoEl && textEl && s.ai_last_action) {
-      const ts = s.ai_last_action_ts ? new Date(s.ai_last_action_ts).toLocaleString('tr-TR') : '';
-      textEl.textContent = `${s.ai_last_action}${ts ? ' · ' + ts : ''}`;
-      infoEl.style.display = '';
-    }
   } catch { /* sessiz */ }
 }
 
@@ -4825,6 +4790,20 @@ async function aiAutoManage() {
   finally { if (btn) { btn.disabled = false; btn.textContent = '⚡ Şimdi Uygula'; } }
 }
 
+async function saveAiAutoManage() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const val   = !!(document.getElementById('ai-auto-manage-toggle')?.checked);
+  try {
+    await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ai_auto_manage: val }),
+    });
+    showToast(val ? '🤖 AI Oto-Yönetim aktif edildi' : '⏸ AI Oto-Yönetim devre dışı');
+  } catch { showToast('❌ Kaydedilemedi'); }
+}
+
 async function loadAiInsights() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
@@ -4890,6 +4869,10 @@ async function loadAiInsights() {
       if (startEl) startEl.textContent = daily[0]?.day?.slice(5) || '';
       if (endEl)   endEl.textContent   = daily[daily.length - 1]?.day?.slice(5) || '';
     }
+
+    // Toggle durumu
+    const toggleEl = g('ai-auto-manage-toggle');
+    if (toggleEl) toggleEl.checked = !!(settings?.ai_auto_manage);
 
     // AI Durumu
     const statusEl = g('ai-status-block');
