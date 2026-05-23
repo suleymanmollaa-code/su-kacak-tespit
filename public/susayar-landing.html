@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuSayar — Akıllı Su Yönetim Platformu</title>
+<title>SuSayar — Su İzleme ve Anomali Tespit Platformu</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 30'%3E%3Cpath d='M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z' fill='%233bb5d4'/%3E%3C/svg%3E">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -559,16 +559,16 @@ nav {
   <div class="hero-left">
     <div class="hero-chip">
       <span class="hero-chip-dot"></span>
-      Türkiye'nin akıllı su yönetim platformu
+      Türkiye'nin su izleme ve kaçak tespit platformu
     </div>
     <h1 class="hero-h1">
       Suyu sadece ölçmez,<br>
-      <span class="grad">anlar ve öğrenir</span>
+      <span class="grad">izler ve uyarır</span>
     </h1>
     <p class="hero-p">
-      SuSayar, su altyapınızı gerçek zamanlı izler; yapay zeka ile
-      anormallikleri tespit eder, tüketim örüntülerinizi öğrenir ve size
-      kişiselleştirilmiş öneriler sunar. Konuttan otele, ofisten fabrikaya —
+      SuSayar, su altyapınızı gerçek zamanlı izler; gece akışı, yüksek akış,
+      sürekli akış ve sızıntı gibi 6 farklı anomali tipini sizin belirlediğiniz
+      kurallara göre anında tespit eder. Konuttan otele, ofisten fabrikaya —
       su kullanan her alan için. Şu an yalnızca <strong>İstanbul</strong>'da hizmetinizdeyiz.
     </p>
     <div class="hero-btns">
@@ -634,14 +634,14 @@ nav {
         </div>
       </div>
       <div class="mock-alert">
-        <span class="mock-alert-icon">&#x1F916;</span>
-        Yapay Zeka: Gece 02:14 — Sızıntı şüphesi tespit edildi
+        <span class="mock-alert-icon">&#x26A1;</span>
+        Kural tetiklendi: Gece 02:14 — Düşük sürekli akış
       </div>
     </div>
 
     <div class="float-badge float-1">
-      <span class="float-badge-icon">&#x1F916;</span>
-      AI: Sifon sızıntısı — 45 dk düşük akış
+      <span class="float-badge-icon">&#x1F6A8;</span>
+      Uyarı: Sifon sızıntısı — 45 dk düşük akış
     </div>
     <div class="float-badge float-2">
       <span class="float-badge-icon">&#x1F4C9;</span>
@@ -653,8 +653,8 @@ nav {
 <!-- SOCIAL PROOF BAR -->
 <div class="proof-bar">
   <div class="proof-item">
-    <span class="proof-item-icon">&#x1F916;</span>
-    <span>Yapay Zeka: <strong>7/24 Akıllı İzleme</strong></span>
+    <span class="proof-item-icon">&#x26A1;</span>
+    <span>Kural Bazlı: <strong>6 Anomali Tipi</strong></span>
   </div>
   <div class="proof-item">
     <span class="proof-item-icon">&#x1F4F1;</span>
@@ -674,10 +674,9 @@ nav {
 <div class="problem-wrap">
   <div>
     <div class="problem-label">&#x26A0; Kontrolsüz tüketim</div>
-    <h2 class="problem-h">Su tüketiminizi anlamak artık yapay zekanın işi.</h2>
+    <h2 class="problem-h">Kaçak, israf ve arıza — fatura gelene kadar habersiz kalıyorsunuz.</h2>
     <p class="problem-p">
-      Su takibi sadece kaçak bulmak değil; <strong>tüketim alışkanlıklarını anlamak, anormallikleri anında fark etmek ve maliyeti gerçek verilerle kontrol altında tutmak</strong>tır.
-      SuSayar tüm bunları otomatik olarak yapar — siz sadece telefona bakın.
+      Gece akan su, damla damla giden sifon, tatildeyken patlayan boru — bunların hiçbiri fatura gelene kadar görünmez. SuSayar, <strong>kural bazlı anomali tespiti</strong> ile anormal akışı saniyeler içinde yakalar ve sizi anında bilgilendirir.
     </p>
     <div class="problem-stats">
       <div class="pstat">
@@ -685,8 +684,8 @@ nav {
         <div class="pstat-text">Ortalama hanede fark edilemeyen kayıp su oranı</div>
       </div>
       <div class="pstat">
-        <div class="pstat-num">10 dk</div>
-        <div class="pstat-text">AI'ın sisteminizi yeniden analiz etme sıklığı — sorun varsa anında haberdar olursunuz</div>
+        <div class="pstat-num">6 tip</div>
+        <div class="pstat-text">Gece akışı, yüksek akış, sızıntı, sürekli akış, cihaz çevrimdışı, tatil modu — her senaryo kapsanıyor</div>
       </div>
       <div class="pstat">
         <div class="pstat-num">₺4.200</div>
@@ -695,33 +694,33 @@ nav {
     </div>
   </div>
   <div class="problem-visual">
-    <div class="pvis-title">&#x1F916; Örnek AI Analiz Özeti</div>
+    <div class="pvis-title">&#x26A1; Örnek Kural Tetikleyici</div>
     <div class="pvis-row">
       <span>Gerçek zamanlı izleme</span>
       <span style="color:var(--text)">7/24 aktif</span>
     </div>
     <div class="pvis-row">
-      <span>Gece 02:14 — düşük sürekli akış</span>
-      <span style="color:var(--red)">Sızıntı alarmı</span>
+      <span>Gece 02:14 — akış 0,4 L/dk</span>
+      <span style="color:var(--red)">Sızıntı kuralı tetiklendi</span>
+    </div>
+    <div class="pvis-row">
+      <span>Telegram bildirimi</span>
+      <span style="color:var(--text)">02:14'te gönderildi</span>
     </div>
     <div class="pvis-row">
       <span>Sabah 06:30 — akış durdu</span>
       <span style="color:#16a34a">Otomatik çözüldü</span>
     </div>
     <div class="pvis-row">
-      <span>AI mesajı (Telegram)</span>
-      <span style="color:var(--text)">"Olası sifon kaçağı"</span>
-    </div>
-    <div class="pvis-row">
-      <span>AI eşik güncellemesi</span>
-      <span style="color:var(--text)">Günlük otomatik</span>
+      <span>Eşik ayarı (kullanıcı)</span>
+      <span style="color:var(--text)">0,3 L/dk · 30 dk</span>
     </div>
     <div class="pvis-total">
       <span>Bu ay önlenen maliyet</span>
       <span>~280 TL</span>
     </div>
     <div style="text-align:center;margin-top:.75rem;font-size:.72rem;color:#15803d;font-weight:600">
-      &#x2713; Sistem fark etti, AI bildirdi, sorun çözüldü
+      &#x2713; Kural tetikledi, sistem bildirdi, sorun çözüldü
     </div>
   </div>
 </div>
@@ -763,8 +762,8 @@ nav {
   <div class="features-inner">
     <div class="section-header">
       <div class="s-label">Özellikler</div>
-      <h2 class="s-h">Sadece veri değil — anlayış</h2>
-      <p class="s-p">Ne zaman aktığını değil, <em>neden aktığını</em> anlayan bir sistem.</p>
+      <h2 class="s-h">Sadece veri değil — anında uyarı</h2>
+      <p class="s-p">Ne zaman aktığını görün, normalin dışına çıkınca anında haberdar olun.</p>
     </div>
     <div class="feat-grid">
       <div class="feat-card">
@@ -773,14 +772,14 @@ nav {
         <p>Litre/dakika akış ve günlük tüketim anlık güncellenir. Cihaz çevrimdışı olursa anında bildirim alırsınız.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#f5f3ff">&#x1F916;</div>
-        <h4>Yapay Zeka ile Sürekli Analiz</h4>
-        <p>Her 10 dakikada bir sistem analiz edilir. Anormallik varsa Telegram'a anında açıklama gider. Durum normale dönünce anomaliler otomatik kapanır — hiç dokunmanıza gerek yok.</p>
+        <div class="feat-icon-box" style="background:#fef9c3">&#x26A1;</div>
+        <h4>Kural Bazlı Anomali Tespiti</h4>
+        <p>Gece akışı, yüksek akış, sızıntı, sürekli akış, cihaz çevrimdışı, tatil modu — 6 farklı anomali tipi, sizin belirlediğiniz eşiklerle gerçek zamanlı izlenir.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#fef9c3">&#x26A1;</div>
-        <h4>Akıllı Anomali Tespiti</h4>
-        <p>Gece akışı, yüksek akış, sızıntı, sürekli akış — 6 farklı anomali tipi sizin alışkanlıklarınıza göre kalibre edilebilir eşiklerle izlenir. AI öğrendikçe hata payı azalır.</p>
+        <div class="feat-icon-box" style="background:#f5f3ff">&#x23F1;</div>
+        <h4>Sürekli İzleme &amp; Otomatik Çözüm</h4>
+        <p>Her 2 saniyede bir ölçüm alınır. Anomali koşulu ortadan kalktığında sistem otomatik olarak kapatır ve sizi bilgilendirir — hiç dokunmanıza gerek yok.</p>
       </div>
       <div class="feat-card">
         <div class="feat-icon-box" style="background:#f0fdf4">&#x1F4CA;</div>
@@ -793,9 +792,9 @@ nav {
         <p>Telegram ve e-posta ile gerçek zamanlı uyarılar. Tatilde, toplantıda veya uzaktayken bile sisteminizden haberdarsınız.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon-box" style="background:#f0f9ff">&#x1F9E0;</div>
-        <h4>AI Eşik Yönetimi</h4>
-        <p>AI her gün akış profilinizi inceleyerek alarm eşiklerini otomatik günceller. Yanlış alarm azalır, gerçek sorunlar daha kesin tespit edilir — müdahale gerekmez.</p>
+        <div class="feat-icon-box" style="background:#f0f9ff">&#x2699;</div>
+        <h4>Özelleştirilebilir Eşikler</h4>
+        <p>Gece saatlerini, akış limitlerini ve bildirim sürelerini kendiniz ayarlayın. Cihaz bazında farklı kurallar tanımlayın — her mekânın ihtiyacı farklıdır.</p>
       </div>
       <div class="feat-card">
         <div class="feat-icon-box" style="background:#fff7ed">&#x1F6E0;</div>
@@ -903,7 +902,7 @@ nav {
       </div>
       <div class="testi-card">
         <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-        <p class="testi-q">Geceleri ne kadar su aktığını hiç düşünmemiştim. AI her sabah özet atıyor, bir haftada tüketim alışkanlıklarımı anladım.</p>
+        <p class="testi-q">Geceleri ne kadar su aktığını hiç düşünmemiştim. Sistem her sabah özet e-posta atıyor, bir haftada tüketim alışkanlıklarımı anladım.</p>
         <div class="testi-author">
           <div class="testi-avatar" style="background:#7c3aed">MO</div>
           <div>
@@ -945,8 +944,8 @@ nav {
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="rgba(255,255,255,.9)"/></svg>
       <span style="font-size:1.35rem;font-weight:900;letter-spacing:-.01em;color:white">SuSayar</span>
     </div>
-    <h2>Su yönetiminizi akıllandırın</h2>
-    <p>Suyunuzu izleyin, anlayın ve kontrol edin. Yapay zeka eşiklerinizi öğrenir, siz sadece kararları verin.</p>
+    <h2>Su yönetiminizi görünür kılın</h2>
+    <p>Suyunuzu izleyin, anormalliği anında yakalayın, kontrolü elinizde tutun. Siz eşikleri belirleyin, sistem anında uyarsın.</p>
     <div class="cta-btns">
       <a class="btn btn-white btn-xl" href="#" onclick="openTalep();return false;">Kurulum Talep Et</a>
       <a class="btn btn-outline-white btn-xl" href="/susayar-auth.html?tab=login">Giriş Yap</a>
