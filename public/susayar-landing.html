@@ -3,10 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuSayar — Akıllı Su Takip Sistemi</title>
+<title>SuSayar — Akıllı Su Takip Sistemi | IoT Su İzleme ve Kaçak Tespiti</title>
+<meta name="description" content="SuSayar — Türkiye'nin akıllı su takip sistemi. IoT sensörler ile gerçek zamanlı su akışı izleme, 6 tip anomali tespiti ve Telegram bildirimi. Konut, otel, ofis ve fabrika için. Şu an İstanbul'da hizmetinizdeyiz.">
+<meta name="keywords" content="akıllı su takip, su kaçak tespiti, IoT su sensörü, su tüketim izleme, Telegram su bildirimi, su anomali tespiti, gece akışı tespiti, SuSayar, İstanbul su izleme">
+<meta name="robots" content="index, follow">
+<meta name="author" content="SuSayar">
+<meta property="og:title" content="SuSayar — Akıllı Su Takip Sistemi">
+<meta property="og:description" content="IoT sensörler ile su kaçağını anında tespit et, Telegram ve e-posta ile bildirim al. 6 farklı anomali tipi, çoklu cihaz yönetimi. Türkiye'nin akıllı su takip platformu.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://susayar.com">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SuSayar — Akıllı Su Takip Sistemi">
+<meta name="twitter:description" content="IoT sensörler ile su kaçağını anında tespit et, Telegram bildirimi al. Türkiye'nin akıllı su takip platformu.">
+<link rel="canonical" href="https://susayar.com">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SuSayar",
+  "description": "Türkiye'nin akıllı su takip sistemi. IoT sensörler ile gerçek zamanlı su akışı izleme ve kural bazlı kaçak tespiti.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "inLanguage": "tr",
+  "offers": { "@type": "Offer", "availability": "https://schema.org/InStock", "areaServed": "TR" },
+  "provider": {
+    "@type": "Organization",
+    "name": "SuSayar",
+    "url": "https://susayar.com",
+    "contactPoint": { "@type": "ContactPoint", "email": "info@susayar.com", "contactType": "customer service", "availableLanguage": "Turkish" }
+  }
+}
+</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 30'%3E%3Cpath d='M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z' fill='%233bb5d4'/%3E%3C/svg%3E">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
 :root {
   --blue:    #3bb5d4;
@@ -525,6 +556,44 @@ nav {
   nav .nav-ctas { gap: .4rem; }
   nav .nav-ctas .btn { padding: .42rem .85rem; font-size: .78rem; }
   #kullanim-alanlari div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr !important; }
+  .proof-bar { gap: .75rem; padding: 1rem; }
+  .proof-item { font-size: .75rem; }
+  .hero-proof { flex-direction: column; gap: .5rem; }
+  .hero-proof-divider { display: none; }
+  .pstat { flex-direction: column; gap: .4rem; }
+  .pstat-num { min-width: auto; }
+}
+
+/* ── TEKNOLOJİLER ─────────────────────────────────── */
+.tech-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; margin-bottom: 1.25rem; }
+.tech-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+.tech-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.tech-card:hover { border-color: var(--blue); box-shadow: 0 6px 20px rgba(59,181,212,.09); }
+.tech-category { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--blue); margin-bottom: .85rem; }
+.tech-items { display: flex; flex-direction: column; gap: .7rem; }
+.tech-item { display: flex; align-items: flex-start; gap: .7rem; }
+.tech-item-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: white; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.tech-item-name { font-weight: 600; font-size: .84rem; color: var(--text); }
+.tech-item-sub { font-size: .72rem; color: var(--muted); line-height: 1.45; margin-top: .1rem; }
+.tech-note {
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 12px; padding: 1rem 1.35rem;
+  display: flex; align-items: center; gap: 1rem;
+  font-size: .86rem; color: #15803d; line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .tech-grid-3 { grid-template-columns: 1fr; }
+  .tech-grid-2 { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -536,6 +605,7 @@ nav {
   <div class="nav-links">
     <a href="#nasil-calisir">Nasıl Çalışır</a>
     <a href="#ozellikler">Özellikler</a>
+    <a href="#teknolojiler">Teknoloji</a>
     <a href="#fiyatlar">Teklif Al</a>
   </div>
   <div class="nav-ctas">
@@ -549,7 +619,8 @@ nav {
 <div class="mobile-menu" id="mobile-menu">
   <a href="#nasil-calisir" onclick="closeMobileMenu()">Nasıl Çalışır</a>
   <a href="#ozellikler" onclick="closeMobileMenu()">Özellikler</a>
-  <a href="#fiyatlar" onclick="closeMobileMenu()">Fiyatlar</a>
+  <a href="#teknolojiler" onclick="closeMobileMenu()">Teknoloji</a>
+  <a href="#fiyatlar" onclick="closeMobileMenu()">Teklif Al</a>
   <a href="/susayar-auth.html?tab=login" onclick="closeMobileMenu()">Giriş Yap</a>
   <a href="#" onclick="openTalep();closeMobileMenu();return false;" style="color:var(--blue);font-weight:700">Kurulum Talep Et →</a>
 </div>
@@ -813,8 +884,130 @@ nav {
 
 <hr class="div-line">
 
+<!-- TEKNOLOJİLER -->
+<div class="section-wrap" id="teknolojiler">
+  <div class="section-header">
+    <div class="s-label">Teknoloji</div>
+    <h2 class="s-h">IoT'den buluta — uçtan uca sistem</h2>
+    <p class="s-p">Saha sensöründen Telegram bildirimine kadar tüm katmanlar SuSayar bünyesinde çalışır. Ekstra altyapı, kablo veya ağ geçidi gerekmez.</p>
+  </div>
+
+  <div class="tech-grid-3">
+    <div class="tech-card">
+      <div class="tech-category">⚙️ Donanım</div>
+      <div class="tech-items">
+        <div class="tech-item">
+          <div class="tech-item-icon">🔌</div>
+          <div>
+            <div class="tech-item-name">ESP32 Mikrodenetleyici</div>
+            <div class="tech-item-sub">Çift çekirdekli IoT işlemcisi, dahili WiFi ve Bluetooth, düşük güç tüketimi</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">💧</div>
+          <div>
+            <div class="tech-item-name">YF-S201 Akış Sensörü</div>
+            <div class="tech-item-sub">Hall-effect teknolojisi, 1–30 L/dk ölçüm aralığı, 450 darbe/litre hassasiyet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-category">📡 Bağlantı &amp; İletişim</div>
+      <div class="tech-items">
+        <div class="tech-item">
+          <div class="tech-item-icon">📶</div>
+          <div>
+            <div class="tech-item-name">WiFi 802.11 b/g/n</div>
+            <div class="tech-item-sub">Mevcut kablosuz ağa bağlanır, ekstra altyapı veya kablo gerektirmez</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">☁️</div>
+          <div>
+            <div class="tech-item-name">HTTPS / REST API</div>
+            <div class="tech-item-sub">Şifreli veri iletimi, her 2 saniyede bir ölçüm buluta gönderilir</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-category">🖥️ Backend Platform</div>
+      <div class="tech-items">
+        <div class="tech-item">
+          <div class="tech-item-icon">⚡</div>
+          <div>
+            <div class="tech-item-name">Node.js Backend</div>
+            <div class="tech-item-sub">Gerçek zamanlı veri işleme, WebSocket ile anlık dashboard güncellemesi</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">🗄️</div>
+          <div>
+            <div class="tech-item-name">PostgreSQL Veritabanı</div>
+            <div class="tech-item-sub">Tüm ölçüm geçmişi, anomali kayıtları ve kullanıcı ayarları güvenle saklanır</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech-grid-2">
+    <div class="tech-card">
+      <div class="tech-category">🔔 Bildirim Kanalları</div>
+      <div class="tech-items">
+        <div class="tech-item">
+          <div class="tech-item-icon">✈️</div>
+          <div>
+            <div class="tech-item-name">Telegram Bot API</div>
+            <div class="tech-item-sub">Anomali anında Telegram'a detaylı mesaj gider; durum normale dönünce otomatik kapanır</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">📧</div>
+          <div>
+            <div class="tech-item-name">SMTP E-posta</div>
+            <div class="tech-item-sub">Günlük ve haftalık tüketim özeti, anomali geçmişi raporları</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tech-card">
+      <div class="tech-category">📊 Web Dashboard</div>
+      <div class="tech-items">
+        <div class="tech-item">
+          <div class="tech-item-icon">🌐</div>
+          <div>
+            <div class="tech-item-name">Responsive Web Arayüzü</div>
+            <div class="tech-item-sub">Telefon, tablet veya bilgisayardan erişim — uygulama indirmek gerekmez</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">📈</div>
+          <div>
+            <div class="tech-item-name">Canlı Grafikler &amp; Raporlar</div>
+            <div class="tech-item-sub">Saatlik, günlük, haftalık tüketim analizi; cihaz bazında karşılaştırma</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech-note">
+    <span style="font-size:1.5rem;flex-shrink:0">🔔</span>
+    <div>
+      <strong>Bildirim odaklı sistem</strong> — SuSayar şu an anında uyarı ve bildirim gönderir; otomatik vana kapatma veya fiziksel müdahale yapmaz. Sistem sizi haberdar eder, kararı siz verirsiniz.
+    </div>
+  </div>
+</div>
+
+<hr class="div-line">
+
 <!-- KULLANIM ALANLARI -->
-<div class="section-wrap">
+<div class="section-wrap" id="kullanim-alanlari">
   <div class="section-header">
     <div class="s-label">Kullanım Alanları</div>
     <h2 class="s-h">Konuttan sanayiye — her ortamda çalışır</h2>
@@ -968,11 +1161,15 @@ nav {
       <span>SuSayar</span>
     </div>
     <div class="footer-links">
-      <a href="/susayar-auth.html">Giriş / Kayıt</a>
       <a href="#nasil-calisir">Nasıl Çalışır</a>
+      <a href="#ozellikler">Özellikler</a>
+      <a href="#teknolojiler">Teknoloji</a>
+      <a href="#kullanim-alanlari">Kullanım Alanları</a>
       <a href="#fiyatlar">Teklif Al</a>
+      <a href="mailto:info@susayar.com">İletişim</a>
+      <a href="/susayar-auth.html">Giriş / Kayıt</a>
     </div>
-    <div class="footer-copy">Prototip &mdash; 2026</div>
+    <div class="footer-copy">© 2026 SuSayar &nbsp;·&nbsp; Şu an İstanbul'da hizmetinizdeyiz</div>
   </div>
 </footer>
 
