@@ -890,6 +890,31 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     if (newAnomalies.length > 0) {
       sendAnomalyNotifications(reading.user_id, newAnomalies).catch(() => {});
     }
+
+    // ── Otomatik çözümleme: koşul ortadan kalktıysa aktif anomaliyi kapat ──
+    {
+      const resolvedVal = db.isPg ? true : 1;
+      // Hangi tipler artık aktif değil?
+      const toAutoResolve = [];
+      if (reading.flow_lpm <= 0.1)                                             toAutoResolve.push('surekli-akis');
+      if (reading.flow_lpm <= 0 || reading.flow_lpm > leakFlowLpm)            toAutoResolve.push('kacak');
+      if (reading.flow_lpm <= highFlowLpm)                                     toAutoResolve.push('yuksek-akis');
+      if (!isNight)                                                             toAutoResolve.push('gece-akis');
+      if (trTotalMin < alertTotalMin)                                          toAutoResolve.push('saat-akis');
+
+      for (const type of toAutoResolve) {
+        const open = await db.queryAll(
+          `SELECT id FROM anomalies WHERE user_id=$1 AND type=$2 AND device=$3 AND NOT resolved`,
+          [reading.user_id, type, reading.device_id]
+        );
+        for (const a of open) {
+          await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedVal, a.id]);
+          broadcastToUser(reading.user_id, { type: 'anomaly', payload: { id: a.id, type, device: reading.device_id, resolved: true } });
+          console.log(`[AUTO-RESOLVE] ${type} → ${a.id} çözüldü (${reading.device_id})`);
+        }
+      }
+    }
+
     // Canlı durum panelini güncelle
     updateTelegramLivePanel(reading.user_id, data, devRow.name).catch(() => {});
 
@@ -1600,7 +1625,32 @@ Dikkat çekici durum varsa 2-3 cümle Türkçe yaz. Her şey normaldeyse tam ola
     messages: [{ role: 'user', content: prompt }],
   });
   const text = (msg.content[0]?.text || '').trim();
-  if (!text || text.startsWith('NORMAL')) return;
+  if (!text) return;
+
+  if (text.startsWith('NORMAL')) {
+    // AI sistem normal dedi → aktif akış anomalilerini otomatik çöz
+    const resolvedVal = db.isPg ? true : 1;
+    const flowTypes   = ['surekli-akis', 'yuksek-akis', 'kacak', 'gece-akis', 'saat-akis'];
+    let resolvedCount = 0;
+    for (const type of flowTypes) {
+      const open = await db.queryAll(
+        `SELECT id, device FROM anomalies WHERE user_id=$1 AND type=$2 AND NOT resolved`,
+        [userId, type]
+      );
+      for (const a of open) {
+        await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedVal, a.id]);
+        broadcastToUser(userId, { type: 'anomaly', payload: { id: a.id, type, device: a.device, resolved: true } });
+        resolvedCount++;
+      }
+    }
+    if (resolvedCount > 0 && chatId) {
+      await sendTelegram(chatId.trim(),
+        `✅ <b>SuSayar AI</b> • ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}\n\nSistem normal — ${resolvedCount} aktif anomali otomatik çözüldü.`
+      ).catch(() => {});
+    }
+    console.log(`[AI-AUTO] Normal → ${resolvedCount} anomali çözüldü (user ${userId})`);
+    return;
+  }
 
   await sendTelegram(chatId.trim(),
     `🤖 <b>SuSayar AI • ${new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</b>\n\n${text}`
