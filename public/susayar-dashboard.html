@@ -1556,7 +1556,6 @@
         </div>
       </div>
 
-      </div><!-- /card -->
     </div><!-- /page-bildirimler -->
 
     <!-- PAGE: UYARI AYARLARI (eski: SİSTEM ÖĞRENİYOR) -->
@@ -3654,7 +3653,7 @@ function _renderAnomalyList(filter) {
       <button type="button" onclick="setFeedback(${a.id},'real')" title="Gerçek sorun" style="font-size:.68rem;padding:.2rem .45rem;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0;border:1px solid ${fb==='real'?'rgba(16,185,129,.5)':'var(--border2)'};background:${fb==='real'?'rgba(16,185,129,.15)':'transparent'};color:${fb==='real'?'var(--green)':'var(--muted)'}">✅ Gerçek</button>
       <button type="button" onclick="setFeedback(${a.id},'false_positive')" title="Normal durum — sisteme öğret" style="font-size:.68rem;padding:.2rem .45rem;border-radius:5px;cursor:pointer;white-space:nowrap;flex-shrink:0;border:1px solid ${fb==='false_positive'?'rgba(245,158,11,.5)':'var(--border2)'};background:${fb==='false_positive'?'rgba(245,158,11,.12)':'transparent'};color:${fb==='false_positive'?'#f59e0b':'var(--muted)'}">❌ Normal</button>
     </div>`;
-    return `<div style="${dim}display:flex;gap:0;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)">
+    return `<div style="${dim}flex-shrink:0;display:flex;gap:0;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)">
       <div style="width:3px;flex-shrink:0;background:${a.resolved ? 'var(--muted)' : meta.leftColor}"></div>
       <div style="display:flex;gap:.75rem;padding:.8rem;flex:1;align-items:flex-start">
         <div style="font-size:1rem;margin-top:.05rem;flex-shrink:0">${meta.icon}</div>
