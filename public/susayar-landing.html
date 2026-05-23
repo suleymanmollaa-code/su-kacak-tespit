@@ -591,6 +591,36 @@ nav {
   font-size: .86rem; color: #15803d; line-height: 1.55;
 }
 
+/* Bağlantı teknolojisi kartları */
+.conn-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+.conn-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.6rem 1.4rem;
+  text-align: center;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
+}
+.conn-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
+.conn-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.55rem; margin: 0 auto 1rem;
+}
+.conn-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: .25rem; }
+.conn-sub { font-size: .76rem; font-weight: 600; color: var(--muted); margin-bottom: .85rem; }
+.conn-desc { font-size: .8rem; color: var(--sub); line-height: 1.6; margin-bottom: 1rem; }
+.conn-checks { list-style: none; text-align: left; display: flex; flex-direction: column; gap: .4rem; }
+.conn-checks li { font-size: .78rem; color: var(--sub); display: flex; gap: .5rem; align-items: flex-start; }
+.conn-checks li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+.conn-badge {
+  display: inline-block; font-size: .62rem; font-weight: 700;
+  padding: .15rem .6rem; border-radius: 20px; margin-bottom: .5rem;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.conn-badge-active { background: #dcfce7; color: #15803d; }
+.conn-badge-soon   { background: #fef3c7; color: #92400e; }
+@media (max-width: 900px) { .conn-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 480px) { .conn-grid { grid-template-columns: 1fr; } }
+
 @media (max-width: 900px) {
   .tech-grid-3 { grid-template-columns: 1fr; }
   .tech-grid-2 { grid-template-columns: 1fr; }
@@ -994,6 +1024,67 @@ nav {
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Bağlantı Teknolojileri -->
+  <div style="text-align:center;margin-bottom:1.75rem;margin-top:.5rem">
+    <div class="s-label" style="margin-bottom:.5rem">Bağlantı Teknolojileri</div>
+    <p style="font-size:.9rem;color:var(--sub)">Her mekânın altyapısına uygun iletişim protokolü — mevcut sisteminizi değiştirmenize gerek yok.</p>
+  </div>
+  <div class="conn-grid">
+
+    <div class="conn-card">
+      <div class="conn-icon" style="background:#f3e8ff">📡</div>
+      <div style="margin-bottom:.3rem"><span class="conn-badge conn-badge-soon">Yakında</span></div>
+      <div class="conn-name">LoRa / LoRaWAN</div>
+      <div class="conn-sub">10 km'ye kadar menzil</div>
+      <div class="conn-desc">WiFi olmayan büyük tesisler, açık alanlar ve uzak noktalar için ideal. Yıllarca pil ile çalışır.</div>
+      <ul class="conn-checks">
+        <li>Uzun mesafe kablosuz haberleşme</li>
+        <li>Düşük enerji tüketimi</li>
+        <li>10 yıla kadar pil ömrü</li>
+      </ul>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-icon" style="background:#fee2e2">📶</div>
+      <div style="margin-bottom:.3rem"><span class="conn-badge conn-badge-soon">Yakında</span></div>
+      <div class="conn-name">GSM / 4G LTE</div>
+      <div class="conn-sub">Dünya genelinde erişim</div>
+      <div class="conn-desc">Mobil şebeke kapsama alanındaki tüm lokasyonlar için ideal. SMS ve mobil veri ile uzaktan yönetim.</div>
+      <ul class="conn-checks">
+        <li>Her yerden erişim</li>
+        <li>SMS ile kontrol</li>
+        <li>Bağımsız çalışma</li>
+      </ul>
+    </div>
+
+    <div class="conn-card" style="border-color:var(--blue);box-shadow:0 4px 20px rgba(59,181,212,.12)">
+      <div class="conn-icon" style="background:#d1fae5">📶</div>
+      <div style="margin-bottom:.3rem"><span class="conn-badge conn-badge-active">Aktif</span></div>
+      <div class="conn-name">WiFi</div>
+      <div class="conn-sub">Yerel ağ üzerinden</div>
+      <div class="conn-desc">Konut, ofis, otel ve işletmelerde mevcut kablosuz ağa bağlanır. Ekstra altyapı gerekmez.</div>
+      <ul class="conn-checks">
+        <li>Kolay kurulum</li>
+        <li>Düşük maliyet</li>
+        <li>Hızlı veri aktarımı</li>
+      </ul>
+    </div>
+
+    <div class="conn-card">
+      <div class="conn-icon" style="background:#dbeafe">🔵</div>
+      <div style="margin-bottom:.3rem"><span class="conn-badge conn-badge-soon">Yakında</span></div>
+      <div class="conn-name">Bluetooth</div>
+      <div class="conn-sub">Yakın Kontrol (100m)</div>
+      <div class="conn-desc">İnternet veya ağ altyapısı olmayan yerlerde akıllı telefon ile doğrudan kontrol ve konfigurasyon.</div>
+      <ul class="conn-checks">
+        <li>Ağ gerektirmez</li>
+        <li>Hızlı eşleşme</li>
+        <li>Tamamen ücretsiz</li>
+      </ul>
+    </div>
+
   </div>
 
   <div class="tech-note">
