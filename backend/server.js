@@ -1490,33 +1490,109 @@ async function runAIAutoAnalysis() {
 }
 
 async function _aiAnalyzeUser(ai, userId, chatId) {
-  const COOLDOWN_MS = 30 * 60 * 1000; // aynı kullanıcıya en az 30 dk ara
+  const COOLDOWN_MS = 30 * 60 * 1000;
   if (_aiAnalysisCooldown[userId] && Date.now() - _aiAnalysisCooldown[userId] < COOLDOWN_MS) return;
 
-  const cutoff = new Date(Date.now() - 12 * 60 * 1000).toISOString();
-  const readings = await db.queryAll(
+  // Son 10 dk anlık ölçümler
+  const cutoffNow  = new Date(Date.now() - 12 * 60 * 1000).toISOString();
+  const readings   = await db.queryAll(
     `SELECT flow_lpm, device_id, ts FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts DESC LIMIT 30`,
-    [userId, cutoff]
+    [userId, cutoffNow]
   );
-  if (readings.length === 0) return; // cihaz veri göndermiyorsa atla
+  if (readings.length === 0) return;
 
-  const anomalies = await db.queryAll(
+  // Bugünkü toplam ve ortalama
+  const cutoffDay  = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const dayRows    = await db.queryAll(
+    `SELECT flow_lpm, total_liters, ts FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+    [userId, cutoffDay]
+  );
+  const dayTotal   = dayRows.length > 1
+    ? Math.max(0, dayRows[dayRows.length - 1].total_liters - dayRows[0].total_liters)
+    : 0;
+  const dayAvgLpm  = dayRows.length
+    ? (dayRows.reduce((s, r) => s + (r.flow_lpm || 0), 0) / dayRows.length)
+    : 0;
+
+  // Son 7 günlük günlük toplam (haftanın profili)
+  const cutoff7    = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const weekRows   = await db.queryAll(
+    `SELECT ts, total_liters FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+    [userId, cutoff7]
+  );
+  // Günlük toplam tüketim hesapla
+  const dayMap = {};
+  for (const r of weekRows) {
+    const day = r.ts.slice(0, 10);
+    if (!dayMap[day]) dayMap[day] = { min: r.total_liters, max: r.total_liters };
+    dayMap[day].max = Math.max(dayMap[day].max, r.total_liters);
+    dayMap[day].min = Math.min(dayMap[day].min, r.total_liters);
+  }
+  const weekProfile = Object.entries(dayMap)
+    .map(([d, v]) => `${d}: ${Math.max(0, v.max - v.min).toFixed(0)}L`)
+    .join(', ');
+
+  // Saatlik profil — hangi saatte ne kadar akış var (son 7 gün ortalaması)
+  const hourMap = {};
+  for (const r of weekRows) {
+    const h = new Date(r.ts).getHours();
+    if (!hourMap[h]) hourMap[h] = [];
+    hourMap[h].push(r.flow_lpm || 0);
+  }
+  const hourProfile = Object.entries(hourMap)
+    .sort(([a], [b]) => a - b)
+    .map(([h, v]) => `${h}:00=${(v.reduce((s, x) => s + x, 0) / v.length).toFixed(2)}`)
+    .join(', ');
+
+  // Aktif anomaliler
+  const anomalies  = await db.queryAll(
     `SELECT type, detail, device FROM anomalies WHERE user_id=$1 AND resolved=FALSE ORDER BY ts DESC LIMIT 5`,
     [userId]
   );
-  const settings = await db.queryOne(`SELECT high_flow_lpm, leak_flow_lpm, leak_cont_min FROM user_settings WHERE user_id=$1`, [userId]);
 
-  const readingSummary = readings.slice(0, 8)
-    .map(r => `${r.device_id}: ${(r.flow_lpm || 0).toFixed(2)} L/dk`)
-    .join(' | ');
+  // Anomali geçmişi (son 7 gün, çözülmüş dahil)
+  const anomHist   = await db.queryAll(
+    `SELECT type, feedback, COUNT(*) as cnt FROM anomalies
+     WHERE user_id=$1 AND ts > $2
+     GROUP BY type, feedback`,
+    [userId, cutoff7]
+  );
+  const anomSummary = anomHist.map(a =>
+    `${a.type}(${a.cnt}x${a.feedback ? ',fb:' + a.feedback : ''})`
+  ).join(', ');
 
-  const prompt = `Su izleme sistemi AI asistanısın. Son 10 dakikalık veriyi değerlendir.
+  const settings = await db.queryOne(
+    `SELECT high_flow_lpm, leak_flow_lpm, leak_cont_min, night_start_hour, night_end_hour FROM user_settings WHERE user_id=$1`,
+    [userId]
+  );
 
-Ölçümler: ${readingSummary}
-Aktif anomaliler: ${anomalies.length === 0 ? 'yok' : anomalies.map(a => a.detail).join('; ')}
-Eşikler: yüksek=${settings?.high_flow_lpm || 8} L/dk, sızıntı=${settings?.leak_flow_lpm || 0.3} L/dk
+  const nowHour = new Date().getHours();
+  const readingSummary = readings.slice(0, 6)
+    .map(r => `${(r.flow_lpm || 0).toFixed(2)} L/dk`)
+    .join(', ');
 
-Eğer dikkat çekici bir durum varsa 2-3 cümle Türkçe yaz. Her şey normaldeyse tam olarak sadece NORMAL yaz.`;
+  const prompt = `Su izleme sistemi AI asistanısın. Tüm bağlamı değerlendirip karar ver.
+
+ŞU AN (${nowHour}:xx):
+- Son ölçümler: ${readingSummary}
+- Aktif anomaliler: ${anomalies.length === 0 ? 'yok' : anomalies.map(a => a.type + ': ' + a.detail).join(' | ')}
+
+BUGÜN:
+- Toplam tüketim: ${dayTotal.toFixed(1)} L
+- Ortalama akış: ${dayAvgLpm.toFixed(2)} L/dk
+
+HAFTALIK GÜNLÜK TÜKETİM:
+${weekProfile || 'veri yok'}
+
+SAATLİK AKIŞ PROFİLİ (7 gün ortalaması):
+${hourProfile || 'veri yok'}
+
+ANOMALİ GEÇMİŞİ (7 gün): ${anomSummary || 'yok'}
+
+EŞIKLER: yüksek=${settings?.high_flow_lpm || 8} L/dk, sızıntı=${settings?.leak_flow_lpm || 0.3} L/dk, gece=${settings?.night_start_hour || 0}-${settings?.night_end_hour || 5}
+
+Saatlik profille kıyasla: şu anki akış bu saatte normal mi? Haftalık tüketim trendi var mı? Anomali geçmişiyle tutarlı mı?
+Dikkat çekici durum varsa 2-3 cümle Türkçe yaz. Her şey normaldeyse tam olarak sadece NORMAL yaz.`;
 
   const msg = await ai.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -1551,50 +1627,130 @@ async function runAIThresholdManager() {
 
 async function _aiAutoUpdateThresholds(ai, userId) {
   const cutoff14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const cutoff7  = new Date(Date.now() -  7 * 24 * 60 * 60 * 1000).toISOString();
 
-  // İstatistikler (SQLite ve PG uyumlu)
-  const rows = await db.queryAll(
+  // Akış dağılımı
+  const flowRows = await db.queryAll(
     `SELECT flow_lpm FROM readings WHERE user_id=$1 AND ts > $2 AND flow_lpm > 0 ORDER BY flow_lpm`,
     [userId, cutoff14]
   );
-  if (rows.length < 50) return; // yetersiz veri
+  if (flowRows.length < 50) return;
 
-  const flows = rows.map(r => r.flow_lpm);
+  const flows = flowRows.map(r => r.flow_lpm);
   const avg   = flows.reduce((a, b) => a + b, 0) / flows.length;
   const max   = flows[flows.length - 1];
   const p95   = flows[Math.floor(flows.length * 0.95)];
+  const p99   = flows[Math.floor(flows.length * 0.99)];
 
-  const fpPatterns = await db.queryAll(
-    `SELECT type, COUNT(*) as cnt FROM anomalies
-     WHERE user_id=$1 AND feedback='false_positive'
-     GROUP BY type HAVING COUNT(*) >= 2`,
-    [userId]
+  // Günlük tüketim trendi (son 14 gün)
+  const allRows = await db.queryAll(
+    `SELECT ts, total_liters FROM readings WHERE user_id=$1 AND ts > $2 ORDER BY ts`,
+    [userId, cutoff14]
   );
+  const dayMap = {};
+  for (const r of allRows) {
+    const d = r.ts.slice(0, 10);
+    if (!dayMap[d]) dayMap[d] = { min: r.total_liters, max: r.total_liters };
+    dayMap[d].max = Math.max(dayMap[d].max, r.total_liters);
+    dayMap[d].min = Math.min(dayMap[d].min, r.total_liters);
+  }
+  const dailyTotals = Object.entries(dayMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([d, v]) => ({ day: d, total: Math.max(0, v.max - v.min) }));
+  const dailyAvg = dailyTotals.length
+    ? dailyTotals.reduce((s, r) => s + r.total, 0) / dailyTotals.length
+    : 0;
+  const dailyMax = dailyTotals.length ? Math.max(...dailyTotals.map(r => r.total)) : 0;
+  const trend = dailyTotals.length >= 7
+    ? (() => {
+        const first  = dailyTotals.slice(0, Math.floor(dailyTotals.length / 2)).reduce((s, r) => s + r.total, 0);
+        const second = dailyTotals.slice(Math.floor(dailyTotals.length / 2)).reduce((s, r) => s + r.total, 0);
+        const ratio  = first > 0 ? second / first : 1;
+        return ratio > 1.15 ? 'artış' : ratio < 0.85 ? 'düşüş' : 'sabit';
+      })()
+    : 'yetersiz veri';
+
+  // Saatlik profil — aktif saatler
+  const hourMap = {};
+  for (const r of allRows) {
+    const h = new Date(r.ts).getHours();
+    if (!hourMap[h]) hourMap[h] = 0;
+    hourMap[h]++;
+  }
+  const activeHours = Object.entries(hourMap)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 6)
+    .map(([h]) => parseInt(h))
+    .sort((a, b) => a - b);
+  const nightCandidateStart = activeHours.length
+    ? (() => {
+        // En düşük aktiviteli ardışık 5 saati bul
+        let best = 0, bestScore = Infinity;
+        for (let s = 0; s < 24; s++) {
+          const score = [0,1,2,3,4].reduce((t, i) => t + (hourMap[(s + i) % 24] || 0), 0);
+          if (score < bestScore) { bestScore = score; best = s; }
+        }
+        return best;
+      })()
+    : 0;
+  const nightCandidateEnd = (nightCandidateStart + 5) % 24;
+
+  // Anomali geçmişi ve geri bildirimler
+  const anomStats = await db.queryAll(
+    `SELECT type, feedback, COUNT(*) as cnt FROM anomalies
+     WHERE user_id=$1 AND ts > $2
+     GROUP BY type, feedback`,
+    [userId, cutoff14]
+  );
+  const fpByType = {};
+  const realByType = {};
+  for (const a of anomStats) {
+    if (a.feedback === 'false_positive') fpByType[a.type] = (fpByType[a.type] || 0) + parseInt(a.cnt);
+    if (a.feedback === 'real')           realByType[a.type] = (realByType[a.type] || 0) + parseInt(a.cnt);
+  }
 
   const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [userId]);
   if (!cur) return;
 
-  const prompt = `Su yönetim sistemi AI yöneticisisin. Kullanıcı ayarlarını veriye göre optimize et.
+  const prompt = `Su yönetim sistemi AI yöneticisisin. Tüm verileri analiz edip ayarları optimize et.
 
-Son 14 gün istatistik:
-- Ortalama akış: ${avg.toFixed(2)} L/dk
-- Maksimum akış: ${max.toFixed(2)} L/dk
+AKIŞ İSTATİSTİKLERİ (14 gün, ${flowRows.length} ölçüm):
+- Ortalama: ${avg.toFixed(2)} L/dk
+- Maksimum: ${max.toFixed(2)} L/dk
 - 95. yüzdelik: ${p95.toFixed(2)} L/dk
-- Ölçüm sayısı: ${flows.length}
+- 99. yüzdelik: ${p99.toFixed(2)} L/dk
 
-Yanlış pozitif uyarılar: ${fpPatterns.length === 0 ? 'yok' : fpPatterns.map(p => `${p.type}(${p.cnt}x)`).join(', ')}
+GÜNLÜK TÜKETİM:
+- Günlük ortalama: ${dailyAvg.toFixed(0)} L
+- Günlük maksimum: ${dailyMax.toFixed(0)} L
+- Trend: ${trend}
+- Günlük dağılım: ${dailyTotals.slice(-7).map(r => r.day.slice(5) + ':' + r.total.toFixed(0) + 'L').join(', ')}
 
-Mevcut ayarlar:
+KULLANIM PATERNİ:
+- En aktif saatler: ${activeHours.join(', ')}
+- En düşük aktivite bloğu: ${nightCandidateStart}:00 – ${nightCandidateEnd}:00
+
+ANOMALİ GERİ BİLDİRİMLERİ (14 gün):
+- Yanlış pozitif: ${Object.entries(fpByType).map(([t, n]) => `${t}(${n}x)`).join(', ') || 'yok'}
+- Gerçek sorun: ${Object.entries(realByType).map(([t, n]) => `${t}(${n}x)`).join(', ') || 'yok'}
+
+MEVCUT AYARLAR:
 - Yüksek akış eşiği: ${cur.high_flow_lpm} L/dk
 - Sızıntı eşiği: ${cur.leak_flow_lpm} L/dk
 - Sürekli akış süresi: ${cur.leak_cont_min} dk
-- Gece: ${cur.night_start_hour}:00 – ${cur.night_end_hour}:00
+- Gece aralığı: ${cur.night_start_hour}:00 – ${cur.night_end_hour}:00
 
-Yalnızca değişmesi gereken ayarları JSON formatında döndür:
+KARAR KURALLARI:
+- Yüksek akış eşiği: p99 × 1.3 iyi başlangıç. Çok yanlış pozitif varsa artır.
+- Sızıntı eşiği: düşük akış ortalamasının 3 katı mantıklı. "kacak" tipi yanlış pozitifler varsa artır.
+- Gece aralığı: kullanım paterni verisine göre gerçekten düşük aktiviteli saatler.
+- Sürekli akış: günlük tüketim yüksekse (>500L) artır, düşükse azalt.
+
+Yalnızca değişmesi gereken ayarları JSON döndür:
 {"high_flow_lpm":X,"leak_flow_lpm":X,"leak_cont_min":X,"night_start_hour":X,"night_end_hour":X,"reason":"kısa Türkçe açıklama"}
 
 Değişiklik gerekmiyorsa: {}
-Kural: yüksek akış = p95 × 1.8 civarı mantıklı. Sızıntı eşiği çok yanlış pozitif varsa %20 artır. Min değerler: high≥2, leak≥0.05, cont≥10.`;
+Min değerler: high≥2, leak≥0.05, cont≥10.`;
 
   const aiMsg = await ai.messages.create({
     model: 'claude-haiku-4-5-20251001',
