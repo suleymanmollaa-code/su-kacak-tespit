@@ -3934,8 +3934,8 @@ async function saveAnomalyTypeSettings() {
       body: JSON.stringify(body),
     });
     if (r.ok) showToast(device ? `✅ ${device} cihaz eşikleri kaydedildi` : '✅ Eşik ayarları kaydedildi');
-    else showToast('❌ Kayıt başarısız');
-  } catch { showToast('❌ Bağlantı hatası'); }
+    else { const err = await r.json().catch(() => ({})); showToast('❌ ' + (err.error || 'Kayıt başarısız')); }
+  } catch (e) { showToast('❌ Bağlantı hatası: ' + e.message); }
 }
 
 async function loadAnomalyTypeSettings() {

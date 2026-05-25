@@ -712,7 +712,7 @@ app.put('/api/settings', requireAuth, async (req, res) => {
       );
     }
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
+  } catch (e) { console.error('[PUT /api/settings]', e?.message || e); res.status(500).json({ error: e?.message || 'Sunucu hatası' }); }
 });
 
 // ── Telegram test ─────────────────────────────────────────────
