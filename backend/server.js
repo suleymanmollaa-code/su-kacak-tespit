@@ -1471,14 +1471,21 @@ async function checkOfflineDevices() {
     for (const dev of devices) {
       const usrSettings = await db.queryOne(`SELECT offline_repeat_min FROM user_settings WHERE user_id=$1`, [dev.user_id]);
       const offlineRepeatMin = usrSettings?.offline_repeat_min ?? 60;
+      // En son cihaz-offline bildirimi (çözülmüş olsa bile) — offlineRepeatMin süre dolmadıysa atla
+      const lastNotif = await db.queryOne(
+        `SELECT ts FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 ORDER BY ts DESC LIMIT 1`,
+        [dev.user_id, dev.device_id]
+      );
+      if (lastNotif) {
+        const msSinceLast = Date.now() - new Date(lastNotif.ts).getTime();
+        if (msSinceLast < offlineRepeatMin * 60 * 1000) continue;
+      }
+      // Hâlâ açık anomali varsa kapat
       const existing = await db.queryOne(
-        `SELECT id, ts FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND NOT resolved`,
+        `SELECT id FROM anomalies WHERE user_id=$1 AND type='cihaz-offline' AND device=$2 AND NOT resolved`,
         [dev.user_id, dev.device_id]
       );
       if (existing) {
-        const msSinceNotif = Date.now() - new Date(existing.ts).getTime();
-        if (msSinceNotif < offlineRepeatMin * 60 * 1000) continue; // tekrar bildirim aralığı dolmadı
-        // Tekrar bildirim zamanı geldi: eski anomaliyi çöz, yeni oluştur
         const resolvedTrue = db.isPg ? true : 1;
         await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedTrue, existing.id]);
       }
