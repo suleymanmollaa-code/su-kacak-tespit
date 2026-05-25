@@ -632,6 +632,14 @@ app.get('/api/settings', requireAuth, async (req, res) => {
         tatil_modu:             !!(s.tatil_modu),
         tatil_modu_until:       s.tatil_modu_until || null,
         tatil_yetkili:          s.tatil_yetkili || '',
+        night_start_hour:       s.night_start_hour   ?? 0,
+        night_start_minute:     s.night_start_minute ?? 0,
+        night_end_hour:         s.night_end_hour     ?? 5,
+        night_end_minute:       s.night_end_minute   ?? 0,
+        high_flow_lpm:          s.high_flow_lpm      ?? 8,
+        leak_flow_lpm:          s.leak_flow_lpm      ?? 0.3,
+        leak_cont_min:          s.leak_cont_min      ?? 30,
+        offline_repeat_min:     s.offline_repeat_min ?? 60,
       }});
     }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
