@@ -781,11 +781,18 @@
     .main { width: 100%; overflow-x: hidden; }
 
     /* Topbar */
-    .topbar { padding: .7rem 1rem; gap: .5rem; }
+    .topbar { padding: .6rem .875rem; gap: .5rem; }
     .topbar-sub { display: none; }
-    .topbar-right { gap: .4rem; }
+    .topbar-right { gap: .35rem; }
     .topbar-right > div:first-child { display: none; } /* status dot+text */
     #user-display-name { display: none; }
+    /* Cihazlarım butonunu sadece ikon göster */
+    #btn-cihaz-bagla { font-size: 0; padding: .35rem .5rem; }
+    #btn-cihaz-bagla::before { content: '📡'; font-size: .9rem; }
+    /* Çıkış butonunu küçült */
+    .topbar-right .btn-sm[onclick="doLogout()"] { padding: .3rem .55rem; font-size: .75rem; }
+    /* border-left separator'ı kaldır */
+    .topbar-right > div[style*="border-left"] { border-left: none !important; padding-left: 0 !important; margin-left: 0 !important; }
 
     /* Content */
     .content { padding: .875rem; }
