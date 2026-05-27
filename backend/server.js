@@ -160,7 +160,6 @@ function adminLoginPage(error) {
       ${error ? `<p class="err">${error}</p>` : ''}
       <button type="submit">Giriş Yap</button>
     </form>
-    <p class="hint">İlk kurulum: <a href="/admin/setup" style="color:#38bdf8">/admin/setup</a></p>
   </div>
 </body>
 </html>`;
