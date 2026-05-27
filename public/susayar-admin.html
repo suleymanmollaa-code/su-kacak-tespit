@@ -377,8 +377,9 @@ function doAdminLogin(){
 function doAdminLogout(){
   sessionStorage.removeItem('admin_secret');
   adminSecret='';
-  document.getElementById('admin-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
+  // TOTP cookie oturumunu da sonlandır
+  fetch('/admin/logout', { method: 'POST', credentials: 'same-origin' })
+    .finally(() => { window.location.href = '/admin/login'; });
 }
 
 function showAdmin(){

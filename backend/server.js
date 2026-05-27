@@ -16,6 +16,9 @@ const jwt               = require('jsonwebtoken');
 const { randomUUID }    = require('crypto');
 const { Resend }        = require('resend');
 const Anthropic         = require('@anthropic-ai/sdk');
+const speakeasy         = require('speakeasy');
+const QRCode            = require('qrcode');
+const cookieParser      = require('cookie-parser');
 const db                = require('./db');
 
 // ── E-posta ───────────────────────────────────────────────────
@@ -114,13 +117,208 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json({ limit: '10kb' })); // body boyutu sınırı
+app.use(cookieParser()); // signed cookie desteği
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-landing.html')));
-app.get('/admin', (req, res) => {
-  const secret = req.query.s || req.headers['x-admin-secret'];
-  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) return res.status(403).send('Yetkisiz');
-  res.sendFile(path.join(__dirname, '..', 'public', 'susayar-admin.html'));
+// ── Admin TOTP oturumu ────────────────────────────────────────
+function adminLoginPage(error) {
+  return `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SuSayar Admin Girişi</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+         background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;
+          padding:40px 36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    h1{color:#38bdf8;font-size:1.5rem;font-weight:700;margin-bottom:6px;text-align:center}
+    p.sub{color:#94a3b8;font-size:.85rem;text-align:center;margin-bottom:28px}
+    label{display:block;color:#cbd5e1;font-size:.82rem;font-weight:600;margin-bottom:6px}
+    input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid #475569;
+          background:#0f172a;color:#f1f5f9;font-size:1rem;margin-bottom:18px;outline:none}
+    input:focus{border-color:#38bdf8}
+    button{width:100%;padding:12px;background:#0ea5e9;color:#fff;border:none;
+           border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s}
+    button:hover{background:#0284c7}
+    .err{color:#f87171;font-size:.82rem;text-align:center;margin-top:-10px;margin-bottom:14px}
+    .hint{color:#64748b;font-size:.75rem;text-align:center;margin-top:18px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔐 Admin Girişi</h1>
+    <p class="sub">SuSayar yönetici paneli</p>
+    <form method="POST" action="/admin/login">
+      <label>Yönetici Şifresi</label>
+      <input type="password" name="secret" placeholder="••••••••" required autocomplete="current-password">
+      <label>Google Authenticator Kodu</label>
+      <input type="text" name="totp" placeholder="6 haneli kod" maxlength="6" pattern="[0-9]{6}" required
+             autocomplete="one-time-code" inputmode="numeric">
+      ${error ? `<p class="err">${error}</p>` : ''}
+      <button type="submit">Giriş Yap</button>
+    </form>
+    <p class="hint">İlk kurulum için: <code>/admin/setup?s=ADMIN_SECRET</code></p>
+  </div>
+</body>
+</html>`;
+}
+
+function isAdminAuthenticated(req) {
+  try {
+    const token = req.cookies && req.cookies['admin_session'];
+    if (!token) return false;
+    const data = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+    if (!data.sig || !data.exp || !data.ts) return false;
+    if (Date.now() > data.exp) return false;
+    // imzayı doğrula
+    const { createHmac } = require('crypto');
+    const expected = createHmac('sha256', COOKIE_SECRET).update(`admin:${data.ts}`).digest('hex');
+    return data.sig === expected;
+  } catch { return false; }
+}
+
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Çok fazla giriş denemesi. 15 dakika sonra tekrar deneyin.',
 });
+
+// Admin sayfası — cookie kontrolü + secret enjeksiyonu
+app.get('/admin', (req, res) => {
+  if (!isAdminAuthenticated(req)) return res.redirect('/admin/login');
+  const fs = require('fs');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'susayar-admin.html'), 'utf8');
+  // Sayfa yüklenince şifreyi enjekte et ve login ekranını atla
+  const inject = `<script>
+window.__ADMIN_SECRET__ = ${JSON.stringify(ADMIN_SECRET)};
+window.addEventListener('DOMContentLoaded', function() {
+  if (window.__ADMIN_SECRET__ && typeof adminSecret !== 'undefined') {
+    adminSecret = window.__ADMIN_SECRET__;
+    sessionStorage.setItem('admin_secret', adminSecret);
+    if (typeof showAdmin === 'function') showAdmin();
+  }
+});
+</script>`;
+  res.send(html.replace('</head>', inject + '</head>'));
+});
+
+// Giriş formu
+app.get('/admin/login', (req, res) => {
+  if (isAdminAuthenticated(req)) return res.redirect('/admin');
+  res.send(adminLoginPage());
+});
+
+// Giriş işlemi
+app.post('/admin/login', adminLoginLimiter, express.urlencoded({ extended: false }), (req, res) => {
+  const { secret, totp } = req.body;
+  if (!secret || secret !== ADMIN_SECRET) {
+    return res.send(adminLoginPage('Yönetici şifresi hatalı.'));
+  }
+  if (!ADMIN_TOTP_SECRET) {
+    return res.send(adminLoginPage('TOTP henüz kurulmamış. Önce /admin/setup adresini ziyaret edin.'));
+  }
+  const valid = speakeasy.totp.verify({
+    secret: ADMIN_TOTP_SECRET,
+    encoding: 'base32',
+    token: String(totp).trim(),
+    window: 1, // ±30 saniye tolerans
+  });
+  if (!valid) {
+    return res.send(adminLoginPage('Google Authenticator kodu hatalı veya süresi dolmuş.'));
+  }
+  // Oturum cookie oluştur
+  const { createHmac } = require('crypto');
+  const ts  = Date.now();
+  const exp = ts + ADMIN_SESSION_TTL;
+  const sig = createHmac('sha256', COOKIE_SECRET).update(`admin:${ts}`).digest('hex');
+  const token = Buffer.from(JSON.stringify({ ts, exp, sig })).toString('base64');
+  res.cookie('admin_session', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: ADMIN_SESSION_TTL,
+  });
+  res.redirect('/admin');
+});
+
+// Çıkış
+app.post('/admin/logout', (req, res) => {
+  res.clearCookie('admin_session');
+  res.redirect('/admin/login');
+});
+
+// İlk kurulum — QR kod üretir (ADMIN_SECRET ?s= ile korunur, bir kez kullanılır)
+app.get('/admin/setup', async (req, res) => {
+  const s = req.query.s;
+  if (!s || s !== ADMIN_SECRET) return res.status(403).send('Yetkisiz');
+  if (ADMIN_TOTP_SECRET) {
+    // Zaten kurulmuş — yeniden göster
+    const otpauth = speakeasy.otpauthURL({
+      secret: ADMIN_TOTP_SECRET,
+      label: 'SuSayar Admin',
+      issuer: 'SuSayar',
+      encoding: 'base32',
+    });
+    const qr = await QRCode.toDataURL(otpauth);
+    return res.send(adminSetupPage(ADMIN_TOTP_SECRET, qr, false));
+  }
+  // Yeni secret üret
+  const generated = speakeasy.generateSecret({ name: 'SuSayar Admin', issuer: 'SuSayar', length: 20 });
+  const qr = await QRCode.toDataURL(generated.otpauth_url);
+  res.send(adminSetupPage(generated.base32, qr, true));
+});
+
+function adminSetupPage(base32, qrDataUrl, isNew) {
+  return `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SuSayar Admin TOTP Kurulum</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+         background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;padding:24px}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;
+          padding:36px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center}
+    h1{color:#38bdf8;font-size:1.4rem;font-weight:700;margin-bottom:8px}
+    p{color:#94a3b8;font-size:.88rem;margin-bottom:20px;line-height:1.6}
+    img{border-radius:12px;margin-bottom:20px;max-width:220px}
+    .secret{background:#0f172a;border:1px solid #475569;border-radius:8px;
+            padding:12px 16px;font-family:monospace;font-size:1rem;
+            color:#a5f3fc;letter-spacing:.15em;word-break:break-all;margin-bottom:20px}
+    .warn{background:#422006;border:1px solid #92400e;border-radius:8px;
+          padding:12px 16px;color:#fbbf24;font-size:.82rem;margin-bottom:20px}
+    ol{text-align:left;color:#cbd5e1;font-size:.85rem;line-height:2;padding-left:20px;margin-bottom:20px}
+    .env{background:#0f172a;border:1px solid #475569;border-radius:8px;
+         padding:10px 14px;font-family:monospace;font-size:.82rem;color:#86efac;text-align:left}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔑 Google Authenticator Kurulum</h1>
+    <p>${isNew ? 'Yeni TOTP secret üretildi. Bu sayfayı kaydedin, bir daha gösterilmeyecek.' : 'Mevcut TOTP yapılandırması.'}</p>
+    <img src="${qrDataUrl}" alt="QR Kod">
+    <p style="margin-bottom:8px"><strong style="color:#f1f5f9">Manuel giriş kodu:</strong></p>
+    <div class="secret">${base32}</div>
+    ${isNew ? `<div class="warn">⚠️ Bu secret'ı şimdi Render > Environment'a ekleyin:</div>
+    <div class="env">ADMIN_TOTP_SECRET=${base32}</div>
+    <br>` : ''}
+    <ol>
+      <li>Google Authenticator uygulamasını açın</li>
+      <li>"+" → "QR kodu tara" seçin</li>
+      <li>Yukarıdaki QR kodu taratın</li>
+      <li>Render > Environment > <code>ADMIN_TOTP_SECRET</code> = <code>${base32}</code></li>
+      <li>Servisi yeniden başlatın</li>
+      <li><a href="/admin/login" style="color:#38bdf8">/admin/login</a> adresinden giriş yapın</li>
+    </ol>
+  </div>
+</body>
+</html>`;
+}
 
 // ── Middleware ────────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -1169,7 +1367,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 });
 
 // ── Admin ─────────────────────────────────────────────────────
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
+const ADMIN_SECRET      = process.env.ADMIN_SECRET;
+const ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET; // speakeasy base32 secret
+const COOKIE_SECRET     = process.env.COOKIE_SECRET || JWT_SECRET;
+const ADMIN_SESSION_TTL = 4 * 60 * 60 * 1000; // 4 saat
+
 if (!ADMIN_SECRET) {
   console.error('[HATA] ADMIN_SECRET ortam değişkeni ayarlanmamış! Render > Environment > ADMIN_SECRET ekleyin.');
   process.exit(1);
