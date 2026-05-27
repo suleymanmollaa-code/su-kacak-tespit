@@ -159,7 +159,7 @@ nav {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 1.5rem;
 }
-.mock-logo { font-size: .85rem; font-weight: 800; color: white; letter-spacing: .02em; }
+.mock-logo { font-size: .85rem; font-weight: 800; color: white; letter-spacing: .02em; display:flex;align-items:center;gap:5px; }
 .mock-status {
   display: flex; align-items: center; gap: .4rem;
   font-size: .72rem; color: rgba(255,255,255,.7);
@@ -359,23 +359,78 @@ nav {
 /* ── TESTIMONIALS ────────────────────────────────── */
 .testi-bg { background: var(--bg2); }
 .testi-inner { padding: 5rem clamp(1.25rem,5vw,3rem); max-width: 1160px; margin: 0 auto; }
-.testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
-.testi-card {
-  background: white; border: 1px solid var(--border);
-  border-radius: 14px; padding: 1.6rem;
+
+/* Slider wrapper */
+.testi-slider-wrap { position: relative; overflow: hidden; }
+.testi-track {
+  display: flex; transition: transform .45s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
 }
-.testi-stars { color: #f59e0b; font-size: .85rem; margin-bottom: .85rem; }
-.testi-q { font-size: .87rem; color: var(--text); line-height: 1.65; margin-bottom: 1.1rem; font-style: italic; }
-.testi-q::before { content: '"'; }
-.testi-q::after  { content: '"'; }
-.testi-author { display: flex; align-items: center; gap: .75rem; }
-.testi-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
+.testi-slide {
+  min-width: 100%; padding: 0 .25rem; box-sizing: border-box;
+}
+/* Card */
+.testi-card-new {
+  background: var(--surface,#fff); border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,.07);
+  max-width: 720px; margin: 0 auto;
+}
+.testi-card-head {
+  position: relative; padding: 2rem 2rem 3.5rem;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  overflow: hidden;
+}
+.testi-card-head::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--grad-head, linear-gradient(135deg,#1d4ed8 0%,#0ea5e9 100%));
+  z-index: 0;
+}
+.testi-head-info { position: relative; z-index: 1; }
+.testi-head-stars { color: #fbbf24; font-size: 1rem; letter-spacing: 2px; margin-bottom: .5rem; }
+.testi-head-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.testi-head-role { font-size: .82rem; color: rgba(255,255,255,.75); margin-top: .15rem; }
+.testi-head-photo {
+  position: relative; z-index: 1; flex-shrink: 0;
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.4);
+  object-fit: cover; margin-top: -4px;
+}
+.testi-card-body {
+  padding: 1.75rem 2rem 2rem;
+  position: relative;
+}
+.testi-card-body::before {
+  content: '\201C';
+  position: absolute; top: .5rem; left: 1.6rem;
+  font-size: 5rem; line-height: 1; color: var(--blue-lt,#60a5fa);
+  opacity: .18; font-family: Georgia, serif;
+}
+.testi-card-text {
+  font-size: .97rem; color: var(--text); line-height: 1.75;
+  position: relative; z-index: 1;
+}
+
+/* Controls */
+.testi-controls {
   display: flex; align-items: center; justify-content: center;
-  font-size: .8rem; font-weight: 700; color: white; flex-shrink: 0;
+  gap: 1rem; margin-top: 2rem;
 }
-.testi-name { font-size: .82rem; font-weight: 600; }
-.testi-city { font-size: .72rem; color: var(--muted); }
+.testi-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface,#fff);
+  cursor: pointer; font-size: 1.1rem; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, border-color .2s;
+}
+.testi-btn:hover { background: var(--blue); border-color: var(--blue); color: #fff; }
+.testi-dots { display: flex; gap: .5rem; align-items: center; }
+.testi-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); cursor: pointer;
+  transition: background .25s, transform .25s;
+}
+.testi-dot.active { background: var(--blue); transform: scale(1.35); }
 
 /* ── PRICING ─────────────────────────────────────── */
 .pricing-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; align-items: start; }
@@ -438,6 +493,36 @@ nav {
 .footer-links a { font-size: .8rem; color: var(--muted); transition: color .15s; }
 .footer-links a:hover { color: var(--text); }
 .footer-copy { font-size: .78rem; color: var(--muted); }
+
+/* ── SSS / FAQ ───────────────────────────────────── */
+.faq-wrap { max-width: 720px; margin: 0 auto; }
+.faq-item {
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: .75rem; overflow: hidden;
+  transition: border-color .2s;
+}
+.faq-item.open { border-color: var(--blue); }
+.faq-q {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.35rem; text-align: left; gap: 1rem;
+  font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--text);
+  transition: background .15s;
+}
+.faq-q:hover { background: var(--bg2); }
+.faq-arrow {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; flex-shrink: 0; transition: transform .25s, background .2s;
+}
+.faq-item.open .faq-arrow { transform: rotate(180deg); background: var(--blue); color: white; border-color: var(--blue); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease;
+  font-size: .86rem; color: var(--sub); line-height: 1.75;
+  padding: 0 1.35rem;
+}
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.35rem 1.2rem; }
 
 /* ── LIVE ECOSYSTEM ──────────────────────────────── */
 .live-eco {
@@ -541,7 +626,10 @@ nav {
   .problem-wrap, .learn-wrap { grid-template-columns: 1fr; gap: 3rem; }
   .steps-grid { grid-template-columns: 1fr; }
   .step-arrow { display: none; }
-  .feat-grid, .testi-grid { grid-template-columns: 1fr; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .testi-card-head { padding: 1.5rem 1.25rem 2.75rem; }
+  .testi-head-photo { width: 64px; height: 64px; }
+  .testi-card-body { padding: 1.25rem 1.25rem 1.5rem; }
   #kullanim-alanlari div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
   .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
   .p-card.featured { transform: none; }
@@ -717,7 +805,10 @@ nav {
   <div class="hero-right">
     <div class="hero-phone-wrap">
       <div class="mock-bar">
-        <div class="mock-logo">SuSayar</div>
+        <div class="mock-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="rgba(255,255,255,.9)"/></svg>
+          SuSayar
+        </div>
         <div class="mock-status">
           <span class="mock-dot"></span> Canlı
         </div>
@@ -765,6 +856,43 @@ nav {
     <div class="float-badge float-2">
       <span class="float-badge-icon">&#x1F4C9;</span>
       Bu ay ↓%23 tüketim &nbsp;·&nbsp; 280 TL tasarruf
+    </div>
+  </div>
+</div>
+
+<!-- CANLI İSTATİSTİKLER -->
+<div class="live-eco">
+  <div class="live-eco-inner">
+    <div class="live-eco-head">
+      <div class="live-eco-badge"><span class="live-dot"></span>Sistem Aktif</div>
+      <div class="live-eco-title">Gerçek zamanlı su takibi, her an</div>
+      <div class="live-eco-sub">Her 2 saniyede ölçüm · 6 anomali tipi · Telegram &amp; e-posta bildirimi</div>
+    </div>
+    <div class="live-stats">
+      <div class="live-stat">
+        <div class="live-stat-icon">💧</div>
+        <div class="live-stat-val">2<span class="u">sn</span></div>
+        <div class="live-stat-lbl">Ölçüm Sıklığı</div>
+        <div class="live-stat-delta">Kesintisiz izleme</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">⚡</div>
+        <div class="live-stat-val">6</div>
+        <div class="live-stat-lbl">Anomali Tipi</div>
+        <div class="live-stat-delta">Kural bazlı tespit</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">📉</div>
+        <div class="live-stat-val">%23</div>
+        <div class="live-stat-lbl">Ort. Tasarruf</div>
+        <div class="live-stat-delta warn">Fatura farkı</div>
+      </div>
+      <div class="live-stat">
+        <div class="live-stat-icon">🔔</div>
+        <div class="live-stat-val">7/24</div>
+        <div class="live-stat-lbl">İzleme</div>
+        <div class="live-stat-delta">Tatilde de aktif</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1070,41 +1198,120 @@ nav {
       <div class="s-label">Kullanıcılarımızdan</div>
       <h2 class="s-h">Gerçek mekânlar, gerçek tasarruf</h2>
     </div>
-    <div class="testi-grid">
-      <div class="testi-card">
-        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-        <p class="testi-q">3 aydır olan sifon kaçağını ilk haftada tespit etti. Tamirden sonra faturam 180 TL düştü.</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:#3bb5d4">AK</div>
-          <div>
-            <div class="testi-name">Ahmet K.</div>
-            <div class="testi-city">İstanbul, Kadıköy</div>
+
+    <div class="testi-slider-wrap">
+      <div class="testi-track" id="testiTrack">
+
+        <!-- 1 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#1d4ed8 0%,#38bdf8 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Ahmet K.</div>
+                <div class="testi-head-role">Konut Sahibi — İstanbul, Kadıköy</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/men/32.jpg"
+                alt="Ahmet K.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">3 aydır devam eden sifon kaçağını ilk haftada tespit etti. Tamirden sonra aylık faturam 180 TL düştü. Sistem kendini 2 ayda amorti etti — keşke daha önce taksaydım.</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-        <p class="testi-q">Tatil dönüşü eve geldiğimizde boru patlamış, ama sistem 20 dakikada bize haber vermişti. Büyük felaketten kurtulduk.</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:#059669">SY</div>
-          <div>
-            <div class="testi-name">Selin Y.</div>
-            <div class="testi-city">Ankara, Çankaya</div>
+
+        <!-- 2 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#059669 0%,#34d399 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Selin Y.</div>
+                <div class="testi-head-role">Ev Sahibi — Ankara, Çankaya</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/women/44.jpg"
+                alt="Selin Y.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">Tatil dönüşü eve geldiğimizde boru patlamış, ama SuSayar 20 dakika içinde telefona uyarı göndermişti. Büyük felaketten kurtulduk. Sigortadan daha hızlı haberdar ettik kendimizi.</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">&#x2605;&#x2605;&#x2605;&#x2605;&#x2605;</div>
-        <p class="testi-q">Geceleri ne kadar su aktığını hiç düşünmemiştim. Sistem her sabah özet e-posta atıyor, bir haftada tüketim alışkanlıklarımı anladım.</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:#7c3aed">MO</div>
-          <div>
-            <div class="testi-name">Mehmet O.</div>
-            <div class="testi-city">İzmir, Bornova</div>
+
+        <!-- 3 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Mehmet O.</div>
+                <div class="testi-head-role">Apartman Yöneticisi — İzmir, Bornova</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/men/58.jpg"
+                alt="Mehmet O.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">Geceleri ne kadar su aktığını hiç düşünmemiştim. Sistem her sabah özet rapor gönderiyor. Bir haftada 12 dairenin tüketim profilini çıkardım, iki tanede anormal tüketim tespit ettim.</p>
+            </div>
           </div>
         </div>
+
+        <!-- 4 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#b45309 0%,#fbbf24 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Fatma A.</div>
+                <div class="testi-head-role">Restoran İşletmecisi — Bursa, Osmangazi</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/women/68.jpg"
+                alt="Fatma A.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">Mutfakta gece boyunca akış olduğunu sabah anlıyorduk. SuSayar gece 2'de alarm verdi, şef boru bağlantısını kapattı. Hem su hem hasar kaybını önledi. İşletme için şart.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#0f766e 0%,#2dd4bf 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Cengiz B.</div>
+                <div class="testi-head-role">Fabrika Teknik Müdürü — Kocaeli, Gebze</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/men/76.jpg"
+                alt="Cengiz B.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">30 noktayı merkezi panelden izliyoruz. Geçen ay bir kompresör hattında sızıntı vardı — tespit etmeden önce 2 ton su kaybetmiştik. Şimdi sistem anında bildiriyor, 15 dakika içinde müdahale ediyoruz.</p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /testi-track -->
+    </div><!-- /slider-wrap -->
+
+    <div class="testi-controls">
+      <button class="testi-btn" onclick="testiPrev()" aria-label="Önceki">&#8592;</button>
+      <div class="testi-dots" id="testiDots">
+        <div class="testi-dot active" onclick="testiGo(0)"></div>
+        <div class="testi-dot" onclick="testiGo(1)"></div>
+        <div class="testi-dot" onclick="testiGo(2)"></div>
+        <div class="testi-dot" onclick="testiGo(3)"></div>
+        <div class="testi-dot" onclick="testiGo(4)"></div>
       </div>
+      <button class="testi-btn" onclick="testiNext()" aria-label="Sonraki">&#8594;</button>
     </div>
+
   </div>
 </div>
 
@@ -1129,6 +1336,76 @@ nav {
     </div>
   </div>
 </div>
+
+<!-- SSS -->
+<div class="section-wrap" id="sss">
+  <div class="section-header">
+    <div class="s-label">SSS</div>
+    <h2 class="s-h">Sıkça Sorulan Sorular</h2>
+    <p class="s-p">Aklınızdaki soruların cevabı burada — bulamazsanız bize yazın.</p>
+  </div>
+  <div class="faq-wrap">
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Kurulum ne kadar sürer, teknik bilgi gerekiyor mu?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Ortalama 30–60 dakika. Teknik bilgiye ihtiyacınız yok. Ekibimiz mekânınıza gelir, cihazı ana su vanasına kurar, WiFi bağlantısını ayarlar ve sistemi aktif hale getirir. Siz sadece telefonunuzu açıp dashboard'a bakarsınız.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Mevcut su sayacımı değiştirmem gerekiyor mu?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Hayır. SuSayar, mevcut su sayacınızın pulse çıkışına bağlanan harici bir sensördür. Sayacınıza dokunulmaz, İSKİ veya su idaresi onayına gerek yoktur. Standart DN15 (1/2 inç) ve DN20 bağlantılarıyla uyumludur.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Bildirimler nasıl geliyor, Telegram zorunlu mu?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Telegram ve e-posta olmak üzere iki kanal mevcuttur. İkisi birden, sadece biri ya da hiçbiri seçilebilir — tercih sizin. Telegram bildirimleri için bot üzerinden chat ID'nizi eklemeniz yeterli; ek uygulama kurulumu gerekmez.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        WiFi yoksa veya sinyal zayıfsa ne olur?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Şu an aktif bağlantı teknolojisi WiFi (2.4 GHz). Sinyal yetmezse cihaz çevrimdışı olur ve bunu size bildirir. LoRaWAN ve 4G LTE desteği geliştirme aşamasındadır; WiFi altyapısı olmayan lokasyonlar için yakında kullanıma açılacak.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Aylık abonelik ücreti ne kadar?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Fiyatlandırma mekân türüne ve cihaz sayısına göre değişmektedir. Ücretsiz keşif randevusu alın, ihtiyacınızı değerlendirip size özel teklif sunalım. Bireysel kullanım için platform ücreti aylık sabit, kurumsal kullanım için ayrı paketler mevcuttur.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Verilerim nerede saklanıyor, güvenli mi?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Tüm veriler şifreli bağlantı (HTTPS/WSS) ile iletilir ve güvenli bulut altyapısında saklanır. Kullanıcı verileri asla üçüncü taraflarla paylaşılmaz. KVKK kapsamında veri işleme politikamız mevcuttur.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Kaç cihazı aynı anda izleyebilirim?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">Plana göre değişir. Bireysel planda tek cihaz, kurumsal planlarda sınırsız cihaz desteği mevcuttur. Her cihaza ayrı isim, eşik ve uyarı kuralı tanımlayabilirsiniz. Otel, site veya fabrika gibi çok noktalı yapılar için tek panelden tam görünürlük sağlanır.</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="div-line">
 
 <!-- CTA FINAL -->
 <div class="cta-section">
@@ -1165,6 +1442,7 @@ nav {
       <a href="#teknolojiler">Teknoloji</a>
       <a href="#kullanim-alanlari">Kullanım Alanları</a>
       <a href="#fiyatlar">Teklif Al</a>
+      <a href="#sss">SSS</a>
       <a href="mailto:info@susayar.com">İletişim</a>
       <a href="/susayar-auth.html">Giriş / Kayıt</a>
     </div>
@@ -1173,6 +1451,30 @@ nav {
 </footer>
 
 <script>
+/* ── TESTIMONIAL SLIDER ── */
+(function() {
+  var cur = 0, total = 5, timer;
+  function update() {
+    document.getElementById('testiTrack').style.transform = 'translateX(-' + cur * 100 + '%)';
+    document.querySelectorAll('.testi-dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === cur);
+    });
+  }
+  window.testiNext = function() { cur = (cur + 1) % total; update(); resetTimer(); };
+  window.testiPrev = function() { cur = (cur - 1 + total) % total; update(); resetTimer(); };
+  window.testiGo   = function(i) { cur = i; update(); resetTimer(); };
+  function resetTimer() { clearInterval(timer); timer = setInterval(window.testiNext, 4500); }
+  resetTimer();
+})();
+
+/* FAQ accordion */
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
 /* Hero mockup - Anlık akış değeri dalgalanır */
 let mockToday = 187;
 let mockMonth = 4.2;
