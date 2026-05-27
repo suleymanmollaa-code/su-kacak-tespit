@@ -521,7 +521,7 @@ app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
 });
 
 // Şifre sıfırla
-app.post('/api/auth/reset-password', async (req, res) => {
+app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
     if (!token || !password) return res.status(400).json({ error: 'Token ve şifre zorunludur' });
@@ -1529,7 +1529,7 @@ app.delete('/api/admin/readings/cleanup', adminLimiter, requireAdmin, async (req
 });
 
 // ── Kurulum Talebi ────────────────────────────────────────────
-app.post('/api/talep', async (req, res) => {
+app.post('/api/talep', authLimiter, async (req, res) => {
   try {
     const { name, phone, address, note } = req.body || {};
     if (!name || !phone || !address) return res.status(400).json({ error: 'Ad, telefon ve adres zorunlu' });
@@ -1554,11 +1554,7 @@ app.post('/api/talep', async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
-app.get('/api/health', (req, res) => res.json({
-  status: 'ok', uptime_s: Math.floor(process.uptime()),
-  clients: wss.clients.size, db: db.isPg ? 'postgresql' : 'sqlite',
-  ts: new Date().toISOString(),
-}));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // ── WebSocket ─────────────────────────────────────────────────
 const server    = http.createServer(app);
