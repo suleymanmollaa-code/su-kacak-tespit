@@ -640,6 +640,8 @@ nav {
   .footer-wrap { flex-direction: column; text-align: center; }
   .footer-links { justify-content: center; }
   .live-stats { grid-template-columns: repeat(2,1fr); }
+  .hero-proof { flex-wrap: wrap; gap: .75rem; }
+  .hero-proof-divider { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -656,8 +658,7 @@ nav {
   #kullanim-alanlari div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr !important; }
   .proof-bar { gap: .75rem; padding: 1rem; }
   .proof-item { font-size: .75rem; }
-  .hero-proof { flex-direction: column; gap: .5rem; }
-  .hero-proof-divider { display: none; }
+  .hero-proof { flex-direction: column; gap: .4rem; align-items: flex-start; }
   .pstat { flex-direction: column; gap: .4rem; }
   .pstat-num { min-width: auto; }
 }
