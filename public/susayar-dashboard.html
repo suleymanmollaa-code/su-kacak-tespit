@@ -827,6 +827,19 @@
     .page-split.active { flex-direction: column; overflow-y: auto; }
     .split-col, .split-col-sm { flex: none !important; width: 100% !important; overflow-y: visible; }
     .split-col .card[style*="flex:1"] { flex: none !important; }
+
+    /* AI yönetim sayfası */
+    #ai-kpi-row { grid-template-columns: 1fr 1fr !important; }
+    #page-ai-yonetim > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+    /* Cihaz ayarları iç grid */
+    #cihaz-ayar-body > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+    /* Anomali detay mini-grid ve cihaz kartı stat grid */
+    .mini-stat-grid { grid-template-columns: 1fr 1fr !important; }
+
+    /* Tatil modu ve bildirim ayar grid'leri */
+    #page-bildirimler div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
   }
 
   @media (max-width: 400px) {
@@ -2743,7 +2756,7 @@ const anomaliData = [
     details: `
       <div style="margin-bottom:1.25rem">
         <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">02:14 ile 02:47 arasında toplam <strong style="color:var(--text)">8,3 litre</strong> akış tespit edildi.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem" class="mini-stat-grid">
           <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
             <div style="font-size:1.2rem;font-weight:700;color:var(--red)">8,3 L</div>
             <div style="font-size:.68rem;color:var(--muted)">Toplam Akış</div>
@@ -2779,7 +2792,7 @@ const anomaliData = [
     details: `
       <div style="margin-bottom:1.25rem">
         <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Cumartesi günü günlük tüketim <strong style="color:var(--text)">312 litre</strong> olarak ölçüldü. Haftalık ortalama 213 L/gün.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem" class="mini-stat-grid">
           <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
             <div style="font-size:1.2rem;font-weight:700;color:var(--red)">312 L</div>
             <div style="font-size:.68rem;color:var(--muted)">Cumartesi</div>
@@ -2815,7 +2828,7 @@ const anomaliData = [
     details: `
       <div style="margin-bottom:1.25rem">
         <div style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Perşembe 14:23 - 15:10 arasında <strong style="color:var(--text)">47 dakika</strong> kesintisiz 1,8 L/dk akış ölçüldü.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem" class="mini-stat-grid">
           <div style="background:var(--bg3);border-radius:8px;padding:.85rem;text-align:center">
             <div style="font-size:1.2rem;font-weight:700;color:var(--blue-lt)">47 dk</div>
             <div style="font-size:.68rem;color:var(--muted)">Süre</div>
