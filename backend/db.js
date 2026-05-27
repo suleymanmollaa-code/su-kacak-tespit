@@ -206,6 +206,13 @@ async function initSchema() {
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_modu BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_modu_until TEXT`).catch(() => {});
     await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS tatil_yetkili TEXT`).catch(() => {});
+    // Anomali tipi on/off toggle'ları
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS night_flow_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS alert_hour_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS high_flow_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS cont_flow_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS leak_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
+    await _pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS offline_enabled BOOLEAN NOT NULL DEFAULT TRUE`).catch(() => {});
     await _pool.query(`
       CREATE TABLE IF NOT EXISTS ai_action_log (
         id         SERIAL PRIMARY KEY,
@@ -246,6 +253,13 @@ async function initSchema() {
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_modu INTEGER NOT NULL DEFAULT 0`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_modu_until TEXT`); } catch {}
     try { _db.exec(`ALTER TABLE user_settings ADD COLUMN tatil_yetkili TEXT`); } catch {}
+    // Anomali tipi on/off toggle'ları
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN night_flow_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN alert_hour_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN high_flow_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN cont_flow_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN leak_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
+    try { _db.exec(`ALTER TABLE user_settings ADD COLUMN offline_enabled INTEGER NOT NULL DEFAULT 1`); } catch {}
     try { _db.exec(`CREATE TABLE IF NOT EXISTS ai_action_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL,
       action TEXT NOT NULL, detail TEXT, ts TEXT NOT NULL

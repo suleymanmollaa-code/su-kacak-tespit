@@ -668,6 +668,12 @@ app.get('/api/settings', requireAuth, async (req, res) => {
         leak_flow_lpm:          s.leak_flow_lpm      ?? 0.3,
         leak_cont_min:          s.leak_cont_min      ?? 30,
         offline_repeat_min:     s.offline_repeat_min ?? 60,
+        night_flow_enabled:     s.night_flow_enabled  !== 0 && s.night_flow_enabled  !== false,
+        alert_hour_enabled:     s.alert_hour_enabled  !== 0 && s.alert_hour_enabled  !== false,
+        high_flow_enabled:      s.high_flow_enabled   !== 0 && s.high_flow_enabled   !== false,
+        cont_flow_enabled:      s.cont_flow_enabled   !== 0 && s.cont_flow_enabled   !== false,
+        leak_enabled:           s.leak_enabled        !== 0 && s.leak_enabled        !== false,
+        offline_enabled:        s.offline_enabled     !== 0 && s.offline_enabled     !== false,
       }});
     }
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
@@ -681,7 +687,9 @@ app.put('/api/settings', requireAuth, async (req, res) => {
             night_start_hour, night_start_minute, night_end_hour, night_end_minute,
             high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min,
             ai_auto_manage,
-            tatil_modu, tatil_modu_until, tatil_yetkili } = req.body;
+            tatil_modu, tatil_modu_until, tatil_yetkili,
+            night_flow_enabled, alert_hour_enabled, high_flow_enabled,
+            cont_flow_enabled, leak_enabled, offline_enabled } = req.body;
     const hour   = parseInt(alert_after_hour   ?? 22);
     const minute = parseInt(alert_after_minute ?? 0);
     const mins   = parseInt(continuous_flow_min ?? 30);
@@ -716,27 +724,37 @@ app.put('/api/settings', requireAuth, async (req, res) => {
       const tm  = tatil_modu            !== undefined ? tatil_modu            : cur.tatil_modu;
       const tmu = tatil_modu_until      !== undefined ? tatil_modu_until      : cur.tatil_modu_until;
       const tmy = tatil_yetkili         !== undefined ? tatil_yetkili         : cur.tatil_yetkili;
+      const nfe = night_flow_enabled  !== undefined ? night_flow_enabled  : (cur.night_flow_enabled  ?? 1);
+      const ahe = alert_hour_enabled  !== undefined ? alert_hour_enabled  : (cur.alert_hour_enabled  ?? 1);
+      const hfe = high_flow_enabled   !== undefined ? high_flow_enabled   : (cur.high_flow_enabled   ?? 1);
+      const cfe = cont_flow_enabled   !== undefined ? cont_flow_enabled   : (cur.cont_flow_enabled   ?? 1);
+      const le  = leak_enabled        !== undefined ? leak_enabled        : (cur.leak_enabled        ?? 1);
+      const oe  = offline_enabled     !== undefined ? offline_enabled     : (cur.offline_enabled     ?? 1);
       await db.queryRun(
         `INSERT INTO user_settings
            (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
             notify_realtime_email,notify_telegram,telegram_chat_id,
             night_start_hour,night_start_minute,night_end_hour,night_end_minute,
             high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min,ai_auto_manage,
-            tatil_modu,tatil_modu_until,tatil_yetkili)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+            tatil_modu,tatil_modu_until,tatil_yetkili,
+            night_flow_enabled,alert_hour_enabled,high_flow_enabled,cont_flow_enabled,leak_enabled,offline_enabled)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
          ON CONFLICT (user_id) DO UPDATE SET
            alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4,
            daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9,
            night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
            high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17,
-           ai_auto_manage=$18, tatil_modu=$19, tatil_modu_until=$20, tatil_yetkili=$21`,
+           ai_auto_manage=$18, tatil_modu=$19, tatil_modu_until=$20, tatil_yetkili=$21,
+           night_flow_enabled=$22, alert_hour_enabled=$23, high_flow_enabled=$24,
+           cont_flow_enabled=$25, leak_enabled=$26, offline_enabled=$27`,
         [req.user.id, hour, minute, mins,
          dr ? 1 : 0, wr ? 1 : 0,
          nre ? 1 : 0, ntg ? 1 : 0,
          cid || null,
          nsh, nsm, neh, nem, hfl, lfl, lcm, orm,
          aam ? 1 : 0,
-         tm ? 1 : 0, tmu || null, tmy || null]
+         tm ? 1 : 0, tmu || null, tmy || null,
+         nfe ? 1 : 0, ahe ? 1 : 0, hfe ? 1 : 0, cfe ? 1 : 0, le ? 1 : 0, oe ? 1 : 0]
       );
     }
     res.json({ ok: true });
