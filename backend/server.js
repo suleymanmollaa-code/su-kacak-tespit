@@ -81,10 +81,30 @@ const sensorLimiter = rateLimit({
   standardHeaders: true, legacyHeaders: false,
 });
 
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 dakika
+  max: 10,                   // 10 deneme — brute force önlemi
+  message: { error: 'Çok fazla OTP denemesi. 15 dakika sonra tekrar deneyin.' },
+  standardHeaders: true, legacyHeaders: false,
+});
+
 // ── Express ───────────────────────────────────────────────────
 const app = express();
 app.set('trust proxy', 1); // Render reverse proxy arkasında çalışır
-app.use(helmet({ contentSecurityPolicy: false })); // güvenlik headerları
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "wss:", "ws:", "https://api.anthropic.com"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+})); // güvenlik headerları
 app.use(cors({
   origin: CORS_ORIGINS.split(',').map(s => s.trim()),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -92,7 +112,11 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' })); // body boyutu sınırı
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-landing.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'susayar-admin.html')));
+app.get('/admin', (req, res) => {
+  const secret = req.query.s || req.headers['x-admin-secret'];
+  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) return res.status(403).send('Yetkisiz');
+  res.sendFile(path.join(__dirname, '..', 'public', 'susayar-admin.html'));
+});
 
 // ── Middleware ────────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -152,7 +176,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
         <p style="font-size:12px;color:#94a3b8;margin:0">Bu kaydı siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
       ` }),
     });
-    if (!sent) console.log(`[AUTH] OTP (${user.email}): ${otp}`);
+    if (!sent) console.log(`[AUTH] OTP gönderilemedi → ${user.email}`);
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
     console.log(`[AUTH] Kayıt: ${user.email}`);
     res.json({ ok: true, token, user: { id: user.id, name: user.name, email: user.email, phone_verified: 0 }, needsVerification: true });
@@ -160,7 +184,7 @@ app.post('/api/auth/register', authLimiter, async (req, res) => {
 });
 
 // OTP doğrula
-app.post('/api/auth/verify-otp', requireAuth, async (req, res) => {
+app.post('/api/auth/verify-otp', otpLimiter, requireAuth, async (req, res) => {
   try {
     const { otp } = req.body;
     if (!otp) return res.status(400).json({ error: 'Kod zorunludur' });
@@ -200,7 +224,7 @@ app.post('/api/auth/resend-otp', authLimiter, requireAuth, async (req, res) => {
         <p style="font-size:12px;color:#94a3b8;margin:0">Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
       ` }),
     });
-    if (!sent) console.log(`[AUTH] OTP yeniden (${user.email}): ${otp}`);
+    if (!sent) console.log(`[AUTH] OTP yeniden gönderilemedi → ${user.email}`);
     res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası' }); }
 });
@@ -948,7 +972,7 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     }
 
     // Canlı durum panelini güncelle
-    updateTelegramLivePanel(reading.user_id, data, devRow.name).catch(() => {});
+    updateTelegramLivePanel(reading.user_id, data, req.device.name).catch(() => {});
 
     console.log(`[${reading.ts}] ${reading.device_id} | ${data.flow_lpm} L/dk | ${data.total_liters} L`);
     res.json({ ok: true, ts: reading.ts });
