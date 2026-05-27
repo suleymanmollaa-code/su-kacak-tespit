@@ -953,11 +953,8 @@
   <div class="nav-item" data-page="anomaliler" data-title="Anomaliler">
     <span class="nav-icon">&#x1F6A8;</span><span class="nav-label">Anomaliler</span>
   </div>
-  <div class="nav-item" data-page="bildirimler" data-title="Bildirimler">
-    <span class="nav-icon">&#x1F4E8;</span><span class="nav-label">Bildirimler</span>
-  </div>
-  <div class="nav-item" data-page="sistem-ogreniyor" data-title="Uyarı Ayarları">
-    <span class="nav-icon">&#x2699;&#xFE0F;</span><span class="nav-label">Uyarı Ayarları</span>
+  <div class="nav-item" data-page="bildirimler" data-title="Bildirimler & Uyarılar">
+    <span class="nav-icon">&#x1F4E8;</span><span class="nav-label">Bildirimler & Uyarılar</span>
   </div>
   <div class="nav-item" data-page="ai-yonetim" data-title="AI Yönetim">
     <span class="nav-icon">🤖</span><span class="nav-label">AI Yönetim</span>
@@ -1506,120 +1503,98 @@
     </div><!-- /page-anomaliler -->
 
     <!-- PAGE: BİLDİRİMLER (sadece kanallar) -->
-    <div class="page" id="page-bildirimler">
+    <div class="page page-split" id="page-bildirimler">
 
-      <div class="card" style="max-width:520px">
-        <div class="card-head">
-          <div class="card-title">Bildirim Kanalları</div>
-          <span id="channels-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.6rem">
-
-          <!-- Bağlantı Bildirimleri — kilitli, her zaman açık -->
-          <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:rgba(139,92,246,.07);border-radius:9px;border:1px solid rgba(139,92,246,.25)">
-            <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem;opacity:.7;pointer-events:none">
-              <div class="slider-track" style="position:absolute;inset:0;border-radius:999px;background:rgba(139,92,246,.5);border:1px solid rgba(139,92,246,.6)"></div>
-              <div class="slider-thumb" style="position:absolute;top:2px;left:18px;width:14px;height:14px;border-radius:50%;background:#fff"></div>
-            </div>
-            <div style="flex:1">
-              <div style="font-size:.83rem;font-weight:600">📡 Bağlantı Bildirimleri <span style="font-size:.65rem;padding:.1rem .4rem;background:rgba(139,92,246,.2);color:#a78bfa;border-radius:4px;margin-left:.3rem">Zorunlu</span></div>
-              <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Cihaz bağlantısı kopunca e-posta ve Telegram ile anında bildirim gönderilir. Devre dışı bırakılamaz.</div>
-              <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem" id="user-email-display"></div>
-            </div>
-          </div>
-
-          <!-- E-posta -->
-          <label style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
-            <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
-              <input type="checkbox" id="setting-notify-email" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Anlık e-posta bildirimlerini')">
-              <div class="slider-track" id="track-setting-notify-email" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
-              <div class="slider-thumb" id="thumb-setting-notify-email" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
-            </div>
-            <div>
-              <div style="font-size:.83rem;font-weight:600">📧 Anlık E-posta</div>
-              <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda kayıtlı e-postanıza anında bildirim gönderilir.</div>
-              <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem" id="email-channel-display"></div>
-            </div>
-          </label>
-          <!-- Telegram -->
-          <div style="padding:.85rem;background:var(--bg3);border-radius:9px;border:1px solid var(--border)">
-            <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
-              <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
-                <input type="checkbox" id="setting-notify-telegram" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Telegram bildirimlerini',()=>{ document.getElementById('telegram-chat-row').style.display=this.checked?'':'none'; })">
-                <div class="slider-track" id="track-setting-notify-telegram" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
-                <div class="slider-thumb" id="thumb-setting-notify-telegram" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
-              </div>
-              <div style="flex:1">
-                <div style="font-size:.83rem;font-weight:600">✈️ Telegram</div>
-                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda Telegram botumuzdan mesaj alırsınız. Ücretsiz, anlık.</div>
-              </div>
-            </label>
-            <div id="telegram-chat-row" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
-              <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">
-                Botunuza Telegram'dan /start yazın, ardından Chat ID'nizi girin.
-              </div>
-              <!-- Kayıtlı ID görünümü (maskeli) -->
-              <div id="chatid-saved-row" style="display:none;align-items:center;gap:.6rem;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:.55rem .75rem">
-                <span style="font-size:.8rem;font-family:monospace;flex:1" id="chatid-masked-display">****</span>
-                <button type="button" onclick="unlockChatId()" style="font-size:.7rem;padding:.2rem .55rem;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:5px;cursor:pointer">Değiştir</button>
-              </div>
-              <!-- Düzenleme alanı (başlangıçta gizli eğer kayıtlı ID varsa) -->
-              <div id="chatid-edit-row" style="display:none;flex-direction:column;gap:.4rem">
-                <input type="text" class="form-input" id="setting-telegram-chatid" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
-                <div style="font-size:.7rem;color:#f59e0b">⚠️ Mevcut Chat ID değiştirilecek. Kaydet butonuna basarak onaylayın.</div>
-              </div>
-              <!-- Hiç kayıt yoksa direkt input göster -->
-              <div id="chatid-new-row">
-                <input type="text" class="form-input" id="setting-telegram-chatid-new" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
-          <button type="button" class="btn-sm" id="btn-test-telegram" onclick="testTelegram()" style="background:var(--bg3);color:var(--fg2);border:1px solid var(--border2)">Test Gönder</button>
-          <button type="button" class="btn-sm btn-primary" onclick="saveChannelSettings()">Kaydet</button>
-        </div>
-      </div>
-
-    </div><!-- /page-bildirimler -->
-
-    <!-- PAGE: UYARI AYARLARI (eski: SİSTEM ÖĞRENİYOR) -->
-    <div class="page page-split" id="page-sistem-ogreniyor">
-
-      <!-- SOL: RAPOR AYARLARI -->
+      <!-- SOL: BİLDİRİM KANALLARI + RAPOR AYARLARI -->
       <div class="split-col" style="flex:1">
 
-        <!-- RAPOR AYARLARI KARTI -->
+        <!-- BİLDİRİM KANALLARI -->
         <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-head">
+            <div class="card-title">Bildirim Kanalları</div>
+            <span id="channels-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <!-- E-posta -->
+            <label style="display:flex;align-items:flex-start;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
+                <input type="checkbox" id="setting-notify-email" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Anlık e-posta bildirimlerini')">
+                <div class="slider-track" id="track-setting-notify-email" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-notify-email" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div>
+                <div style="font-size:.83rem;font-weight:600">📧 Anlık E-posta</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda kayıtlı e-postanıza anında bildirim gönderilir.</div>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem" id="email-channel-display"></div>
+                <div style="font-size:.7rem;color:var(--muted);margin-top:.1rem" id="user-email-display"></div>
+              </div>
+            </label>
+            <!-- Telegram -->
+            <div style="padding:.85rem;background:var(--bg3);border-radius:9px;border:1px solid var(--border)">
+              <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
+                <div style="position:relative;width:36px;height:20px;flex-shrink:0;margin-top:.15rem">
+                  <input type="checkbox" id="setting-notify-telegram" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Telegram bildirimlerini',()=>{ document.getElementById('telegram-chat-row').style.display=this.checked?'':'none'; })">
+                  <div class="slider-track" id="track-setting-notify-telegram" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                  <div class="slider-thumb" id="thumb-setting-notify-telegram" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:.83rem;font-weight:600">✈️ Telegram</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Anomali oluştuğunda Telegram botumuzdan mesaj alırsınız. Ücretsiz, anlık.</div>
+                </div>
+              </label>
+              <div id="telegram-chat-row" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+                <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">Botunuza Telegram'dan /start yazın, ardından Chat ID'nizi girin.</div>
+                <div id="chatid-saved-row" style="display:none;align-items:center;gap:.6rem;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:.55rem .75rem">
+                  <span style="font-size:.8rem;font-family:monospace;flex:1" id="chatid-masked-display">****</span>
+                  <button type="button" onclick="unlockChatId()" style="font-size:.7rem;padding:.2rem .55rem;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3);border-radius:5px;cursor:pointer">Değiştir</button>
+                </div>
+                <div id="chatid-edit-row" style="display:none;flex-direction:column;gap:.4rem">
+                  <input type="text" class="form-input" id="setting-telegram-chatid" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
+                  <div style="font-size:.7rem;color:#f59e0b">⚠️ Mevcut Chat ID değiştirilecek. Kaydet butonuna basarak onaylayın.</div>
+                </div>
+                <div id="chatid-new-row">
+                  <input type="text" class="form-input" id="setting-telegram-chatid-new" placeholder="Chat ID (örn: 123456789)" style="font-family:monospace;font-size:.82rem">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
+            <button type="button" class="btn-sm" id="btn-test-telegram" onclick="testTelegram()" style="background:var(--bg3);color:var(--fg2);border:1px solid var(--border2)">Test Gönder</button>
+            <button type="button" class="btn-sm btn-primary" onclick="saveChannelSettings()">Kaydet</button>
+          </div>
+        </div>
+
+        <!-- RAPOR AYARLARI -->
+        <div class="card">
           <div class="card-head">
             <div class="card-title">Rapor Ayarları</div>
             <span id="settings-save-chip" style="display:none;font-size:.72rem;padding:.2rem .6rem;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25);border-radius:6px">Kaydedildi ✓</span>
           </div>
           <div>
-              <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem">Düzenli Raporlar</div>
-              <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;margin-bottom:.6rem;border:1px solid var(--border)">
-                <div style="position:relative;width:36px;height:20px;flex-shrink:0">
-                  <input type="checkbox" id="setting-daily" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
-                  <div class="slider-track" id="track-setting-daily" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
-                  <div class="slider-thumb" id="thumb-setting-daily" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
-                </div>
-                <div>
-                  <div style="font-size:.83rem;font-weight:600">Günlük Rapor</div>
-                  <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her gün sabah 08:00'de e-posta ile özet.</div>
-                </div>
-              </label>
-              <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
-                <div style="position:relative;width:36px;height:20px;flex-shrink:0">
-                  <input type="checkbox" id="setting-weekly" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
-                  <div class="slider-track" id="track-setting-weekly" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
-                  <div class="slider-thumb" id="thumb-setting-weekly" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
-                </div>
-                <div>
-                  <div style="font-size:.83rem;font-weight:600">Haftalık Rapor</div>
-                  <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her Pazartesi sabah haftalık özet e-postası.</div>
-                </div>
-              </label>
-            </div>
+            <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem">Düzenli Raporlar</div>
+            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;margin-bottom:.6rem;border:1px solid var(--border)">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0">
+                <input type="checkbox" id="setting-daily" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <div class="slider-track" id="track-setting-daily" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-daily" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div>
+                <div style="font-size:.83rem;font-weight:600">Günlük Rapor</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her gün sabah 08:00'de e-posta ile özet.</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
+              <div style="position:relative;width:36px;height:20px;flex-shrink:0">
+                <input type="checkbox" id="setting-weekly" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <div class="slider-track" id="track-setting-weekly" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
+                <div class="slider-thumb" id="thumb-setting-weekly" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
+              </div>
+              <div>
+                <div style="font-size:.83rem;font-weight:600">Haftalık Rapor</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her Pazartesi sabah haftalık özet e-postası.</div>
+              </div>
+            </label>
+          </div>
           <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
             <button class="btn-sm btn-primary" onclick="saveSettings()">Kaydet</button>
           </div>
@@ -1627,12 +1602,10 @@
 
       </div><!-- /split-col sol -->
 
-      <div class="split-divider" data-split="sistem-ogreniyor"></div>
+      <div class="split-divider" data-split="bildirimler"></div>
 
       <!-- SAĞ: UYARI YÖNETİMİ -->
       <div class="split-col" style="flex:1">
-
-        <!-- UYARI TİPİ YÖNETİMİ -->
         <div class="card">
           <div class="card-head">
             <div class="card-title">⚙️ Uyarı Yönetimi</div>
@@ -1640,7 +1613,7 @@
               style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
 
-          <!-- CİHAZ SEÇİCİ (per-device eşik ayarı için) -->
+          <!-- CİHAZ SEÇİCİ -->
           <div class="form-group" style="margin-bottom:1.25rem">
             <label class="form-label">Ayar Uygulanacak Cihaz</label>
             <select class="form-select" id="at-device" onchange="loadAnomalyTypeSettings()">
@@ -1779,9 +1752,12 @@
           </div>
 
         </div>
-
       </div><!-- /split-col sağ -->
-    </div><!-- /page-sistem-ogreniyor -->
+
+    </div><!-- /page-bildirimler -->
+
+    <!-- PAGE: UYARI AYARLARI — içerik page-bildirimler'e taşındı -->
+    <div class="page" id="page-sistem-ogreniyor" style="display:none!important"></div><!-- /page-sistem-ogreniyor -->
 
     <!-- PAGE: CİHAZ AYARLARI -->
     <div class="page" id="page-cihaz-ayarlari">

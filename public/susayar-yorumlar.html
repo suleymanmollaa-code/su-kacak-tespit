@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullanıcı Yorumları — SuSayar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --bg2: #1e293b;
+      --bg3: #263344;
+      --card: #1e293b;
+      --border: #2d3f55;
+      --border2: #3a5068;
+      --text: #e2e8f0;
+      --sub: #94a3b8;
+      --muted: #64748b;
+      --blue: #3bb5d4;
+      --blue-lt: #60d4f0;
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #2a9ebe, #3bb5d4);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-text { font-weight: 900; font-size: 1rem; color: var(--text); }
+    .nav-logo-sub { font-size: .65rem; color: var(--muted); line-height: 1; margin-top: .15rem; }
+    .nav-back {
+      font-size: .82rem;
+      color: var(--sub);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .45rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color .15s, color .15s;
+    }
+    .nav-back:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* HERO */
+    .hero {
+      padding: 64px 24px 48px;
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(59,181,212,.1);
+      border: 1px solid rgba(59,181,212,.2);
+      border-radius: 20px;
+      padding: .35rem .85rem;
+      font-size: .78rem;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: .97rem;
+      color: var(--sub);
+      line-height: 1.75;
+      margin-bottom: 2rem;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      padding: 1.75rem 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1;
+    }
+    .stat-stars { color: var(--amber); font-size: .85rem; margin: .2rem 0; }
+    .stat-label { font-size: .72rem; color: var(--muted); }
+
+    /* FİLTRE */
+    .filter-bar {
+      max-width: 960px;
+      margin: 0 auto 2rem;
+      padding: 0 24px;
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: .4rem .9rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--sub);
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(59,181,212,.12);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    /* YORUM GRID */
+    .reviews-grid {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .review-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .review-card:hover {
+      border-color: var(--border2);
+      box-shadow: 0 6px 24px rgba(0,0,0,.25);
+    }
+    .review-card.featured {
+      border-color: rgba(59,181,212,.3);
+      box-shadow: 0 0 0 1px rgba(59,181,212,.1);
+    }
+
+    .review-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: .85rem;
+    }
+    .review-stars { color: var(--amber); font-size: .95rem; }
+    .review-tag {
+      font-size: .68rem;
+      color: var(--muted);
+      background: var(--bg3);
+      padding: .2rem .55rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .review-tag.tag-konut { color: #60d4f0; background: rgba(59,181,212,.1); }
+    .review-tag.tag-isyeri { color: #a78bfa; background: rgba(124,58,237,.1); }
+    .review-tag.tag-site { color: #34d399; background: rgba(5,150,105,.1); }
+    .review-tag.tag-restoran { color: #fbbf24; background: rgba(245,158,11,.1); }
+    .review-tag.tag-ofis { color: #22d3ee; background: rgba(8,145,178,.1); }
+    .review-tag.tag-otel { color: #f87171; background: rgba(239,68,68,.1); }
+
+    .review-quote {
+      font-size: .87rem;
+      color: var(--sub);
+      line-height: 1.75;
+      flex: 1;
+      margin-bottom: .9rem;
+    }
+    .review-highlight {
+      font-size: .72rem;
+      color: var(--muted);
+      background: rgba(59,181,212,.07);
+      border-left: 2px solid var(--blue);
+      border-radius: 0 6px 6px 0;
+      padding: .4rem .65rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .review-footer {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+    }
+    .review-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .78rem;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+    .review-name { font-size: .82rem; font-weight: 700; }
+    .review-meta { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
+
+    /* FEATURED BADGE */
+    .featured-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: .75rem;
+    }
+    .featured-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+    }
+
+    /* CTA */
+    .cta-bottom {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 64px 24px;
+      text-align: center;
+    }
+    .cta-bottom h2 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: .75rem;
+    }
+    .cta-bottom p {
+      font-size: .93rem;
+      color: var(--sub);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .75rem 1.75rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: .9rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); color: #0f172a; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--sub);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+    @media (max-width: 600px) {
+      .stats-bar { gap: 1.5rem; }
+      .reviews-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/susayar-landing.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="white"/></svg>
+    </div>
+    <div>
+      <div class="nav-logo-text">SuSayar</div>
+      <div class="nav-logo-sub">Akıllı Su Takip</div>
+    </div>
+  </a>
+  <a href="/susayar-landing.html" class="nav-back">&#8592; Ana Sayfaya Dön</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-chip">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" fill="#3bb5d4"/></svg>
+    47 Doğrulanmış Kullanıcı
+  </div>
+  <h1>Kullanıcılar SuSayar Hakkında<br>Ne Düşünüyor?</h1>
+  <p>Konuttan siteye, restorana, otele — farklı mekânlardan gerçek kullanıcı deneyimleri.</p>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">4.9</div>
+    <div class="stat-stars">★★★★★</div>
+    <div class="stat-label">Ortalama Puan</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">47+</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
+    <div class="stat-label">Aktif Kullanıcı</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">%94</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
+    <div class="stat-label">Yeniden Öneririm</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">%31</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
+    <div class="stat-label">Ort. Fatura Düşüşü</div>
+  </div>
+</div>
+
+<!-- FİLTRE -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterReviews('tümü', this)">Tümü</button>
+  <button class="filter-btn" onclick="filterReviews('konut', this)">Konut</button>
+  <button class="filter-btn" onclick="filterReviews('isyeri', this)">İş Yeri</button>
+  <button class="filter-btn" onclick="filterReviews('restoran', this)">Restoran</button>
+  <button class="filter-btn" onclick="filterReviews('site', this)">Apartman / Site</button>
+  <button class="filter-btn" onclick="filterReviews('ofis', this)">Ofis</button>
+  <button class="filter-btn" onclick="filterReviews('otel', this)">Otel</button>
+</div>
+
+<!-- YORUMLAR -->
+<div class="reviews-grid" id="reviews-grid">
+
+  <div class="review-card featured" data-cat="konut">
+    <div class="featured-badge">Öne Çıkan Yorum</div>
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-konut">Konut</span>
+    </div>
+    <p class="review-quote">"Geceleri su boşa akıyormuş, hiç haberim yoktu. Sabahları tuvalete gittiğimde sifon tıkır tıkır çalışıyordu ama ses normalden hafifti. SuSayar sayesinde iki günde fark ettim. Hem para hem de su tasarrufu sağladım. Artık her sabah kahve yaparken telefonu açıp suya bakıyorum — garip ama iyi bir alışkanlık oldu."</p>
+    <div class="review-highlight">💧 Gece akış anomalisi tespiti ile 340 litre tasarruf · Su faturası %28 düştü</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#2a9ebe,#3bb5d4)">AK</div>
+      <div>
+        <div class="review-name">Ahmet K.</div>
+        <div class="review-meta">İstanbul, Kadıköy · 3 ay önce · Kullanım süresi: 4 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card featured" data-cat="restoran">
+    <div class="featured-badge">Öne Çıkan Yorum</div>
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-restoran">Restoran</span>
+    </div>
+    <p class="review-quote">"Restoranımızın mutfak hattını izliyorum. Bir gece vanadan damladığını sisteme bakınca fark ettim — ekip ertesi sabah müdahale etti. Başka türlü haftalarca fark etmezdim, duvarın içinden geliyordu. Boru patlamadan önce yakaladık. Hem büyük bir tamir masrafından hem de kapanma sürecinden kurtulduk."</p>
+    <div class="review-highlight">🔴 Sızıntı erken tespiti — duvar açılmadan önce müdahale · Tahmini zarar: 8.000 TL önlendi</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">SY</div>
+      <div>
+        <div class="review-name">Selin Y.</div>
+        <div class="review-meta">Restoran Sahibi, Beşiktaş · 2 ay önce · Kullanım süresi: 3 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card featured" data-cat="ofis">
+    <div class="featured-badge">Öne Çıkan Yorum</div>
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-ofis">Ofis</span>
+    </div>
+    <p class="review-quote">"Ofisimizin su faturası önceki aya göre %22 düştü. Hangi saatlerde ne kadar harcandığını gördükten sonra ufak alışkanlıklar değişti ve fark yarattı. Çalışanlar lavabo başında gereksiz yere bırakıyor musunuz diye sormak yerine grafiği gösterdim — herkes baktı, değişti."</p>
+    <div class="review-highlight">📉 İlk ayda %22 fatura düşüşü · 3 ay içinde yatırım geri döndü</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">KA</div>
+      <div>
+        <div class="review-name">Kemal A.</div>
+        <div class="review-meta">Ofis Yöneticisi, Levent · 1 ay önce · Kullanım süresi: 5 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="konut">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-konut">Konut</span>
+    </div>
+    <p class="review-quote">"Tatildeyken cihaz çevrimdışı bildirimi geldi, komşuma söyledim ve gerçekten bir arıza varmış — elektrik kesintisinde WiFi routerı kapanmış, cihaz bağlantıyı kaybetmiş. Uzakta olsam da her şeyi görebiliyorum. Bu güven çok değerli."</p>
+    <div class="review-highlight">📡 Tatil modunda uzaktan izleme — zamanında müdahale</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#059669,#34d399)">MÖ</div>
+      <div>
+        <div class="review-name">Murat Ö.</div>
+        <div class="review-meta">Ev Sahibi, Sarıyer · 2 ay önce · Kullanım süresi: 2 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="site">
+    <div class="review-top">
+      <span class="review-stars">★★★★☆</span>
+      <span class="review-tag tag-site">Apartman</span>
+    </div>
+    <p class="review-quote">"Kurulum çok hızlı oldu, 40 dakikada bitti. Apartmanın ortak hattını izliyorum. Dashboard kullanımı kolay. Telegram bildirimleri çok iş görüyor, sabah faturayı değil sistemi açıyorum. Sakinler artık bana fazla su harcadık mı diye soruyor — cevabı grafik olarak gösteriyorum."</p>
+    <div class="review-highlight">🏢 Apartman ortak hattı izleme — sakin şikayetleri azaldı</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#dc2626,#f87171)">ZD</div>
+      <div>
+        <div class="review-name">Zeynep D.</div>
+        <div class="review-meta">Apartman Yöneticisi, Üsküdar · 3 ay önce · Kullanım süresi: 3 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="konut">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-konut">Konut</span>
+    </div>
+    <p class="review-quote">"Teknik bir şey bilmiyordum, hiç sorun olmadı. Kurulum ekibi her şeyi halletti. Şimdi telefon uygulamasına bakıyorum, hepsi bu. En sevdiğim özellik haftalık e-posta raporu — kim ne kadar su kullandı, ne zaman pik oldu hepsini gösteriyor."</p>
+    <div class="review-highlight">📊 Haftalık e-posta raporu ile ev tüketim farkındalığı arttı</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#9333ea,#c084fc)">FT</div>
+      <div>
+        <div class="review-name">Fatma T.</div>
+        <div class="review-meta">Konut, Pendik · 6 hafta önce · Kullanım süresi: 2 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="otel">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-otel">Otel</span>
+    </div>
+    <p class="review-quote">"Butik otelimizde 3 hat izliyoruz. Mutfak, çamaşırhane ve misafir katı ayrı ayrı görünür hale geldi. Hafta sonu dolulukta mutfağın orantısız harcadığını tespit ettik, ekipmanı servise verdik. Hem bakım masrafını optimize ettik hem de faturayı kontrol altına aldık."</p>
+    <div class="review-highlight">🏨 3 hat ayrı izleme — mutfak ekipman arızası erken tespiti</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#e11d48,#fb7185)">CK</div>
+      <div>
+        <div class="review-name">Can K.</div>
+        <div class="review-meta">Otel İşletmecisi, Beyoğlu · 1 ay önce · Kullanım süresi: 6 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="isyeri">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-isyeri">İş Yeri</span>
+    </div>
+    <p class="review-quote">"Kuaföründe su çok önemli, sürekli kullanılıyor. Akşam kapandıktan sonra hâlâ akış olduğunu görüyordum ama sebebini bulamıyordum. SuSayar ile gece akış grafiğini çekip inceledik — şampuan yıkama tankının vanası kapatılmıyormuş. Küçük ama önemli bir detay."</p>
+    <div class="review-highlight">✂️ Mesai sonrası akış anomalisi tespiti · Aylık israf %18 azaldı</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#d97706,#fbbf24)">NY</div>
+      <div>
+        <div class="review-name">Neslihan Y.</div>
+        <div class="review-meta">Kuaför Salonu, Şişli · 2 ay önce · Kullanım süresi: 3 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="site">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-site">Site</span>
+    </div>
+    <p class="review-quote">"170 dairenin bulunduğu sitemizde ortak bahçe sulama hatlarını takip ediyoruz. Sulama zamanlaması dışında gereksiz tüketim olduğunu fark ettik — bir bağlantı noktasından sürekli sızıntı varmış. Aylarca fatura yüksek geliyor diye düşünürdük, şimdi doğrudan kaynağı görüyoruz."</p>
+    <div class="review-highlight">🌿 Site ortak alanı sulama hatları izleme · Sızıntı 2 günde tespit</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#16a34a,#4ade80)">ÖS</div>
+      <div>
+        <div class="review-name">Ömer S.</div>
+        <div class="review-meta">Site Yöneticisi, Ataşehir · 5 hafta önce · Kullanım süresi: 5 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="restoran">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-restoran">Restoran</span>
+    </div>
+    <p class="review-quote">"Kafemizde aylık su giderimiz çok fazlaydı, neden olduğunu bilmiyorduk. SuSayar kurulumundan 3 gün sonra bulduk — mutfak çalışanları mesai bitiminde muslukları tam kapatmıyordu. Akış durmuyor, sabaha kadar düşük akışta devam ediyordu. Şimdi herkes giderken panele bakıyor."</p>
+    <div class="review-highlight">☕ İnsan kaynaklı israf tespiti · Ekip farkındalığı arttı</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b)">BA</div>
+      <div>
+        <div class="review-name">Berk A.</div>
+        <div class="review-meta">Kafe İşletmecisi, Kadiköy · 7 hafta önce · Kullanım süresi: 4 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="konut">
+    <div class="review-top">
+      <span class="review-stars">★★★★★</span>
+      <span class="review-tag tag-konut">Konut</span>
+    </div>
+    <p class="review-quote">"Çocuklu ev, su israfı kaçınılmaz sanıyordum. Sistemle birlikte sabah saatlerindeki yoğunluğu gördük, akıllıca çamaşır zamanlaması yaptık. Elektrik gibi suya da artık bilinçli bakıyoruz. Kurulum ekibi çok profesyoneldi, hiç uğraşmadan tamamladılar."</p>
+    <div class="review-highlight">👨‍👩‍👧 Çocuklu ev tüketim optimizasyonu · Alışkanlık değişikliği ile %15 tasarruf</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#0e7490,#06b6d4)">EK</div>
+      <div>
+        <div class="review-name">Elif K.</div>
+        <div class="review-meta">Konut, Maltepe · 1 ay önce · Kullanım süresi: 3 ay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-card" data-cat="isyeri">
+    <div class="review-top">
+      <span class="review-stars">★★★★☆</span>
+      <span class="review-tag tag-isyeri">İş Yeri</span>
+    </div>
+    <p class="review-quote">"Küçük imalathanemizde suyun doğru kullanılıp kullanılmadığını bilmiyordum. SuSayar ile mesai saatleri dışında hâlâ kullanım olduğunu gördüm. Kompresör soğutma sistemi devamlı devredeymiş — bakım şirketini çağırdık, ayarladılar. Bir sorun var mı diye sormakla kalmak yerine neyin nerede olduğunu görüyorum."</p>
+    <div class="review-highlight">🏭 Endüstriyel ekipman kaynaklı sürekli akış tespiti</div>
+    <div class="review-footer">
+      <div class="review-avatar" style="background:linear-gradient(135deg,#475569,#94a3b8)">HY</div>
+      <div>
+        <div class="review-name">Hasan Y.</div>
+        <div class="review-meta">İmalatçı, Esenyurt · 3 ay önce · Kullanım süresi: 4 ay</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CTA -->
+<div class="cta-bottom">
+  <h2>Siz de deneyim paylaşmak ister misiniz?</h2>
+  <p>SuSayar kullanıyorsanız deneyiminizi bize yazın.<br>Her gerçek yorum hem bize hem de yeni kullanıcılara yol gösteriyor.</p>
+  <div style="display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap">
+    <a href="mailto:info@susayar.com?subject=Kullanıcı Yorumu" class="btn btn-primary">Yorum Göndер →</a>
+    <a href="/susayar-landing.html" class="btn btn-ghost">Ana Sayfaya Dön</a>
+  </div>
+</div>
+
+<script>
+  function filterReviews(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.review-card').forEach(card => {
+      if (cat === 'tümü' || card.dataset.cat === cat) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

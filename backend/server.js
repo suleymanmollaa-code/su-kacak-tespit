@@ -1795,9 +1795,14 @@ async function checkOfflineDevices() {
       );
       broadcastToUser(dev.user_id, { type: 'anomaly', payload: { id: anomId, type: 'cihaz-offline', device: dev.device_id, detail, ts: new Date().toISOString(), resolved: false } });
 
-      // Telegram + E-posta bildirimi (her zaman gönderilir)
-      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [dev.user_id]);
+      // Telegram + E-posta bildirimi (offline_enabled kontrolü)
+      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id, offline_enabled FROM user_settings WHERE user_id=$1`, [dev.user_id]);
       const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [dev.user_id]);
+      const offlineEnabled = s?.offline_enabled !== 0 && s?.offline_enabled !== false;
+      if (!offlineEnabled) {
+        console.log(`[OFFLINE] ${dev.device_id} bildirimi kapalı, atlandı`);
+        continue;
+      }
       const offlineMsg = `🔴 <b>Cihaz Bağlantısı Kesildi</b>\n\n📡 ${dev.name || dev.device_id}\n⏱ Son veri: ${offlineSince}\n\nCihazı kontrol edin.`;
       if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
         await sendTelegram(s.telegram_chat_id.trim(), offlineMsg).catch(() => {});

@@ -741,10 +741,10 @@ nav {
     </div>
   </a>
   <div class="nav-links">
-    <a href="#nasil-calisir">Nasıl Çalışır</a>
     <a href="#ozellikler">Özellikler</a>
     <a href="#teknolojiler">Teknoloji</a>
-    <a href="#fiyatlar">Teklif Al</a>
+    <a href="#kullanim-alanlari">Kullanım Alanları</a>
+    <a href="#yorumlar">Yorumlar</a>
   </div>
   <div class="nav-ctas">
     <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
@@ -755,10 +755,10 @@ nav {
 
 <!-- MOBİL MENÜ -->
 <div class="mobile-menu" id="mobile-menu">
-  <a href="#nasil-calisir" onclick="closeMobileMenu()">Nasıl Çalışır</a>
   <a href="#ozellikler" onclick="closeMobileMenu()">Özellikler</a>
   <a href="#teknolojiler" onclick="closeMobileMenu()">Teknoloji</a>
-  <a href="#fiyatlar" onclick="closeMobileMenu()">Teklif Al</a>
+  <a href="#kullanim-alanlari" onclick="closeMobileMenu()">Kullanım Alanları</a>
+  <a href="#yorumlar" onclick="closeMobileMenu()">Yorumlar</a>
   <a href="/susayar-auth.html?tab=login" onclick="closeMobileMenu()">Giriş Yap</a>
   <a href="#" onclick="openTalep();closeMobileMenu();return false;" style="color:var(--blue);font-weight:700">Kurulum Talep Et →</a>
 </div>
@@ -785,7 +785,7 @@ nav {
       <a class="btn btn-primary btn-xl" href="#" onclick="openTalep();return false;">
         Kurulum Talep Et &rarr;
       </a>
-      <a class="btn btn-ghost btn-lg" href="#nasil-calisir">Nasıl Çalışır</a>
+      <a class="btn btn-ghost btn-lg" href="#kullanim-alanlari">Kullanım Alanları</a>
     </div>
     <div class="hero-proof">
       <div>
@@ -978,35 +978,6 @@ nav {
 <hr class="div-line">
 
 <!-- NASIL CALISIR -->
-<div class="section-wrap" id="nasil-calisir">
-  <div class="section-header">
-    <div class="s-label">Nasıl Çalışır</div>
-    <h2 class="s-h">Siz sadece izleyin, gerisini biz hallederiz</h2>
-    <p class="s-p">Kurulum ekibimiz mekânınıza gelir, cihazı kurar. Şu an yalnızca <strong>İstanbul</strong>'da hizmet veriyoruz.</p>
-  </div>
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num-circle">1</div>
-      <h3>Kurulum Talep Edin</h3>
-      <p>Hesap oluşturun ve randevu talep edin. Ekibimiz size uygun bir zaman ayarlar.</p>
-      <div class="step-arrow">&#x2192;</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num-circle">2</div>
-      <h3>Biz Kuruyoruz</h3>
-      <p>Teknisyenimiz mekânınıza gelir, cihazı ana su vanasına kurar ve WiFi bağlantısını ayarlar.</p>
-      <div class="step-arrow">&#x2192;</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num-circle">3</div>
-      <h3>Siz İzleyin</h3>
-      <p>Dashboard'dan su akışınızı gerçek zamanlı takip edin. Her şey hazır — dokunmanız gereken tek şey telefon.</p>
-    </div>
-  </div>
-</div>
-
-<hr class="div-line">
-
 <!-- OZELLIKLER -->
 <div class="features-bg" id="ozellikler">
   <div class="features-inner">
@@ -1350,7 +1321,6 @@ nav {
     </p>
     <div style="display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem">
       <a class="btn btn-primary btn-lg" href="#" onclick="openTalep();return false;">Ücretsiz Keşif Talep Et</a>
-      <a class="btn btn-ghost btn-lg" href="mailto:info@susayar.com">Kurumsal Teklif Al</a>
     </div>
     <div style="display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;font-size:.82rem;color:var(--muted)">
       <span>✓ Kurulum ekibimiz gelir</span>
@@ -1359,6 +1329,94 @@ nav {
     </div>
   </div>
 </div>
+
+<!-- YORUMLAR -->
+<div class="section-wrap" id="yorumlar">
+  <div class="section-header">
+    <div class="s-label">Yorumlar</div>
+    <h2 class="s-h">Kullanıcılar ne diyor?</h2>
+    <p class="s-p">Gerçek kullanıcılardan gerçek deneyimler — konuttan restorana, ofisten siteye.</p>
+  </div>
+
+  <!-- Özet istatistik -->
+  <div style="display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem">
+    <div style="text-align:center">
+      <div style="font-size:2rem;font-weight:900;color:var(--blue)">4.9</div>
+      <div style="color:#f59e0b;font-size:1rem;margin:.15rem 0">★★★★★</div>
+      <div style="font-size:.75rem;color:var(--muted)">Ortalama Puan</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:2rem;font-weight:900;color:var(--blue)">47+</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Aktif Kullanıcı</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:2rem;font-weight:900;color:var(--blue)">%94</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Yeniden Öneririm</div>
+    </div>
+  </div>
+
+  <!-- 3 öne çıkan yorum -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;max-width:960px;margin:0 auto 2rem">
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
+        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
+        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Konut</span>
+      </div>
+      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Geceleri su boşa akıyormuş, hiç haberim yoktu. SuSayar sayesinde iki günde fark ettim. Hem para hem de su tasarrufu sağladım."</p>
+      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">💧 Gece akış anomalisi ile 340 litre tasarruf</div>
+      <div style="display:flex;align-items:center;gap:.65rem">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2a9ebe,#3bb5d4);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">AK</div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700">Ahmet K.</div>
+          <div style="font-size:.72rem;color:var(--muted)">İstanbul, Kadıköy · 3 ay önce</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
+        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
+        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Restoran</span>
+      </div>
+      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Restoranımızın mutfak hattını izliyorum. Bir gece vanadan damladığını sisteme bakınca fark ettim — ekip ertesi sabah müdahale etti. Başka türlü haftalarca fark etmezdim."</p>
+      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">🔴 Sızıntı erken tespiti — tamir maliyeti minimuma indi</div>
+      <div style="display:flex;align-items:center;gap:.65rem">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">SY</div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700">Selin Y.</div>
+          <div style="font-size:.72rem;color:var(--muted)">Restoran Sahibi, Beşiktaş · 2 ay önce</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
+        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
+        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Ofis</span>
+      </div>
+      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Ofisimizin su faturası önceki aya göre %22 düştü. Hangi saatlerde ne kadar harcandığını gördükten sonra ufak alışkanlıklar değişti ve fark yarattı."</p>
+      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">📉 İlk ayda %22 fatura düşüşü</div>
+      <div style="display:flex;align-items:center;gap:.65rem">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0891b2,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">KA</div>
+        <div>
+          <div style="font-size:.82rem;font-weight:700">Kemal A.</div>
+          <div style="font-size:.72rem;color:var(--muted)">Ofis Yöneticisi, Levent · 1 ay önce</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tüm yorumlar butonu -->
+  <div style="text-align:center">
+    <a href="/susayar-yorumlar.html" class="btn btn-ghost btn-lg" style="display:inline-flex;align-items:center;gap:.5rem">
+      Tüm Yorumları Gör <span style="font-size:1.1rem">→</span>
+    </a>
+  </div>
+</div>
+
+<hr class="div-line">
 
 <!-- SSS -->
 <div class="section-wrap" id="sss">
@@ -1460,11 +1518,10 @@ nav {
       </div>
     </div>
     <div class="footer-links">
-      <a href="#nasil-calisir">Nasıl Çalışır</a>
       <a href="#ozellikler">Özellikler</a>
       <a href="#teknolojiler">Teknoloji</a>
       <a href="#kullanim-alanlari">Kullanım Alanları</a>
-      <a href="#fiyatlar">Teklif Al</a>
+      <a href="#yorumlar">Yorumlar</a>
       <a href="#sss">SSS</a>
       <a href="mailto:info@susayar.com">İletişim</a>
       <a href="/susayar-auth.html">Giriş / Kayıt</a>
