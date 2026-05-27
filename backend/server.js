@@ -93,17 +93,21 @@ const app = express();
 app.set('trust proxy', 1); // Render reverse proxy arkasında çalışır
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: false, // Helmet varsayılanlarını karıştırma
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"], // onclick, onsubmit gibi inline handler'lara izin ver
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "wss:", "ws:", "https://api.anthropic.com"],
+      connectSrc: ["'self'", "wss:", "ws:"],
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
     },
   },
+  crossOriginEmbedderPolicy: false, // extern resimler için
 })); // güvenlik headerları
 app.use(cors({
   origin: CORS_ORIGINS.split(',').map(s => s.trim()),
