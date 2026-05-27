@@ -160,7 +160,7 @@ function adminLoginPage(error) {
       ${error ? `<p class="err">${error}</p>` : ''}
       <button type="submit">Giriş Yap</button>
     </form>
-    <p class="hint">İlk kurulum için: <code>/admin/setup?s=ADMIN_SECRET</code></p>
+    <p class="hint">İlk kurulum: <a href="/admin/setup" style="color:#38bdf8">/admin/setup</a></p>
   </div>
 </body>
 </html>`;
@@ -250,12 +250,17 @@ app.post('/admin/logout', (req, res) => {
   res.redirect('/admin/login');
 });
 
-// İlk kurulum — QR kod üretir (ADMIN_SECRET ?s= ile korunur, bir kez kullanılır)
-app.get('/admin/setup', async (req, res) => {
-  const s = req.query.s;
-  if (!s || s !== ADMIN_SECRET) return res.status(403).send('Yetkisiz');
+// İlk kurulum — şifre formu ile korunur (URL'de secret yok)
+app.get('/admin/setup', (req, res) => {
+  res.send(adminSetupFormPage());
+});
+
+app.post('/admin/setup', adminLoginLimiter, express.urlencoded({ extended: false }), async (req, res) => {
+  const { secret } = req.body;
+  if (!secret || secret !== ADMIN_SECRET) {
+    return res.send(adminSetupFormPage('Yönetici şifresi hatalı.'));
+  }
   if (ADMIN_TOTP_SECRET) {
-    // Zaten kurulmuş — yeniden göster
     const otpauth = speakeasy.otpauthURL({
       secret: ADMIN_TOTP_SECRET,
       label: 'SuSayar Admin',
@@ -265,11 +270,50 @@ app.get('/admin/setup', async (req, res) => {
     const qr = await QRCode.toDataURL(otpauth);
     return res.send(adminSetupPage(ADMIN_TOTP_SECRET, qr, false));
   }
-  // Yeni secret üret
   const generated = speakeasy.generateSecret({ name: 'SuSayar Admin', issuer: 'SuSayar', length: 20 });
   const qr = await QRCode.toDataURL(generated.otpauth_url);
   res.send(adminSetupPage(generated.base32, qr, true));
 });
+
+function adminSetupFormPage(error) {
+  return `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SuSayar Admin TOTP Kurulum</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+         background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif}
+    .card{background:#1e293b;border:1px solid #334155;border-radius:16px;
+          padding:40px 36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    h1{color:#38bdf8;font-size:1.4rem;font-weight:700;margin-bottom:6px;text-align:center}
+    p.sub{color:#94a3b8;font-size:.85rem;text-align:center;margin-bottom:28px;line-height:1.6}
+    label{display:block;color:#cbd5e1;font-size:.82rem;font-weight:600;margin-bottom:6px}
+    input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid #475569;
+          background:#0f172a;color:#f1f5f9;font-size:1rem;margin-bottom:18px;outline:none}
+    input:focus{border-color:#38bdf8}
+    button{width:100%;padding:12px;background:#0ea5e9;color:#fff;border:none;
+           border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:.2s}
+    button:hover{background:#0284c7}
+    .err{color:#f87171;font-size:.82rem;text-align:center;margin-bottom:14px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔑 TOTP Kurulum</h1>
+    <p class="sub">Google Authenticator QR kodunu almak için yönetici şifresini girin.</p>
+    <form method="POST" action="/admin/setup">
+      <label>Yönetici Şifresi</label>
+      <input type="password" name="secret" placeholder="••••••••" required autocomplete="current-password">
+      ${error ? `<p class="err">${error}</p>` : ''}
+      <button type="submit">Devam Et</button>
+    </form>
+  </div>
+</body>
+</html>`;
+}
 
 function adminSetupPage(base32, qrDataUrl, isNew) {
   return `<!DOCTYPE html>
