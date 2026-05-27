@@ -4,345 +4,292 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kullanıcı Yorumları — SuSayar</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 30'%3E%3Cpath d='M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z' fill='%233bb5d4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     :root {
-      --bg:      #f0f7fa;
-      --bg2:     #ffffff;
-      --bg3:     #e8f4f8;
-      --card:    #ffffff;
-      --border:  #d4e8f0;
-      --border2: #b8d8e8;
-      --text:    #0f2942;
-      --sub:     #3a5a72;
-      --muted:   #6b8fa3;
-      --blue:    #1a8fb5;
-      --blue-lt: #3bb5d4;
-      --blue-bg: #e8f6fb;
-      --green:   #0d9e70;
-      --amber:   #e89c0a;
+      --blue:    #3bb5d4;
+      --blue-dk: #2a9ebe;
+      --blue-lt: #e6f8fc;
+      --text:    #0f172a;
+      --sub:     #475569;
+      --muted:   #94a3b8;
+      --border:  #e2e8f0;
+      --bg:      #ffffff;
+      --bg2:     #f8fafc;
+      --green:   #16a34a;
       --red:     #dc2626;
     }
 
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; overflow-x: hidden;
+      padding-top: 64px;
     }
+    a { color: inherit; text-decoration: none; }
 
-    /* NAV */
+    /* ── NAV (landing ile aynı) ── */
     nav {
-      background: #fff;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 64px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 1px 8px rgba(26,143,181,.07);
+      display: flex; align-items: center;
+      padding: 0 clamp(1.25rem, 5vw, 3rem);
+      gap: 2rem;
     }
-    .nav-logo {
-      display: flex; align-items: center; gap: 10px; text-decoration: none;
+    .nav-logo { font-size: 1.15rem; font-weight: 900; letter-spacing: -.01em; color: var(--text); flex-shrink: 0; }
+    .nav-links { display: flex; gap: 1.75rem; margin-left: .5rem; }
+    .nav-links a { font-size: .85rem; font-weight: 500; color: var(--sub); transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-ctas { margin-left: auto; display: flex; gap: .6rem; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .52rem 1.2rem; border-radius: 8px;
+      font-size: .84rem; font-weight: 600; cursor: pointer;
+      border: 1.5px solid transparent; transition: all .15s; white-space: nowrap;
     }
-    .nav-logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, #1a8fb5, #3bb5d4);
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+    .btn-ghost:hover { background: var(--bg2); border-color: #cbd5e1; }
+    .btn-primary { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 1px 3px rgba(37,99,235,.3); }
+    .btn-primary:hover { background: var(--blue-dk); border-color: var(--blue-dk); }
+    .btn-lg { padding: .75rem 1.75rem; font-size: .96rem; border-radius: 10px; }
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      font-size: 1.4rem; color: var(--text); padding: .2rem .4rem; margin-left: auto; line-height: 1;
     }
-    .nav-logo-text { font-weight: 900; font-size: 1.05rem; color: var(--text); }
-    .nav-logo-sub  { font-size: .63rem; color: var(--muted); line-height: 1; margin-top: .15rem; }
-    .nav-back {
-      font-size: .82rem; color: var(--blue); text-decoration: none;
-      display: flex; align-items: center; gap: .4rem;
-      padding: .45rem 1rem;
-      border: 1.5px solid var(--blue-lt);
-      border-radius: 8px;
-      font-weight: 600;
-      transition: background .15s;
+    .mobile-menu {
+      display: none; position: fixed; top: 64px; left: 0; right: 0;
+      background: rgba(255,255,255,.97); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem clamp(1.25rem,5vw,3rem) 1.5rem;
+      z-index: 199; flex-direction: column; gap: .75rem;
     }
-    .nav-back:hover { background: var(--blue-bg); }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-size: .95rem; font-weight: 600; color: var(--text); padding: .5rem 0; border-bottom: 1px solid var(--border); }
+    .mobile-menu a:last-child { border-bottom: none; }
 
-    /* HERO */
-    .hero-wrap {
-      background: linear-gradient(160deg, #e4f4fa 0%, #f0f7fa 60%, #fafeff 100%);
+    /* ── FOOTER (landing ile aynı) ── */
+    footer { background: var(--bg); }
+    .footer-wrap {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem clamp(1.25rem,5vw,3rem);
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1160px; margin: 0 auto; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo { font-size: .95rem; font-weight: 900; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: .8rem; color: var(--muted); transition: color .15s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: .78rem; color: var(--muted); }
+
+    /* ── HERO ── */
+    .hero-section {
+      background: linear-gradient(160deg, #e8f6fb 0%, #f8fafc 60%, #fff 100%);
       border-bottom: 1px solid var(--border);
       padding: 64px 24px 56px;
       text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-wrap::before {
-      content: '';
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(59,181,212,.12) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    .hero-wrap::after {
-      content: '';
-      position: absolute;
-      bottom: -40px; left: -40px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(26,143,181,.08) 0%, transparent 70%);
-      border-radius: 50%;
     }
     .hero-chip {
       display: inline-flex; align-items: center; gap: 7px;
-      background: rgba(26,143,181,.1);
-      border: 1.5px solid rgba(26,143,181,.2);
-      border-radius: 20px;
-      padding: .35rem .9rem;
-      font-size: .78rem; color: var(--blue); font-weight: 700;
+      background: var(--blue-lt); border: 1px solid #bfdbfe;
+      border-radius: 20px; padding: .3rem 1rem;
+      font-size: .75rem; font-weight: 700; color: var(--blue);
       margin-bottom: 1.25rem;
-      position: relative; z-index: 1;
     }
-    .hero h1 {
-      font-size: clamp(1.7rem, 4vw, 2.6rem);
-      font-weight: 900; line-height: 1.2;
-      color: var(--text);
+    .hero-chip-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .hero-section h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900; line-height: 1.15; letter-spacing: -.02em;
       margin-bottom: 1rem;
-      position: relative; z-index: 1;
     }
-    .hero h1 span { color: var(--blue); }
-    .hero p {
-      font-size: .97rem; color: var(--sub); line-height: 1.75;
-      max-width: 540px; margin: 0 auto;
-      position: relative; z-index: 1;
-    }
+    .hero-section h1 span { color: var(--blue); }
+    .hero-section p { font-size: .97rem; color: var(--sub); line-height: 1.75; max-width: 520px; margin: 0 auto; }
 
-    /* STATS */
+    /* ── STATS ── */
     .stats-row {
-      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
-      background: #fff;
+      display: flex; justify-content: center; flex-wrap: wrap;
       border-bottom: 1px solid var(--border);
-      box-shadow: 0 2px 12px rgba(26,143,181,.06);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
     }
     .stat-item {
-      text-align: center;
-      padding: 1.75rem 2.5rem;
-      border-right: 1px solid var(--border);
-      flex: 1; min-width: 130px;
+      text-align: center; padding: 1.75rem 2.5rem;
+      border-right: 1px solid var(--border); flex: 1; min-width: 120px;
     }
     .stat-item:last-child { border-right: none; }
     .stat-num { font-size: 2rem; font-weight: 900; color: var(--blue); line-height: 1; }
-    .stat-stars { color: var(--amber); font-size: .9rem; margin: .25rem 0; }
-    .stat-label { font-size: .72rem; color: var(--muted); font-weight: 500; }
+    .stat-stars { color: #e89c0a; font-size: .85rem; margin: .25rem 0; }
+    .stat-label { font-size: .72rem; color: var(--muted); }
 
-    /* FILTER */
-    .filter-section {
-      max-width: 1020px; margin: 2.5rem auto 1.5rem;
+    /* ── FİLTRE ── */
+    .filter-bar {
+      max-width: 1060px; margin: 2.5rem auto 1.5rem;
       padding: 0 24px;
       display: flex; gap: .55rem; flex-wrap: wrap; align-items: center;
     }
-    .filter-label { font-size: .75rem; font-weight: 700; color: var(--muted); margin-right: .4rem; text-transform: uppercase; letter-spacing: .05em; }
+    .filter-label { font-size: .72rem; font-weight: 700; color: var(--muted); margin-right: .3rem; text-transform: uppercase; letter-spacing: .06em; }
     .filter-btn {
-      padding: .42rem 1rem;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      color: var(--sub);
-      font-size: .78rem; font-weight: 600;
-      cursor: pointer;
+      padding: .38rem .95rem; border-radius: 20px;
+      border: 1.5px solid var(--border); background: #fff;
+      color: var(--sub); font-size: .78rem; font-weight: 600; cursor: pointer;
       transition: all .15s;
     }
-    .filter-btn:hover { border-color: var(--blue-lt); color: var(--blue); background: var(--blue-bg); }
+    .filter-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
     .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-    /* GRID */
+    /* ── GRID ── */
     .reviews-grid {
-      max-width: 1020px; margin: 0 auto;
+      max-width: 1060px; margin: 0 auto;
       padding: 0 24px 80px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1.35rem;
     }
 
-    /* CARD */
+    /* ── CARD ── */
     .review-card {
-      background: var(--card);
+      background: #fff;
       border: 1.5px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 16px; overflow: hidden;
       display: flex; flex-direction: column;
       transition: transform .18s, box-shadow .18s, border-color .18s;
-      box-shadow: 0 2px 8px rgba(26,143,181,.05);
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
     }
     .review-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(26,143,181,.13);
-      border-color: var(--blue-lt);
+      box-shadow: 0 12px 32px rgba(59,181,212,.13);
+      border-color: var(--blue);
     }
-    .review-card.featured { border-color: var(--blue-lt); box-shadow: 0 4px 16px rgba(26,143,181,.12); }
+    .review-card.featured { border-color: #bfdbfe; }
 
     /* CARD VISUAL BANNER */
     .card-visual {
-      height: 110px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      position: relative;
-      overflow: hidden;
+      height: 108px; position: relative; overflow: hidden;
+      display: flex; align-items: center; padding: 0 22px;
     }
-    .card-visual-icon {
-      font-size: 3.2rem;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,.08));
-      position: relative; z-index: 1;
-    }
-    .card-visual-svg {
-      position: absolute; right: 0; bottom: 0; opacity: .18;
-    }
+    .card-visual-icon { font-size: 3rem; filter: drop-shadow(0 3px 6px rgba(0,0,0,.1)); position: relative; z-index: 1; }
+    .card-visual-svg { position: absolute; right: 0; bottom: 0; opacity: .2; }
     .card-visual-tag {
-      position: absolute; top: 12px; right: 14px;
-      font-size: .68rem; font-weight: 700;
-      padding: .25rem .65rem; border-radius: 20px;
-      z-index: 2;
+      position: absolute; top: 12px; right: 12px;
+      font-size: .67rem; font-weight: 700; padding: .22rem .6rem; border-radius: 20px; z-index: 2;
     }
-    .card-visual-featured {
-      position: absolute; top: 12px; left: 14px;
+    .card-visual-feat {
+      position: absolute; top: 12px; left: 12px;
       font-size: .65rem; font-weight: 700; color: var(--blue);
-      display: flex; align-items: center; gap: 4px;
-      z-index: 2;
+      display: flex; align-items: center; gap: 4px; z-index: 2;
     }
-    .card-visual-featured::before {
-      content: ''; width: 6px; height: 6px;
-      background: var(--blue); border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .card-visual-feat::before { content: ''; width: 6px; height: 6px; background: var(--blue); border-radius: 50%; }
 
-    /* Renk şemaları */
-    .vis-konut   { background: linear-gradient(135deg, #dff3fa 0%, #c8eaf5 100%); }
-    .vis-restoran{ background: linear-gradient(135deg, #fef3e2 0%, #fde8c4 100%); }
-    .vis-ofis    { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
-    .vis-site    { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
-    .vis-otel    { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); }
-    .vis-isyeri  { background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%); }
+    .vis-konut   { background: linear-gradient(135deg, #dff3fa, #c5e8f5); }
+    .vis-restoran{ background: linear-gradient(135deg, #fef3e2, #fde8c4); }
+    .vis-ofis    { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+    .vis-site    { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+    .vis-otel    { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+    .vis-isyeri  { background: linear-gradient(135deg, #fef9c3, #fde68a); }
 
     .tag-konut   { color: #0369a1; background: rgba(3,105,161,.1); }
     .tag-restoran{ color: #92400e; background: rgba(146,64,14,.1); }
-    .tag-ofis    { color: #075985; background: rgba(7,89,133,.1); }
+    .tag-ofis    { color: #1d4ed8; background: rgba(29,78,216,.1); }
     .tag-site    { color: #14532d; background: rgba(20,83,45,.1); }
     .tag-otel    { color: #9d174d; background: rgba(157,23,77,.1); }
     .tag-isyeri  { color: #78350f; background: rgba(120,53,15,.1); }
 
     /* CARD BODY */
-    .card-body { padding: 1.25rem 1.4rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
-
-    .card-stars { color: var(--amber); font-size: .92rem; margin-bottom: .75rem; }
-
+    .card-body { padding: 1.2rem 1.4rem 1.4rem; display: flex; flex-direction: column; flex: 1; }
+    .card-stars { color: #e89c0a; font-size: .9rem; margin-bottom: .75rem; }
     .card-quote {
       font-size: .875rem; color: var(--sub); line-height: 1.75;
       flex: 1; margin-bottom: .9rem;
       position: relative; padding-left: 1rem;
     }
     .card-quote::before {
-      content: '"';
-      position: absolute; left: 0; top: -.1rem;
-      font-size: 1.4rem; color: var(--blue-lt);
-      font-family: Georgia, serif; line-height: 1;
+      content: '"'; position: absolute; left: 0; top: -.1rem;
+      font-size: 1.4rem; color: var(--blue); font-family: Georgia, serif; line-height: 1; opacity: .6;
     }
-
     .card-highlight {
-      font-size: .72rem; color: var(--blue);
-      background: var(--blue-bg);
-      border-left: 3px solid var(--blue-lt);
+      font-size: .72rem; color: #0369a1;
+      background: var(--blue-lt);
+      border-left: 3px solid var(--blue);
       border-radius: 0 7px 7px 0;
-      padding: .45rem .7rem;
-      margin-bottom: 1rem;
-      line-height: 1.5; font-weight: 500;
+      padding: .42rem .7rem; margin-bottom: 1rem; line-height: 1.5; font-weight: 500;
     }
-
     .card-footer { display: flex; align-items: center; gap: .7rem; }
     .card-avatar {
-      width: 40px; height: 40px; border-radius: 50%;
+      width: 38px; height: 38px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; font-weight: 800; color: white; flex-shrink: 0;
+      font-size: .78rem; font-weight: 800; color: white; flex-shrink: 0;
       box-shadow: 0 2px 6px rgba(0,0,0,.12);
     }
-    .card-name { font-size: .83rem; font-weight: 700; color: var(--text); }
-    .card-meta { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
+    .card-name { font-size: .82rem; font-weight: 700; color: var(--text); }
+    .card-meta  { font-size: .7rem; color: var(--muted); margin-top: .1rem; }
 
-    /* CTA BOTTOM */
-    .cta-section {
-      background: linear-gradient(135deg, #1a8fb5 0%, #0d6e90 100%);
-      padding: 72px 24px;
-      text-align: center;
-      position: relative; overflow: hidden;
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav .nav-links { display: none; }
+      nav .nav-ctas .btn-ghost { display: none; }
+      .nav-hamburger { display: flex !important; }
+      .footer-wrap { flex-direction: column; align-items: center; text-align: center; gap: 1.5rem; }
+      .footer-links { justify-content: center; flex-wrap: wrap; gap: .75rem 1.25rem; }
     }
-    .cta-section::before {
-      content: '';
-      position: absolute; top: -80px; right: -80px;
-      width: 320px; height: 320px;
-      background: rgba(255,255,255,.05);
-      border-radius: 50%;
-    }
-    .cta-section h2 { font-size: 1.75rem; font-weight: 900; color: #fff; margin-bottom: .75rem; }
-    .cta-section p  { font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.75; margin-bottom: 2rem; }
-    .btn {
-      display: inline-flex; align-items: center; gap: .5rem;
-      padding: .8rem 1.9rem; border-radius: 10px;
-      font-weight: 700; font-size: .9rem;
-      text-decoration: none; cursor: pointer; border: none;
-      transition: opacity .15s, transform .1s;
-    }
-    .btn:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-white { background: #fff; color: var(--blue); }
-    .btn-outline-white { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.5); }
-    .btn-outline-white:hover { border-color: #fff; }
-    .cta-btns { display: flex; justify-content: center; gap: .75rem; flex-wrap: wrap; }
-
-    /* DROP WATER DECO */
-    .drop-deco {
-      display: flex; justify-content: center; gap: 8px;
-      margin: 1.5rem 0 0;
-    }
-    .drop-deco span {
-      width: 8px; height: 12px;
-      background: rgba(255,255,255,.3);
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      display: block;
-    }
-    .drop-deco span:nth-child(2) { height: 16px; background: rgba(255,255,255,.5); }
-    .drop-deco span:nth-child(3) { height: 10px; }
-
-    @media (max-width: 640px) {
-      .stat-item { padding: 1.25rem 1rem; min-width: 100px; }
+    @media (max-width: 600px) {
+      .stat-item { padding: 1.25rem 1rem; }
       .reviews-grid { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- NAV — landing ile aynı -->
 <nav>
-  <a href="/susayar-landing.html" class="nav-logo">
-    <div class="nav-logo-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="white"/></svg>
+  <a class="nav-logo" href="/susayar-landing.html" style="display:flex;align-items:center;gap:9px">
+    <div style="width:32px;height:32px;background:linear-gradient(135deg,#2a9ebe,#3bb5d4);border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(59,181,212,.3);flex-shrink:0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="19" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="white"/></svg>
     </div>
     <div>
-      <div class="nav-logo-text">SuSayar</div>
-      <div class="nav-logo-sub">Akıllı Su Takip Sistemi</div>
+      <div style="font-size:1.05rem;font-weight:900;letter-spacing:-.01em;line-height:1.1">SuSayar</div>
+      <div style="font-size:.68rem;color:var(--sub);line-height:1">Akıllı Su Takip Sistemi</div>
     </div>
   </a>
-  <a href="/susayar-landing.html" class="nav-back">&#8592; Ana Sayfa</a>
+  <div class="nav-links">
+    <a href="/susayar-landing.html#ozellikler">Özellikler</a>
+    <a href="/susayar-landing.html#teknolojiler">Teknoloji</a>
+    <a href="/susayar-landing.html#kullanim-alanlari">Kullanım Alanları</a>
+    <a href="/susayar-yorumlar.html" style="color:var(--blue);font-weight:700">Yorumlar</a>
+  </div>
+  <div class="nav-ctas">
+    <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
+    <a class="btn btn-primary" href="/susayar-landing.html" onclick="sessionStorage.setItem('openTalep','1')">Kurulum Talep Et</a>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">&#9776;</button>
+  </div>
 </nav>
 
+<!-- MOBİL MENÜ -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="/susayar-landing.html#ozellikler" onclick="closeMobileMenu()">Özellikler</a>
+  <a href="/susayar-landing.html#teknolojiler" onclick="closeMobileMenu()">Teknoloji</a>
+  <a href="/susayar-landing.html#kullanim-alanlari" onclick="closeMobileMenu()">Kullanım Alanları</a>
+  <a href="/susayar-yorumlar.html" onclick="closeMobileMenu()" style="color:var(--blue)">Yorumlar</a>
+  <a href="/susayar-auth.html?tab=login" onclick="closeMobileMenu()">Giriş Yap</a>
+  <a href="/susayar-landing.html" onclick="closeMobileMenu()" style="color:var(--blue);font-weight:700">Kurulum Talep Et →</a>
+</div>
+
 <!-- HERO -->
-<div class="hero-wrap">
-  <div class="hero">
-    <div class="hero-chip">
-      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#1a8fb5"/></svg>
-      47 Doğrulanmış Kullanıcı
-    </div>
-    <h1>Kullanıcılar <span>SuSayar</span> Hakkında<br>Ne Düşünüyor?</h1>
-    <p>Konuttan siteye, restorana, otele — farklı mekânlardan gerçek kullanıcı deneyimleri.</p>
+<div class="hero-section">
+  <div class="hero-chip">
+    <span class="hero-chip-dot"></span>
+    47 Doğrulanmış Kullanıcı
   </div>
+  <h1>Kullanıcılar <span>SuSayar</span> Hakkında<br>Ne Düşünüyor?</h1>
+  <p>Konuttan siteye, restorana, otele — farklı mekânlardan gerçek kullanıcı deneyimleri.</p>
 </div>
 
 <!-- STATS -->
@@ -354,23 +301,23 @@
   </div>
   <div class="stat-item">
     <div class="stat-num">47+</div>
-    <div class="stat-stars" style="opacity:0">★</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
     <div class="stat-label">Aktif Kullanıcı</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">%94</div>
-    <div class="stat-stars" style="opacity:0">★</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
     <div class="stat-label">Yeniden Öneririm</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">%31</div>
-    <div class="stat-stars" style="opacity:0">★</div>
+    <div class="stat-stars" style="visibility:hidden">★</div>
     <div class="stat-label">Ort. Fatura Düşüşü</div>
   </div>
 </div>
 
 <!-- FİLTRE -->
-<div class="filter-section">
+<div class="filter-bar">
   <span class="filter-label">Filtrele:</span>
   <button class="filter-btn active" onclick="filterReviews('tümü', this)">Tümü</button>
   <button class="filter-btn" onclick="filterReviews('konut', this)">🏠 Konut</button>
@@ -384,270 +331,218 @@
 <!-- YORUMLAR -->
 <div class="reviews-grid" id="reviews-grid">
 
-  <!-- FEATURED: Konut -->
   <div class="review-card featured" data-cat="konut">
     <div class="card-visual vis-konut">
-      <div class="card-visual-featured">Öne Çıkan</div>
+      <div class="card-visual-feat">Öne Çıkan</div>
       <div class="card-visual-tag tag-konut">Konut</div>
       <div class="card-visual-icon">🏠</div>
-      <!-- Gece / akış illüstrasyonu -->
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <ellipse cx="130" cy="85" rx="55" ry="40" fill="#1a8fb5" opacity=".15"/>
-        <path d="M10 80 Q30 60 50 75 Q70 90 90 65 Q110 40 130 55 Q150 70 160 60" stroke="#1a8fb5" stroke-width="2.5" fill="none" stroke-dasharray="4 3"/>
-        <circle cx="50" cy="75" r="4" fill="#1a8fb5"/>
-        <circle cx="90" cy="65" r="4" fill="#1a8fb5"/>
-        <path d="M80 30 L80 44 M75 38 L80 44 L85 38" stroke="#e89c0a" stroke-width="2" stroke-linecap="round"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <ellipse cx="130" cy="85" rx="55" ry="38" fill="#1a8fb5"/>
+        <path d="M10 78 Q30 58 50 72 Q70 88 90 63 Q110 38 130 53 Q150 68 160 58" stroke="#1a8fb5" stroke-width="2.5" fill="none" stroke-dasharray="4 3"/>
+        <circle cx="50" cy="72" r="4" fill="#1a8fb5"/>
+        <path d="M80 28 L80 42 M75 37 L80 43 L85 37" stroke="#e89c0a" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Geceleri su boşa akıyormuş, hiç haberim yoktu. Sabahları tuvalete gittiğimde sifon çalışıyordu ama ses normalden hafifti. SuSayar sayesinde iki günde fark ettim. Hem para hem de su tasarrufu sağladım. Artık her sabah kahve yaparken telefonu açıp suya bakıyorum — garip ama iyi bir alışkanlık oldu.</p>
-      <div class="card-highlight">💧 Gece akış anomalisi tespiti ile 340 litre tasarruf · Su faturası %28 düştü</div>
+      <p class="card-quote">Geceleri su boşa akıyormuş, hiç haberim yoktu. Sifon tıkır tıkır çalışıyordu ama ses normalden hafifti. SuSayar sayesinde iki günde fark ettim. Hem para hem su tasarrufu sağladım. Artık her sabah kahve yaparken telefonu açıp suya bakıyorum.</p>
+      <div class="card-highlight">💧 Gece akış anomalisi — 340 litre tasarruf · Su faturası %28 düştü</div>
       <div class="card-footer">
-        <div class="card-avatar" style="background:linear-gradient(135deg,#1a8fb5,#3bb5d4)">AK</div>
-        <div>
-          <div class="card-name">Ahmet K.</div>
-          <div class="card-meta">İstanbul, Kadıköy · 3 ay önce · 4 aylık kullanım</div>
-        </div>
+        <div class="card-avatar" style="background:linear-gradient(135deg,#2a9ebe,#3bb5d4)">AK</div>
+        <div><div class="card-name">Ahmet K.</div><div class="card-meta">İstanbul, Kadıköy · 3 ay önce · 4 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- FEATURED: Restoran -->
   <div class="review-card featured" data-cat="restoran">
     <div class="card-visual vis-restoran">
-      <div class="card-visual-featured">Öne Çıkan</div>
+      <div class="card-visual-feat">Öne Çıkan</div>
       <div class="card-visual-tag tag-restoran">Restoran</div>
       <div class="card-visual-icon">🍽️</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="90" y="30" width="60" height="70" rx="6" fill="#e89c0a" opacity=".12"/>
-        <rect x="100" y="45" width="40" height="8" rx="2" fill="#e89c0a" opacity=".3"/>
-        <rect x="100" y="60" width="30" height="8" rx="2" fill="#e89c0a" opacity=".3"/>
-        <rect x="100" y="75" width="35" height="8" rx="2" fill="#e89c0a" opacity=".3"/>
-        <circle cx="30" cy="60" r="24" fill="#e89c0a" opacity=".08"/>
-        <path d="M22 52 Q30 44 38 52 Q46 60 38 68 Q30 76 22 68 Q14 60 22 52Z" stroke="#e89c0a" stroke-width="1.5" fill="none"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="88" y="28" width="62" height="72" rx="6" fill="#e89c0a"/>
+        <rect x="98" y="42" width="42" height="8" rx="2" fill="#e89c0a"/>
+        <rect x="98" y="58" width="32" height="8" rx="2" fill="#e89c0a"/>
+        <circle cx="32" cy="58" r="26" fill="#e89c0a"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Restoranımızın mutfak hattını izliyorum. Bir gece vanadan damladığını sisteme bakınca fark ettim — ekip ertesi sabah müdahale etti. Başka türlü haftalarca fark etmezdim, duvarın içinden geliyordu. Boru patlamadan önce yakaladık. Hem büyük bir tamir masrafından hem de kapanma sürecinden kurtulduk.</p>
-      <div class="card-highlight">🔴 Sızıntı erken tespiti — duvar açılmadan müdahale · Tahmini zarar: 8.000 TL önlendi</div>
+      <p class="card-quote">Restoranımızın mutfak hattını izliyorum. Bir gece vanadan damladığını sisteme bakınca fark ettim — ekip ertesi sabah müdahale etti. Duvarın içinden geliyordu, boru patlamadan yakaladık. Hem tamir masrafından hem de kapanma sürecinden kurtulduk.</p>
+      <div class="card-highlight">🔴 Sızıntı erken tespiti — duvar açılmadan müdahale · ~8.000 TL zarar önlendi</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">SY</div>
-        <div>
-          <div class="card-name">Selin Y.</div>
-          <div class="card-meta">Restoran Sahibi, Beşiktaş · 2 ay önce · 3 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Selin Y.</div><div class="card-meta">Restoran Sahibi, Beşiktaş · 2 ay önce · 3 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- FEATURED: Ofis -->
   <div class="review-card featured" data-cat="ofis">
     <div class="card-visual vis-ofis">
-      <div class="card-visual-featured">Öne Çıkan</div>
+      <div class="card-visual-feat">Öne Çıkan</div>
       <div class="card-visual-tag tag-ofis">Ofis</div>
       <div class="card-visual-icon">💼</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="80" y="15" width="70" height="85" rx="5" fill="#0ea5e9" opacity=".1"/>
-        <path d="M20 90 L20 40 L60 40 L60 90" stroke="#0ea5e9" stroke-width="2" fill="none"/>
-        <path d="M25 90 L25 65 L55 65 L55 90" fill="#0ea5e9" opacity=".15"/>
-        <path d="M10 90 L150 90" stroke="#0ea5e9" stroke-width="1.5"/>
-        <!-- fatura düşüş grafiği -->
-        <polyline points="90,75 105,60 120,50 135,38 150,30" stroke="#0ea5e9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <circle cx="150" cy="30" r="4" fill="#0ea5e9"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="82" y="12" width="68" height="88" rx="5" fill="#1d4ed8"/>
+        <polyline points="92,72 107,58 122,48 137,36 152,28" stroke="#1d4ed8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="152" cy="28" r="4" fill="#1d4ed8"/>
+        <rect x="10" y="50" width="12" height="36" rx="2" fill="#1d4ed8"/>
+        <rect x="28" y="36" width="12" height="50" rx="2" fill="#1d4ed8"/>
+        <rect x="46" y="44" width="12" height="42" rx="2" fill="#1d4ed8"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Ofisimizin su faturası önceki aya göre %22 düştü. Hangi saatlerde ne kadar harcandığını gördükten sonra ufak alışkanlıklar değişti ve fark yarattı. Çalışanlar lavabo başında gereksiz yere bırakıyor musunuz diye sormak yerine grafiği gösterdim — herkes baktı, değişti.</p>
+      <p class="card-quote">Ofisimizin su faturası önceki aya göre %22 düştü. Hangi saatlerde ne kadar harcandığını gördükten sonra ufak alışkanlıklar değişti. Çalışanlara lavabo başında gereksiz yere bırakıyor musunuz diye sormak yerine grafiği gösterdim — herkes baktı, değişti.</p>
       <div class="card-highlight">📉 İlk ayda %22 fatura düşüşü · 3 ay içinde yatırım geri döndü</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">KA</div>
-        <div>
-          <div class="card-name">Kemal A.</div>
-          <div class="card-meta">Ofis Yöneticisi, Levent · 1 ay önce · 5 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Kemal A.</div><div class="card-meta">Ofis Yöneticisi, Levent · 1 ay önce · 5 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Konut: Tatil -->
   <div class="review-card" data-cat="konut">
     <div class="card-visual vis-konut">
       <div class="card-visual-tag tag-konut">Konut</div>
       <div class="card-visual-icon">🏖️</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <circle cx="130" cy="30" r="22" fill="#f59e0b" opacity=".15"/>
-        <path d="M30 85 Q60 55 90 70 Q120 85 150 60" stroke="#1a8fb5" stroke-width="2" fill="none"/>
-        <path d="M80 30 L80 50" stroke="#e89c0a" stroke-width="2" stroke-dasharray="3 2"/>
-        <circle cx="80" cy="28" r="5" fill="#e89c0a" opacity=".6"/>
-        <!-- telefon -->
-        <rect x="105" y="55" width="18" height="28" rx="3" fill="#1a8fb5" opacity=".25"/>
-        <rect x="108" y="60" width="12" height="16" rx="1" fill="#1a8fb5" opacity=".2"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <circle cx="128" cy="28" r="22" fill="#f59e0b"/>
+        <path d="M30 82 Q60 52 90 68 Q120 84 150 58" stroke="#1a8fb5" stroke-width="2" fill="none"/>
+        <rect x="103" y="52" width="20" height="30" rx="3" fill="#1a8fb5"/>
+        <rect x="107" y="57" width="12" height="18" rx="1" fill="#1a8fb5"/>
+        <circle cx="80" cy="26" r="5" fill="#e89c0a"/>
+        <path d="M80 31 L80 48" stroke="#e89c0a" stroke-width="1.5" stroke-dasharray="3 2"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Tatildeyken cihaz çevrimdışı bildirimi geldi, komşuma söyledim ve gerçekten bir arıza varmış — elektrik kesintisinde WiFi routerı kapanmış, cihaz bağlantıyı kaybetmiş. Uzakta olsam da her şeyi görebiliyorum. Bu güven çok değerli.</p>
-      <div class="card-highlight">📡 Tatilde uzaktan izleme — zamanında müdahale</div>
+      <p class="card-quote">Tatildeyken cihaz çevrimdışı bildirimi geldi, komşuma söyledim ve gerçekten bir arıza varmış — elektrik kesintisinde WiFi router kapanmış. Uzakta olsam da her şeyi görebiliyorum. Bu güven çok değerli.</p>
+      <div class="card-highlight">📡 Tatilde uzaktan izleme — zamanında müdahale sağlandı</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#059669,#34d399)">MÖ</div>
-        <div>
-          <div class="card-name">Murat Ö.</div>
-          <div class="card-meta">Ev Sahibi, Sarıyer · 2 ay önce · 2 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Murat Ö.</div><div class="card-meta">Ev Sahibi, Sarıyer · 2 ay önce · 2 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Apartman -->
   <div class="review-card" data-cat="site">
     <div class="card-visual vis-site">
       <div class="card-visual-tag tag-site">Apartman</div>
       <div class="card-visual-icon">🏢</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="95" y="10" width="55" height="90" rx="4" fill="#16a34a" opacity=".1"/>
-        <rect x="103" y="20" width="10" height="10" rx="2" fill="#16a34a" opacity=".25"/>
-        <rect x="120" y="20" width="10" height="10" rx="2" fill="#16a34a" opacity=".25"/>
-        <rect x="103" y="38" width="10" height="10" rx="2" fill="#16a34a" opacity=".25"/>
-        <rect x="120" y="38" width="10" height="10" rx="2" fill="#16a34a" opacity=".25"/>
-        <rect x="103" y="56" width="10" height="10" rx="2" fill="#16a34a" opacity=".25"/>
-        <rect x="120" y="56" width="10" height="10" rx="2" fill="#16a34a" opacity=".45"/>
-        <rect x="112" y="78" width="14" height="22" rx="2" fill="#16a34a" opacity=".2"/>
-        <!-- checkmark -->
-        <circle cx="40" cy="55" r="22" fill="#16a34a" opacity=".08"/>
-        <path d="M30 55 L38 63 L52 47" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="93" y="8" width="58" height="92" rx="4" fill="#16a34a"/>
+        <rect x="101" y="18" width="11" height="11" rx="2" fill="#16a34a"/>
+        <rect x="118" y="18" width="11" height="11" rx="2" fill="#16a34a"/>
+        <rect x="101" y="36" width="11" height="11" rx="2" fill="#16a34a"/>
+        <rect x="118" y="36" width="11" height="11" rx="2" fill="#16a34a"/>
+        <rect x="101" y="54" width="11" height="11" rx="2" fill="#16a34a"/>
+        <rect x="118" y="54" width="11" height="11" rx="2" fill="#16a34a"/>
+        <path d="M28 55 L38 65 L54 47" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <circle cx="41" cy="56" r="20" stroke="#16a34a" stroke-width="1.5" fill="none"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★☆</div>
-      <p class="card-quote">Kurulum çok hızlı oldu, 40 dakikada bitti. Apartmanın ortak hattını izliyorum. Dashboard kullanımı kolay. Telegram bildirimleri çok iş görüyor, sabah faturayı değil sistemi açıyorum. Sakinler artık bana fazla su harcadık mı diye soruyor — cevabı grafik olarak gösteriyorum.</p>
+      <p class="card-quote">Kurulum 40 dakikada bitti. Apartmanın ortak hattını izliyorum. Telegram bildirimleri çok iş görüyor, sabah faturayı değil sistemi açıyorum. Sakinler bana fazla su harcadık mı diye soruyor — cevabı grafik olarak gösteriyorum.</p>
       <div class="card-highlight">🏢 Apartman ortak hattı izleme — sakin şikayetleri azaldı</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#dc2626,#f87171)">ZD</div>
-        <div>
-          <div class="card-name">Zeynep D.</div>
-          <div class="card-meta">Apartman Yöneticisi, Üsküdar · 3 ay önce · 3 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Zeynep D.</div><div class="card-meta">Apartman Yöneticisi, Üsküdar · 3 ay önce · 3 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Konut: Haftalık rapor -->
   <div class="review-card" data-cat="konut">
     <div class="card-visual vis-konut">
       <div class="card-visual-tag tag-konut">Konut</div>
       <div class="card-visual-icon">📱</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="85" y="5" width="65" height="95" rx="8" fill="#1a8fb5" opacity=".08"/>
-        <!-- bar chart -->
-        <rect x="95" y="60" width="10" height="30" rx="2" fill="#1a8fb5" opacity=".2"/>
-        <rect x="110" y="45" width="10" height="45" rx="2" fill="#1a8fb5" opacity=".3"/>
-        <rect x="125" y="35" width="10" height="55" rx="2" fill="#1a8fb5" opacity=".4"/>
-        <rect x="140" y="50" width="10" height="40" rx="2" fill="#1a8fb5" opacity=".2"/>
-        <!-- envelope -->
-        <rect x="15" y="38" width="45" height="32" rx="4" fill="#e89c0a" opacity=".15"/>
-        <path d="M15 42 L37 56 L60 42" stroke="#e89c0a" stroke-width="1.5" fill="none"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="83" y="5" width="66" height="95" rx="8" fill="#1a8fb5"/>
+        <rect x="93" y="58" width="10" height="30" rx="2" fill="#1a8fb5"/>
+        <rect x="108" y="43" width="10" height="45" rx="2" fill="#1a8fb5"/>
+        <rect x="123" y="33" width="10" height="55" rx="2" fill="#1a8fb5"/>
+        <rect x="138" y="48" width="10" height="40" rx="2" fill="#1a8fb5"/>
+        <rect x="13" y="36" width="46" height="32" rx="4" fill="#e89c0a"/>
+        <path d="M13 40 L36 56 L59 40" stroke="#e89c0a" stroke-width="1.5" fill="none"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Teknik bir şey bilmiyordum, hiç sorun olmadı. Kurulum ekibi her şeyi halletti. Şimdi telefona bakıyorum, hepsi bu. En sevdiğim özellik haftalık e-posta raporu — ne zaman pik oldu, ne kadar harcandı, hepsini gösteriyor.</p>
+      <p class="card-quote">Teknik bir şey bilmiyordum, hiç sorun olmadı. Kurulum ekibi her şeyi halletti. En sevdiğim özellik haftalık e-posta raporu — ne zaman pik oldu, ne kadar harcandı hepsini gösteriyor.</p>
       <div class="card-highlight">📊 Haftalık e-posta raporu ile ev tüketim farkındalığı arttı</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#9333ea,#c084fc)">FT</div>
-        <div>
-          <div class="card-name">Fatma T.</div>
-          <div class="card-meta">Konut, Pendik · 6 hafta önce · 2 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Fatma T.</div><div class="card-meta">Konut, Pendik · 6 hafta önce · 2 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Otel -->
   <div class="review-card" data-cat="otel">
     <div class="card-visual vis-otel">
       <div class="card-visual-tag tag-otel">Otel</div>
       <div class="card-visual-icon">🏨</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="85" y="8" width="65" height="92" rx="5" fill="#db2777" opacity=".08"/>
-        <rect x="93" y="20" width="14" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="113" y="20" width="14" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="133" y="20" width="10" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="93" y="42" width="14" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="113" y="42" width="14" height="14" rx="2" fill="#db2777" opacity=".35"/>
-        <rect x="133" y="42" width="10" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="93" y="64" width="14" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="113" y="64" width="14" height="14" rx="2" fill="#db2777" opacity=".2"/>
-        <rect x="120" y="82" width="16" height="18" rx="2" fill="#db2777" opacity=".15"/>
-        <!-- 3 circles = 3 hat -->
-        <circle cx="28" cy="40" r="14" fill="#db2777" opacity=".1"/>
-        <circle cx="28" cy="40" r="8"  fill="#db2777" opacity=".12"/>
-        <circle cx="28" cy="40" r="3"  fill="#db2777" opacity=".4"/>
-        <path d="M28 40 L50 28" stroke="#db2777" stroke-width="1.5"/>
-        <path d="M28 40 L50 40" stroke="#db2777" stroke-width="1.5"/>
-        <path d="M28 40 L50 52" stroke="#db2777" stroke-width="1.5"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="83" y="6" width="66" height="94" rx="5" fill="#db2777"/>
+        <rect x="91" y="18" width="14" height="14" rx="2" fill="#db2777"/>
+        <rect x="112" y="18" width="14" height="14" rx="2" fill="#db2777"/>
+        <rect x="132" y="18" width="10" height="14" rx="2" fill="#db2777"/>
+        <rect x="91" y="40" width="14" height="14" rx="2" fill="#db2777"/>
+        <rect x="112" y="40" width="14" height="14" rx="2" fill="#db2777"/>
+        <rect x="91" y="62" width="14" height="14" rx="2" fill="#db2777"/>
+        <rect x="112" y="62" width="14" height="14" rx="2" fill="#db2777"/>
+        <circle cx="28" cy="54" r="14" fill="#db2777"/>
+        <path d="M28 54 L48 42" stroke="#db2777" stroke-width="1.5"/>
+        <path d="M28 54 L48 54" stroke="#db2777" stroke-width="1.5"/>
+        <path d="M28 54 L48 66" stroke="#db2777" stroke-width="1.5"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Butik otelimizde 3 hat izliyoruz. Mutfak, çamaşırhane ve misafir katı ayrı ayrı görünür hale geldi. Hafta sonu dolulukta mutfağın orantısız harcadığını tespit ettik, ekipmanı servise verdik. Hem bakım masrafını optimize ettik hem de faturayı kontrol altına aldık.</p>
+      <p class="card-quote">Butik otelimizde 3 hat izliyoruz. Mutfak, çamaşırhane ve misafir katı ayrı ayrı görünür hale geldi. Hafta sonu dolulukta mutfağın orantısız harcadığını tespit ettik, ekipmanı servise verdik. Hem bakım masrafını optimize ettik hem faturayı kontrol altına aldık.</p>
       <div class="card-highlight">🏨 3 hat ayrı izleme — mutfak ekipman arızası erken tespiti</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#e11d48,#fb7185)">CK</div>
-        <div>
-          <div class="card-name">Can K.</div>
-          <div class="card-meta">Otel İşletmecisi, Beyoğlu · 1 ay önce · 6 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Can K.</div><div class="card-meta">Otel İşletmecisi, Beyoğlu · 1 ay önce · 6 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- İş Yeri: Kuaför -->
   <div class="review-card" data-cat="isyeri">
     <div class="card-visual vis-isyeri">
       <div class="card-visual-tag tag-isyeri">İş Yeri</div>
       <div class="card-visual-icon">✂️</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <circle cx="130" cy="55" r="40" fill="#f59e0b" opacity=".1"/>
-        <!-- clock -->
-        <circle cx="40" cy="55" r="22" fill="#f59e0b" opacity=".12"/>
-        <circle cx="40" cy="55" r="16" stroke="#f59e0b" stroke-width="1.5" fill="none"/>
-        <path d="M40 45 L40 55 L48 55" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-        <!-- akış çizgisi -->
-        <path d="M70 70 Q95 55 120 65 Q140 72 155 60" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
-        <circle cx="120" cy="65" r="4" fill="#f59e0b"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <circle cx="130" cy="54" r="42" fill="#f59e0b"/>
+        <circle cx="38" cy="54" r="22" stroke="#f59e0b" stroke-width="1.5" fill="none"/>
+        <circle cx="38" cy="54" r="14" stroke="#f59e0b" stroke-width="1.5" fill="none"/>
+        <path d="M38 43 L38 54 L47 54" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+        <path d="M68 68 Q92 54 118 64 Q138 71 158 60" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+        <circle cx="118" cy="64" r="4" fill="#f59e0b"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Kuaförde su çok önemli, sürekli kullanılıyor. Akşam kapandıktan sonra hâlâ akış olduğunu görüyordum ama sebebini bulamıyordum. SuSayar ile gece akış grafiğini inceledik — şampuan yıkama tankının vanası kapatılmıyormuş. Küçük ama önemli bir detay.</p>
+      <p class="card-quote">Kuaförde su çok önemli, sürekli kullanılıyor. Akşam kapandıktan sonra hâlâ akış görüyordum ama sebebini bulamıyordum. SuSayar ile gece akış grafiğini inceledik — şampuan yıkama tankının vanası kapatılmıyormuş. Küçük ama önemli bir detay.</p>
       <div class="card-highlight">✂️ Mesai sonrası akış anomalisi tespiti · Aylık israf %18 azaldı</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#d97706,#fbbf24)">NY</div>
-        <div>
-          <div class="card-name">Neslihan Y.</div>
-          <div class="card-meta">Kuaför Salonu, Şişli · 2 ay önce · 3 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Neslihan Y.</div><div class="card-meta">Kuaför Salonu, Şişli · 2 ay önce · 3 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Site: 170 daire -->
   <div class="review-card" data-cat="site">
     <div class="card-visual vis-site">
       <div class="card-visual-tag tag-site">Site</div>
       <div class="card-visual-icon">🌿</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <!-- sulama hattı -->
-        <path d="M10 70 Q40 50 70 65 Q100 80 130 55 Q150 42 160 48" stroke="#16a34a" stroke-width="2" fill="none"/>
-        <circle cx="70" cy="65" r="5" fill="#16a34a" opacity=".4"/>
-        <path d="M70 65 L70 82 M66 78 L70 82 L74 78" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- uyarı işareti -->
-        <circle cx="130" cy="55" r="12" fill="#e89c0a" opacity=".2"/>
-        <path d="M130 49 L130 56" stroke="#e89c0a" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="130" cy="60" r="1.5" fill="#e89c0a"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <path d="M10 68 Q40 48 70 63 Q100 78 130 53 Q150 40 160 46" stroke="#16a34a" stroke-width="2" fill="none"/>
+        <circle cx="70" cy="63" r="5" fill="#16a34a"/>
+        <path d="M70 63 L70 80 M66 76 L70 80 L74 76" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="130" cy="53" r="13" fill="#e89c0a"/>
+        <path d="M130 47 L130 54" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="130" cy="58" r="1.5" fill="#fff"/>
       </svg>
     </div>
     <div class="card-body">
@@ -656,118 +551,109 @@
       <div class="card-highlight">🌿 Sulama hattı sızıntısı 2 günde tespit — aylarca sürecek israf önlendi</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#16a34a,#4ade80)">ÖS</div>
-        <div>
-          <div class="card-name">Ömer S.</div>
-          <div class="card-meta">Site Yöneticisi, Ataşehir · 5 hafta önce · 5 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Ömer S.</div><div class="card-meta">Site Yöneticisi, Ataşehir · 5 hafta önce · 5 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Restoran: Kafe -->
   <div class="review-card" data-cat="restoran">
     <div class="card-visual vis-restoran">
       <div class="card-visual-tag tag-restoran">Restoran</div>
       <div class="card-visual-icon">☕</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="90" y="20" width="60" height="75" rx="5" fill="#b45309" opacity=".1"/>
-        <!-- mesai sonrası akış çizgisi -->
-        <path d="M10 50 Q35 50 50 50 Q60 50 65 70 Q70 90 80 88 Q120 82 160 75" stroke="#b45309" stroke-width="2" fill="none"/>
-        <path d="M50 30 L50 50" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3 2"/>
-        <text x="38" y="27" font-size="9" fill="#b45309" opacity=".6">22:00</text>
-        <circle cx="65" cy="70" r="5" fill="#b45309" opacity=".5"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="88" y="18" width="62" height="78" rx="5" fill="#b45309"/>
+        <path d="M10 48 Q35 48 50 48 Q60 48 65 68 Q70 88 80 86 Q120 80 160 73" stroke="#b45309" stroke-width="2" fill="none"/>
+        <path d="M50 28 L50 48" stroke="#b45309" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <circle cx="65" cy="68" r="5" fill="#b45309"/>
+        <text x="37" y="25" font-size="9" fill="#b45309">22:00</text>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
-      <p class="card-quote">Kafemizde aylık su giderimiz çok fazlaydı, neden olduğunu bilmiyorduk. SuSayar kurulumundan 3 gün sonra bulduk — mutfak çalışanları mesai bitiminde muslukları tam kapatmıyordu. Sabaha kadar düşük akışta devam ediyordu. Şimdi herkes giderken panele bakıyor.</p>
+      <p class="card-quote">Kafemizde aylık su giderimiz çok fazlaydı, neden olduğunu bilmiyorduk. SuSayar kurulumundan 3 gün sonra bulduk — mutfak çalışanları mesai bitiminde muslukları tam kapatmıyordu. Şimdi herkes giderken panele bakıyor.</p>
       <div class="card-highlight">☕ İnsan kaynaklı israf tespiti · Ekip farkındalığı arttı</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b)">BA</div>
-        <div>
-          <div class="card-name">Berk A.</div>
-          <div class="card-meta">Kafe İşletmecisi, Kadıköy · 7 hafta önce · 4 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Berk A.</div><div class="card-meta">Kafe İşletmecisi, Kadıköy · 7 hafta önce · 4 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Konut: Çocuklu ev -->
   <div class="review-card" data-cat="konut">
     <div class="card-visual vis-konut">
       <div class="card-visual-tag tag-konut">Konut</div>
       <div class="card-visual-icon">👨‍👩‍👧</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <!-- çamaşır makinesi saatleri -->
-        <rect x="90" y="20" width="60" height="75" rx="6" fill="#1a8fb5" opacity=".08"/>
-        <circle cx="120" cy="57" r="22" stroke="#1a8fb5" stroke-width="1.5" fill="none" opacity=".3"/>
-        <circle cx="120" cy="57" r="14" stroke="#1a8fb5" stroke-width="1.5" fill="none" opacity=".3"/>
-        <path d="M120 45 L120 57 L130 57" stroke="#1a8fb5" stroke-width="2" stroke-linecap="round"/>
-        <!-- aile illüstrasyonu -->
-        <circle cx="28" cy="42" r="8" fill="#1a8fb5" opacity=".15"/>
-        <circle cx="46" cy="45" r="7" fill="#1a8fb5" opacity=".12"/>
-        <circle cx="37" cy="60" r="5" fill="#1a8fb5" opacity=".2"/>
-        <path d="M20 90 Q37 70 55 90" fill="#1a8fb5" opacity=".08"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="88" y="18" width="62" height="78" rx="6" fill="#1a8fb5"/>
+        <circle cx="119" cy="57" r="22" stroke="#1a8fb5" stroke-width="1.5" fill="none"/>
+        <circle cx="119" cy="57" r="14" stroke="#1a8fb5" stroke-width="1.5" fill="none"/>
+        <path d="M119 45 L119 57 L129 57" stroke="#1a8fb5" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="26" cy="40" r="9" fill="#1a8fb5"/>
+        <circle cx="44" cy="43" r="8" fill="#1a8fb5"/>
+        <circle cx="35" cy="58" r="6" fill="#1a8fb5"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★★</div>
       <p class="card-quote">Çocuklu ev, su israfı kaçınılmaz sanıyordum. Sistemle birlikte sabah saatlerindeki yoğunluğu gördük, akıllıca çamaşır zamanlaması yaptık. Elektrik gibi suya da artık bilinçli bakıyoruz. Kurulum ekibi çok profesyoneldi.</p>
-      <div class="card-highlight">👨‍👩‍👧 Çamaşır zamanlaması optimizasyonu · Alışkanlık değişikliği %15 tasarruf</div>
+      <div class="card-highlight">👨‍👩‍👧 Çamaşır zamanlaması optimizasyonu · %15 tasarruf</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#0e7490,#06b6d4)">EK</div>
-        <div>
-          <div class="card-name">Elif K.</div>
-          <div class="card-meta">Konut, Maltepe · 1 ay önce · 3 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Elif K.</div><div class="card-meta">Konut, Maltepe · 1 ay önce · 3 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
-  <!-- İş Yeri: İmalatçı -->
   <div class="review-card" data-cat="isyeri">
     <div class="card-visual vis-isyeri">
       <div class="card-visual-tag tag-isyeri">İş Yeri</div>
       <div class="card-visual-icon">🏭</div>
-      <svg class="card-visual-svg" width="160" height="110" viewBox="0 0 160 110" fill="none">
-        <rect x="85" y="30" width="70" height="65" rx="4" fill="#78350f" opacity=".08"/>
-        <!-- kompresör dalgası -->
-        <path d="M10 60 Q25 40 40 60 Q55 80 70 60 Q85 40 100 60 Q115 80 130 60 Q145 40 160 60" stroke="#f59e0b" stroke-width="2" fill="none" opacity=".5"/>
-        <path d="M10 70 Q25 50 40 70 Q55 90 70 70" stroke="#f59e0b" stroke-width="1.5" fill="none" opacity=".3"/>
-        <rect x="95" y="38" width="20" height="20" rx="3" fill="#78350f" opacity=".15"/>
-        <rect x="125" y="38" width="20" height="20" rx="3" fill="#78350f" opacity=".15"/>
-        <rect x="95" y="65" width="20" height="20" rx="3" fill="#78350f" opacity=".15"/>
-        <rect x="125" y="65" width="20" height="20" rx="3" fill="#78350f" opacity=".15"/>
+      <svg class="card-visual-svg" width="160" height="108" viewBox="0 0 160 108" fill="none">
+        <rect x="83" y="28" width="70" height="66" rx="4" fill="#78350f"/>
+        <path d="M10 58 Q25 38 40 58 Q55 78 70 58 Q85 38 100 58 Q115 78 130 58 Q145 38 160 58" stroke="#f59e0b" stroke-width="2" fill="none"/>
+        <rect x="93" y="36" width="20" height="20" rx="3" fill="#78350f"/>
+        <rect x="123" y="36" width="20" height="20" rx="3" fill="#78350f"/>
+        <rect x="93" y="63" width="20" height="20" rx="3" fill="#78350f"/>
+        <rect x="123" y="63" width="20" height="20" rx="3" fill="#78350f"/>
       </svg>
     </div>
     <div class="card-body">
       <div class="card-stars">★★★★☆</div>
-      <p class="card-quote">Küçük imalathanemizde suyun doğru kullanılıp kullanılmadığını bilmiyordum. SuSayar ile mesai saatleri dışında hâlâ kullanım olduğunu gördüm. Kompresör soğutma sistemi devamlı devredeymiş — bakım şirketini çağırdık, ayarladılar. Neyin nerede olduğunu artık görüyorum.</p>
+      <p class="card-quote">Küçük imalathanemizde suyun doğru kullanılıp kullanılmadığını bilmiyordum. SuSayar ile mesai saatleri dışında hâlâ kullanım olduğunu gördüm. Kompresör soğutma sistemi devamlı devredeymiş — bakım şirketini çağırdık, ayarladılar.</p>
       <div class="card-highlight">🏭 Endüstriyel ekipman kaynaklı sürekli akış tespiti</div>
       <div class="card-footer">
         <div class="card-avatar" style="background:linear-gradient(135deg,#475569,#94a3b8)">HY</div>
-        <div>
-          <div class="card-name">Hasan Y.</div>
-          <div class="card-meta">İmalatçı, Esenyurt · 3 ay önce · 4 aylık kullanım</div>
-        </div>
+        <div><div class="card-name">Hasan Y.</div><div class="card-meta">İmalatçı, Esenyurt · 3 ay önce · 4 aylık kullanım</div></div>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- CTA -->
-<div class="cta-section">
-  <h2>Siz de deneyim paylaşmak ister misiniz?</h2>
-  <p>SuSayar kullanıyorsanız deneyiminizi bize yazın.<br>Her gerçek yorum hem bize hem de yeni kullanıcılara yol gösteriyor.</p>
-  <div class="cta-btns">
-    <a href="mailto:info@susayar.com?subject=Kullanıcı Yorumu" class="btn btn-white">Yorum Gönder →</a>
-    <a href="/susayar-landing.html" class="btn btn-outline-white">Ana Sayfaya Dön</a>
+<!-- FOOTER — landing ile aynı -->
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-logo" style="display:flex;align-items:center;gap:9px">
+      <div style="width:30px;height:30px;background:linear-gradient(135deg,#2a9ebe,#3bb5d4);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 22 30"><path d="M11,2 C11,2 20,13 20,19 A9,9 0 0,1 2,19 C2,13 11,2 11,2 Z" fill="white"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:900;line-height:1.1">SuSayar</div>
+        <div style="font-size:.68rem;color:var(--muted);line-height:1;margin-top:.2rem">Akıllı Su Takip Sistemi</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="/susayar-landing.html#ozellikler">Özellikler</a>
+      <a href="/susayar-landing.html#teknolojiler">Teknoloji</a>
+      <a href="/susayar-landing.html#kullanim-alanlari">Kullanım Alanları</a>
+      <a href="/susayar-yorumlar.html">Yorumlar</a>
+      <a href="/susayar-landing.html#sss">SSS</a>
+      <a href="mailto:info@susayar.com">İletişim</a>
+      <a href="/susayar-auth.html">Giriş / Kayıt</a>
+    </div>
+    <div class="footer-copy">© 2026 SuSayar &nbsp;·&nbsp; Şu an İstanbul'da hizmetinizdeyiz</div>
   </div>
-  <div class="drop-deco">
-    <span></span><span></span><span></span><span></span><span></span>
-  </div>
-</div>
+</footer>
 
 <script>
   function filterReviews(cat, btn) {
@@ -777,6 +663,19 @@
       card.style.display = (cat === 'tümü' || card.dataset.cat === cat) ? '' : 'none';
     });
   }
+  function toggleMobileMenu() {
+    const m = document.getElementById('mobile-menu');
+    const h = document.getElementById('nav-hamburger');
+    m.classList.toggle('open');
+    h.textContent = m.classList.contains('open') ? '✕' : '☰';
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.getElementById('nav-hamburger').textContent = '☰';
+  }
+  window.addEventListener('scroll', () => {
+    if (document.getElementById('mobile-menu')?.classList.contains('open')) closeMobileMenu();
+  });
 </script>
 
 </body>
