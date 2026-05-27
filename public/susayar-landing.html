@@ -1297,6 +1297,25 @@ nav {
           </div>
         </div>
 
+        <!-- 6 -->
+        <div class="testi-slide">
+          <div class="testi-card-new">
+            <div class="testi-card-head" style="--grad-head:linear-gradient(135deg,#be123c 0%,#fb7185 100%)">
+              <div class="testi-head-info">
+                <div class="testi-head-stars">★★★★★</div>
+                <div class="testi-head-name">Deniz A.</div>
+                <div class="testi-head-role">Airbnb Ev Sahibi — İstanbul, Beyoğlu</div>
+              </div>
+              <img class="testi-head-photo"
+                src="https://randomuser.me/api/portraits/women/29.jpg"
+                alt="Deniz A.">
+            </div>
+            <div class="testi-card-body">
+              <p class="testi-card-text">Kiracılar gidince su sayacını okumak yerine artık uygulamadan bakıyorum. Bir misafir 3 günde 4 kişilik bir ailenin aylık kullandığı kadar su harcamıştı — fark edip konuşamazdım ama veriyi görmek bambaşka bir şey. Artık her rezervasyon için tüketim raporu alıyorum.</p>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /testi-track -->
     </div><!-- /slider-wrap -->
 
@@ -1308,6 +1327,7 @@ nav {
         <div class="testi-dot" onclick="testiGo(2)"></div>
         <div class="testi-dot" onclick="testiGo(3)"></div>
         <div class="testi-dot" onclick="testiGo(4)"></div>
+        <div class="testi-dot" onclick="testiGo(5)"></div>
       </div>
       <button class="testi-btn" onclick="testiNext()" aria-label="Sonraki">&#8594;</button>
     </div>
@@ -1453,7 +1473,7 @@ nav {
 <script>
 /* ── TESTIMONIAL SLIDER ── */
 (function() {
-  var cur = 0, total = 5, timer;
+  var cur = 0, total = 6, timer, paused = false;
   function update() {
     document.getElementById('testiTrack').style.transform = 'translateX(-' + cur * 100 + '%)';
     document.querySelectorAll('.testi-dot').forEach(function(d, i) {
@@ -1463,7 +1483,16 @@ nav {
   window.testiNext = function() { cur = (cur + 1) % total; update(); resetTimer(); };
   window.testiPrev = function() { cur = (cur - 1 + total) % total; update(); resetTimer(); };
   window.testiGo   = function(i) { cur = i; update(); resetTimer(); };
-  function resetTimer() { clearInterval(timer); timer = setInterval(window.testiNext, 4500); }
+  function resetTimer() {
+    clearInterval(timer);
+    if (!paused) timer = setInterval(window.testiNext, 4500);
+  }
+  /* Hover üzerindeyken durdur */
+  var wrap = document.querySelector('.testi-slider-wrap');
+  if (wrap) {
+    wrap.addEventListener('mouseenter', function() { paused = true; clearInterval(timer); });
+    wrap.addEventListener('mouseleave', function() { paused = false; resetTimer(); });
+  }
   resetTimer();
 })();
 
