@@ -1162,6 +1162,13 @@
 
     <!-- PAGE: ANLIK AKIS -->
     <div class="page" id="page-anlik-akis">
+      <!-- Cihaz seçici -->
+      <div class="card" style="padding:.875rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div style="font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap">Cihaz</div>
+        <select id="anlik-device-select" onchange="onAnlikDeviceChange()" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer;flex:1;min-width:160px">
+          <option value="">Tüm Cihazlar</option>
+        </select>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
         <div class="card" style="text-align:center;padding:2rem">
           <div class="card-head" style="justify-content:center;border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:1.5rem">
@@ -1836,6 +1843,12 @@
               <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Tarih</div>
               <input type="date" id="daily-date-input" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer" onchange="loadDailyReport()">
             </div>
+            <div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Cihaz</div>
+              <select id="daily-device-select" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer;min-width:160px">
+                <option value="">Tüm Cihazlar</option>
+              </select>
+            </div>
             <button onclick="loadDailyReport()" style="margin-top:1.3rem;padding:.45rem 1rem;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:600;cursor:pointer">Yükle</button>
           </div>
         </div>
@@ -1896,6 +1909,12 @@
             <div>
               <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Ay</div>
               <input type="month" id="monthly-month-input" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer" onchange="loadMonthlyReport()">
+            </div>
+            <div>
+              <div style="font-size:.75rem;color:var(--muted);margin-bottom:.35rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Cihaz</div>
+              <select id="monthly-device-select" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:.45rem .75rem;font-size:.88rem;cursor:pointer;min-width:160px">
+                <option value="">Tüm Cihazlar</option>
+              </select>
             </div>
             <button onclick="loadMonthlyReport()" style="margin-top:1.3rem;padding:.45rem 1rem;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:.83rem;font-weight:600;cursor:pointer">Yükle</button>
           </div>
@@ -2068,8 +2087,9 @@ navItems.forEach(item => {
 
     topbarTitle.textContent = title;
 
-    if (pageId === 'gunluk-rapor') loadDailyReport();
-    if (pageId === 'aylik-analiz') loadMonthlyReport();
+    if (pageId === 'gunluk-rapor') { ensureReportDevices(); loadDailyReport(); }
+    if (pageId === 'aylik-analiz') { ensureReportDevices(); loadMonthlyReport(); }
+    if (pageId === 'anlik-akis')   { ensureReportDevices(); }
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'anomaliler')      { loadAnomalies(); }
@@ -3497,11 +3517,13 @@ async function deleteDevice(id) {
 })();
 
 async function loadDailyReport() {
-  const date = document.getElementById('daily-date-input')?.value || new Date().toISOString().slice(0, 10);
-  const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const date   = document.getElementById('daily-date-input')?.value || new Date().toISOString().slice(0, 10);
+  const device = document.getElementById('daily-device-select')?.value || '';
+  const token  = localStorage.getItem('susayar_token') || '';
+  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const devQ   = device ? `&device=${encodeURIComponent(device)}` : '';
   try {
-    const r = await fetch(`${API}/api/reports/daily?date=${date}`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(`${API}/api/reports/daily?date=${date}${devQ}`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await r.json();
     if (!r.ok) { showToast('Rapor yüklenemedi: ' + (data.error || '')); return; }
 
@@ -3568,11 +3590,13 @@ async function loadDailyReport() {
 })();
 
 async function loadMonthlyReport() {
-  const month = document.getElementById('monthly-month-input')?.value || new Date().toISOString().slice(0, 7);
-  const token = localStorage.getItem('susayar_token') || '';
-  const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const month  = document.getElementById('monthly-month-input')?.value || new Date().toISOString().slice(0, 7);
+  const device = document.getElementById('monthly-device-select')?.value || '';
+  const token  = localStorage.getItem('susayar_token') || '';
+  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const devQ   = device ? `&device=${encodeURIComponent(device)}` : '';
   try {
-    const r = await fetch(`${API}/api/reports/monthly?month=${month}`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(`${API}/api/reports/monthly?month=${month}${devQ}`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await r.json();
     if (!r.ok) { showToast('Rapor yüklenemedi: ' + (data.error || '')); return; }
 
@@ -4223,6 +4247,34 @@ async function loadDevicesPage() {
 // CİHAZ AYARLARI SAYFASI
 // ============================
 let _cihazAyarDevices = [];
+let _anlikSelectedDevice = ''; // boş = tüm cihazlar
+
+async function ensureReportDevices() {
+  if (_cihazAyarDevices.length) { populateReportDeviceSelects(_cihazAyarDevices); return; }
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  try {
+    const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
+    if (r.ok) {
+      const devs = await r.json();
+      _cihazAyarDevices = Array.isArray(devs) ? devs : [];
+      populateReportDeviceSelects(_cihazAyarDevices);
+    }
+  } catch {}
+}
+
+function populateReportDeviceSelects(devices) {
+  const opts = '<option value="">Tüm Cihazlar</option>' +
+    devices.map(d => `<option value="${esc(d.device_id)}">${esc(d.name)}</option>`).join('');
+  ['daily-device-select', 'monthly-device-select', 'anlik-device-select'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { const prev = el.value; el.innerHTML = opts; if (prev) el.value = prev; }
+  });
+}
+
+function onAnlikDeviceChange() {
+  _anlikSelectedDevice = document.getElementById('anlik-device-select')?.value || '';
+}
 
 async function loadCihazAyarlariPage() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
@@ -4234,6 +4286,7 @@ async function loadCihazAyarlariPage() {
     const r = await fetch(`${API}/api/devices`, { headers: { Authorization: `Bearer ${token}` } });
     const devs = await r.json();
     _cihazAyarDevices = Array.isArray(devs) ? devs : [];
+    populateReportDeviceSelects(_cihazAyarDevices);
     if (!_cihazAyarDevices.length) {
       if (emptyEl) emptyEl.textContent = 'Kayıtlı cihaz bulunamadı.';
       return;
@@ -4708,7 +4761,11 @@ function connectRealBackend(url) {
         _lastSensorMs = nowMs;
         if (msg.payload.device_id) _lastSensorByDevice[msg.payload.device_id] = nowMs;
         updateDeviceStatus();
-        applyRealReading(msg.payload);
+        // Anlık akış sayfasında cihaz filtresi
+        const anlikSel = _anlikSelectedDevice || document.getElementById('anlik-device-select')?.value || '';
+        if (!anlikSel || msg.payload.device_id === anlikSel) {
+          applyRealReading(msg.payload);
+        }
         renderSonOlcumler([msg.payload], true);
       } else if (msg.type === 'anomaly' && msg.payload) {
         loadAnomalies();
