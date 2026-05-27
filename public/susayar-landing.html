@@ -1471,69 +1471,6 @@ nav {
   </div>
 </footer>
 
-<script>
-/* ── TESTIMONIAL SLIDER ── */
-document.addEventListener('DOMContentLoaded', function() {
-  var cur = 0, total = 6, timer, paused = false;
-  var track = document.getElementById('testiTrack');
-  var dots  = document.querySelectorAll('.testi-dot');
-  var wrap  = document.querySelector('.testi-slider-wrap');
-
-  function update() {
-    track.style.transform = 'translateX(-' + (cur * 100) + '%)';
-    dots.forEach(function(d, i) { d.classList.toggle('active', i === cur); });
-  }
-  function next() { cur = (cur + 1) % total; update(); resetTimer(); }
-  function prev() { cur = (cur - 1 + total) % total; update(); resetTimer(); }
-  function go(i)  { cur = i; update(); resetTimer(); }
-  function resetTimer() {
-    clearInterval(timer);
-    if (!paused) timer = setInterval(next, 4500);
-  }
-
-  /* Ok butonları */
-  var btnPrev = document.querySelector('.testi-btn[aria-label="Önceki"]');
-  var btnNext = document.querySelector('.testi-btn[aria-label="Sonraki"]');
-  if (btnPrev) btnPrev.addEventListener('click', prev);
-  if (btnNext) btnNext.addEventListener('click', next);
-
-  /* Dot'lar */
-  dots.forEach(function(d, i) {
-    d.addEventListener('click', function() { go(i); });
-  });
-
-  /* Hover'da durdur */
-  if (wrap) {
-    wrap.addEventListener('mouseenter', function() { paused = true; clearInterval(timer); });
-    wrap.addEventListener('mouseleave', function() { paused = false; resetTimer(); });
-  }
-
-  resetTimer();
-});
-
-/* FAQ accordion */
-function toggleFaq(btn) {
-  const item = btn.closest('.faq-item');
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
-
-/* Hero mockup - Anlık akış değeri dalgalanır */
-let mockToday = 187;
-let mockMonth = 4.2;
-setInterval(() => {
-  const flow = (1.8 + Math.random() * 2.2).toFixed(1).replace('.', ',');
-  mockToday += Math.floor(Math.random() * 4 + 1);
-  mockMonth = +(mockMonth + 0.001).toFixed(3);
-  const fEl = document.getElementById('mock-flow');
-  const tEl = document.getElementById('mock-today');
-  const mEl = document.getElementById('mock-month');
-  if (fEl) fEl.innerHTML = flow + ' <sub>L/dk</sub>';
-  if (tEl) tEl.innerHTML = mockToday + ' <sub>L</sub>';
-  if (mEl) mEl.innerHTML = mockMonth.toFixed(1).replace('.', ',') + ' <sub>m&sup3;</sub>';
-}, 2500);
-</script>
 
 <!-- KURULUM TALEP MODAL -->
 <div id="talep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:1rem">
@@ -1669,6 +1606,64 @@ window.addEventListener('scroll', () => {
 if (new URLSearchParams(location.search).get('talep') === '1') {
   window.addEventListener('load', () => setTimeout(openTalep, 400));
 }
+
+/* ── FAQ ACCORDION ── */
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+/* ── HERO MOCKUP animasyonu ── */
+let mockToday = 187, mockMonth = 4.2;
+setInterval(() => {
+  const flow = (1.8 + Math.random() * 2.2).toFixed(1).replace('.', ',');
+  mockToday += Math.floor(Math.random() * 4 + 1);
+  mockMonth = +(mockMonth + 0.001).toFixed(3);
+  const fEl = document.getElementById('mock-flow');
+  const tEl = document.getElementById('mock-today');
+  const mEl = document.getElementById('mock-month');
+  if (fEl) fEl.innerHTML = flow + ' <sub>L/dk</sub>';
+  if (tEl) tEl.innerHTML = mockToday + ' <sub>L</sub>';
+  if (mEl) mEl.innerHTML = mockMonth.toFixed(1).replace('.', ',') + ' <sub>m&sup3;</sub>';
+}, 2500);
+
+/* ── TESTİMONİAL SLIDER ── */
+(function () {
+  var cur = 0, total = 6, timer, paused = false;
+  var track = document.getElementById('testiTrack');
+  if (!track) return; // güvenlik
+
+  var dots = document.querySelectorAll('.testi-dot');
+
+  function update() {
+    track.style.transform = 'translateX(-' + (cur * 100) + '%)';
+    dots.forEach(function (d, i) { d.classList.toggle('active', i === cur); });
+  }
+  function next() { cur = (cur + 1) % total; update(); resetTimer(); }
+  function prev() { cur = (cur - 1 + total) % total; update(); resetTimer(); }
+  function resetTimer() { clearInterval(timer); if (!paused) timer = setInterval(next, 4500); }
+
+  /* Ok butonları */
+  document.querySelectorAll('.testi-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (btn.getAttribute('aria-label') === 'Sonraki') next(); else prev();
+    });
+  });
+
+  /* Dot'lar */
+  dots.forEach(function (d, i) { d.addEventListener('click', function () { cur = i; update(); resetTimer(); }); });
+
+  /* Hover — masaüstünde duraklat */
+  var wrap = document.querySelector('.testi-slider-wrap');
+  if (wrap) {
+    wrap.addEventListener('mouseenter', function () { paused = true; clearInterval(timer); });
+    wrap.addEventListener('mouseleave', function () { paused = false; resetTimer(); });
+  }
+
+  resetTimer();
+})();
 </script>
 </body>
 </html>
