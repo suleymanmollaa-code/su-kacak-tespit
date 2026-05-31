@@ -874,15 +874,22 @@ app.get('/api/settings', requireAuth, async (req, res) => {
     const global = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]);
     if (device) {
       const ds = await db.queryOne(`SELECT * FROM device_alert_settings WHERE user_id=$1 AND device_id=$2`, [req.user.id, device]) || {};
+      const g = global || {};
       res.json({ ok: true, settings: {
-        alert_after_hour:    ds.alert_after_hour    ?? global?.alert_after_hour    ?? 22,
-        alert_after_minute:  ds.alert_after_minute  ?? global?.alert_after_minute  ?? 0,
-        continuous_flow_min: ds.continuous_flow_min ?? global?.continuous_flow_min ?? 30,
-        daily_report:            !!global?.daily_report,
-        weekly_report:           !!global?.weekly_report,
-        notify_realtime_email:   !!global?.notify_realtime_email,
-        notify_telegram:         !!global?.notify_telegram,
-        telegram_chat_id:        global?.telegram_chat_id || '',
+        alert_after_hour:    ds.alert_after_hour    ?? g.alert_after_hour    ?? 22,
+        alert_after_minute:  ds.alert_after_minute  ?? g.alert_after_minute  ?? 0,
+        continuous_flow_min: ds.continuous_flow_min ?? g.continuous_flow_min ?? 30,
+        daily_report:            !!g.daily_report,
+        weekly_report:           !!g.weekly_report,
+        notify_realtime_email:   !!g.notify_realtime_email,
+        notify_telegram:         !!g.notify_telegram,
+        telegram_chat_id:        g.telegram_chat_id || '',
+        night_flow_enabled:  g.night_flow_enabled  !== 0 && g.night_flow_enabled  !== false,
+        alert_hour_enabled:  g.alert_hour_enabled  !== 0 && g.alert_hour_enabled  !== false,
+        high_flow_enabled:   g.high_flow_enabled   !== 0 && g.high_flow_enabled   !== false,
+        cont_flow_enabled:   g.cont_flow_enabled   !== 0 && g.cont_flow_enabled   !== false,
+        leak_enabled:        g.leak_enabled        !== 0 && g.leak_enabled        !== false,
+        offline_enabled:     g.offline_enabled     !== 0 && g.offline_enabled     !== false,
       }});
     } else {
       const s = global || {};
