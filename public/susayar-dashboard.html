@@ -3932,12 +3932,18 @@ async function saveEnabledToggle() {
     offline_enabled:    g('at-offline-enabled')?.checked ?? true,
   };
   try {
-    await fetch(`${API}/api/settings`, {
+    const r = await fetch(`${API}/api/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
-  } catch {} // sessiz kaydet
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      showToast('❌ Toggle kaydedilemedi: ' + (err.error || r.status));
+    }
+  } catch (e) {
+    showToast('❌ Bağlantı hatası — toggle kaydedilemedi');
+  }
 }
 
 async function saveAnomalyTypeSettings() {
