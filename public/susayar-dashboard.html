@@ -1609,8 +1609,6 @@
         <div class="card">
           <div class="card-head">
             <div class="card-title">⚙️ Uyarı Yönetimi</div>
-            <button type="button" onclick="loadAnomalyTypeSettings()"
-              style="font-size:.72rem;padding:.25rem .6rem;background:rgba(59,181,212,.1);color:var(--blue-lt);border:1px solid rgba(59,181,212,.25);border-radius:6px;cursor:pointer">↻ Yenile</button>
           </div>
 
           <!-- CİHAZ SEÇİCİ -->
@@ -3937,6 +3935,8 @@ async function saveEnabledToggle() {
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
       showToast('❌ Toggle kaydedilemedi: ' + (err.error || r.status));
+    } else {
+      showToast('✅ Ayarlar kaydedildi');
     }
   } catch (e) {
     showToast('❌ Bağlantı hatası — toggle kaydedilemedi');
