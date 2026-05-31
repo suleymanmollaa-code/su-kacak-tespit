@@ -4622,7 +4622,7 @@ function guardedToggle(checkbox, label, afterFn) {
         oninput="document.getElementById('guarded-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
       <div style="display:flex;gap:.5rem;justify-content:flex-end">
         <button class="btn-sm" onclick="guardedCancel('${checkbox.id}',${afterFn ? 'true' : 'false'})">Vazgeç</button>
-        <button id="guarded-confirm-btn" class="btn-sm btn-primary" disabled onclick="closeModal()">Kapat</button>
+        <button id="guarded-confirm-btn" class="btn-sm btn-primary" disabled onclick="closeModal();saveChannelSettings()">Kapat</button>
       </div>`
     );
     setTimeout(() => document.getElementById('guarded-input')?.focus(), 100);
