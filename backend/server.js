@@ -947,6 +947,10 @@ app.put('/api/settings', requireAuth, async (req, res) => {
     } else {
       // Mevcut ayarları yükle — body'de gelmeyen alanlar için DB değerini koru
       const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
+      // alert_after_hour/minute ve continuous_flow_min de DB'den koru
+      const hour_save = alert_after_hour   !== undefined ? parseInt(alert_after_hour)   : (cur.alert_after_hour   ?? 22);
+      const min_save  = alert_after_minute !== undefined ? parseInt(alert_after_minute) : (cur.alert_after_minute ?? 0);
+      const mins_save = continuous_flow_min !== undefined ? parseInt(continuous_flow_min) : (cur.continuous_flow_min ?? 30);
       const nsh = night_start_hour   !== undefined ? parseInt(night_start_hour)   : (cur.night_start_hour   ?? 0);
       const nsm = night_start_minute !== undefined ? parseInt(night_start_minute) : (cur.night_start_minute ?? 0);
       const neh = night_end_hour     !== undefined ? parseInt(night_end_hour)     : (cur.night_end_hour     ?? 5);
@@ -988,7 +992,7 @@ app.put('/api/settings', requireAuth, async (req, res) => {
            ai_auto_manage=$18, tatil_modu=$19, tatil_modu_until=$20, tatil_yetkili=$21,
            night_flow_enabled=$22, alert_hour_enabled=$23, high_flow_enabled=$24,
            cont_flow_enabled=$25, leak_enabled=$26, offline_enabled=$27`,
-        [req.user.id, hour, minute, mins,
+        [req.user.id, hour_save, min_save, mins_save,
          dr ? 1 : 0, wr ? 1 : 0,
          nre ? 1 : 0, ntg ? 1 : 0,
          cid || null,

@@ -1633,7 +1633,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">🌙 Gece Akışı — Zaman Aralığı</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-night-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-night-inputs',this.checked)">
+                      <input type="checkbox" id="at-night-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-night-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-night-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-night-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -1657,7 +1657,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">🕐 Saat Uyarısı — Bu saatten sonra akış</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-alert-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-alert-inputs',this.checked)">
+                      <input type="checkbox" id="at-alert-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-alert-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-alert-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-alert-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -1677,7 +1677,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">⚡ Yüksek Akış — Alarm eşiği</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-high-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-high-inputs',this.checked)">
+                      <input type="checkbox" id="at-high-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-high-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-high-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-high-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -1695,7 +1695,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">💧 Sürekli Akış — Alarm süresi</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-cont-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-cont-inputs',this.checked)">
+                      <input type="checkbox" id="at-cont-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-cont-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-cont-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-cont-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -1713,7 +1713,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">🔴 Sızıntı — Düşük akış tespiti</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-leak-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-leak-inputs',this.checked)">
+                      <input type="checkbox" id="at-leak-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-leak-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-leak-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-leak-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -1733,7 +1733,7 @@
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
                     <div style="font-size:.78rem;font-weight:600">📡 Cihaz Çevrimdışı — Tekrar bildirim</div>
                     <label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">
-                      <input type="checkbox" id="at-offline-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-offline-inputs',this.checked)">
+                      <input type="checkbox" id="at-offline-enabled" checked style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this);_toggleRule('at-offline-inputs',this.checked);saveEnabledToggle()">
                       <div class="slider-track" id="track-at-offline-enabled" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                       <div class="slider-thumb" id="thumb-at-offline-enabled" style="position:absolute;top:3px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
                     </label>
@@ -3918,6 +3918,28 @@ async function loadLearning(fullPage = false) {
   } catch { /* sessiz */ }
 }
 
+// Toggle değişince anında kaydet (Kaydet butonuna basmaya gerek yok)
+async function saveEnabledToggle() {
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
+  const g = id => document.getElementById(id);
+  const body = {
+    night_flow_enabled: g('at-night-enabled')?.checked   ?? true,
+    alert_hour_enabled: g('at-alert-enabled')?.checked   ?? true,
+    high_flow_enabled:  g('at-high-enabled')?.checked    ?? true,
+    cont_flow_enabled:  g('at-cont-enabled')?.checked    ?? true,
+    leak_enabled:       g('at-leak-enabled')?.checked    ?? true,
+    offline_enabled:    g('at-offline-enabled')?.checked ?? true,
+  };
+  try {
+    await fetch(`${API}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+  } catch {} // sessiz kaydet
+}
+
 async function saveAnomalyTypeSettings() {
   const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token  = localStorage.getItem('susayar_token') || '';
@@ -4519,9 +4541,16 @@ async function loadSettings() {
 async function saveSettings() {
   const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
   const token = localStorage.getItem('susayar_token') || '';
+  const g = id => document.getElementById(id);
   const body = {
-    daily_report:  document.getElementById('setting-daily')?.checked  || false,
-    weekly_report: document.getElementById('setting-weekly')?.checked || false,
+    daily_report:  g('setting-daily')?.checked  || false,
+    weekly_report: g('setting-weekly')?.checked || false,
+    night_flow_enabled: g('at-night-enabled')?.checked   ?? true,
+    alert_hour_enabled: g('at-alert-enabled')?.checked   ?? true,
+    high_flow_enabled:  g('at-high-enabled')?.checked    ?? true,
+    cont_flow_enabled:  g('at-cont-enabled')?.checked    ?? true,
+    leak_enabled:       g('at-leak-enabled')?.checked    ?? true,
+    offline_enabled:    g('at-offline-enabled')?.checked ?? true,
   };
   const url = `${API}/api/settings`;
   try {
