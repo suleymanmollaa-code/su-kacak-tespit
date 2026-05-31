@@ -4609,7 +4609,43 @@ async function testTelegram() {
 
 // Yazılı onay gerektiren toggle — site modalı kullanır
 function guardedAnomalyToggle(checkbox, label, rulesId) {
-  guardedToggle(checkbox, label, () => _toggleRule(rulesId, checkbox.checked), saveEnabledToggle);
+  toggleSlider(checkbox);
+  _toggleRule(rulesId, checkbox.checked);
+  if (!checkbox.checked) {
+    // Kapatma: basit onay — ONAYLA yazmak gerekmez
+    const cbId = checkbox.id;
+    openModal('Uyarı Tipini Kapat',
+      `<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#ef4444">
+        🔕 <strong>${esc(label)}</strong> artık tespit edilmeyecek ve bildirim oluşturmayacak.
+      </div>
+      <p style="font-size:.8rem;color:var(--muted2);line-height:1.6;margin-bottom:1.1rem">
+        Tekrar açmak için toggle'ı açık konuma getirin.
+      </p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn-sm" onclick="anomalyToggleCancel('${cbId}','${rulesId}')">Vazgeç</button>
+        <button class="btn-sm btn-primary" onclick="anomalyToggleConfirm()">Kapat</button>
+      </div>`
+    );
+    window._anomalyToggleCbId   = cbId;
+    window._anomalyToggleRuleId = rulesId;
+  } else {
+    saveEnabledToggle();
+  }
+}
+
+function anomalyToggleConfirm() {
+  window._anomalyToggleCbId   = null; // closeModal override'dan önce temizle
+  window._anomalyToggleRuleId = null;
+  closeModal();
+  saveEnabledToggle();
+}
+
+function anomalyToggleCancel(cbId, rulesId) {
+  const cb = document.getElementById(cbId);
+  if (cb) { cb.checked = true; toggleSlider(cb); _toggleRule(rulesId, true); }
+  window._anomalyToggleCbId   = null;
+  window._anomalyToggleRuleId = null;
+  closeModal();
 }
 
 function guardedToggle(checkbox, label, afterFn, saveFn) {
@@ -4655,6 +4691,7 @@ function guardedCancel(checkboxId, hasAfterFn) {
 // closeModal override — eğer guarded modal açıksa ve onaylanmadıysa geri al
 const _origCloseModal = closeModal;
 closeModal = function() {
+  // guardedToggle (ONAYLA gerektiren) — onaylanmadıysa toggle'ı geri al
   if (window._guardedCheckboxId) {
     const input = document.getElementById('guarded-input');
     if (input && input.value.trim().toUpperCase() !== 'ONAYLA') {
@@ -4664,6 +4701,11 @@ closeModal = function() {
     }
     window._guardedCheckboxId = null;
     window._guardedAfterFn    = null;
+  }
+  // guardedAnomalyToggle — X ile kapatılırsa toggle'ı geri al
+  if (window._anomalyToggleCbId) {
+    anomalyToggleCancel(window._anomalyToggleCbId, window._anomalyToggleRuleId);
+    return; // anomalyToggleCancel closeModal'ı tekrar çağırır
   }
   _origCloseModal();
 };
