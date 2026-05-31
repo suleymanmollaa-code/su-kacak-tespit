@@ -1112,6 +1112,14 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     const contFlowMin = devSettings?.continuous_flow_min ?? settings?.continuous_flow_min ?? 30;
     const alertTotalMin = alertHour * 60 + alertMinute;
 
+    // Anomali tipi toggle'ları — kapalıysa o tip tespit edilmez
+    const isEnabled = (v) => v !== 0 && v !== false && v !== null;
+    const nightEnabled = isEnabled(settings?.night_flow_enabled ?? 1);
+    const alertEnabled = isEnabled(settings?.alert_hour_enabled ?? 1);
+    const highEnabled  = isEnabled(settings?.high_flow_enabled  ?? 1);
+    const contEnabled  = isEnabled(settings?.cont_flow_enabled  ?? 1);
+    const leakEnabled  = isEnabled(settings?.leak_enabled       ?? 1);
+
     // Gece akışı (yapılandırılabilir saat aralığı, varsayılan 00:00–05:00)
     const nightStartH = settings?.night_start_hour   ?? 0;
     const nightStartM = settings?.night_start_minute ?? 0;
@@ -1123,22 +1131,22 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     const isNight = nightStartTotalMin <= nightEndTotalMin
       ? (trTotalMin >= nightStartTotalMin && trTotalMin < nightEndTotalMin)
       : (trTotalMin >= nightStartTotalMin || trTotalMin < nightEndTotalMin);
-    if (isNight && reading.flow_lpm > 0.1) {
+    if (nightEnabled && isNight && reading.flow_lpm > 0.1) {
       anomalies.push({ type: 'gece-akis', detail: `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')} saatinde ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
     // Kullanıcının belirlediği saatten sonra akış
-    if (trTotalMin >= alertTotalMin && reading.flow_lpm > 0.1) {
+    if (alertEnabled && trTotalMin >= alertTotalMin && reading.flow_lpm > 0.1) {
       const alertStr = `${String(alertHour).padStart(2,'0')}:${String(alertMinute).padStart(2,'0')}`;
       const nowStr   = `${String(trHour).padStart(2,'0')}:${String(trMinute).padStart(2,'0')}`;
       anomalies.push({ type: 'saat-akis', detail: `${nowStr} saatinde (${alertStr} sonrası) ${reading.flow_lpm.toFixed(1)} L/dk akış tespit edildi` });
     }
     // Çok yüksek akış (yapılandırılabilir eşik, varsayılan 8 L/dk)
     const highFlowLpm = settings?.high_flow_lpm ?? 8;
-    if (reading.flow_lpm > highFlowLpm) {
+    if (highEnabled && reading.flow_lpm > highFlowLpm) {
       anomalies.push({ type: 'yuksek-akis', detail: `Anlık akış ${reading.flow_lpm.toFixed(1)} L/dk — anormal yüksek (eşik: ${highFlowLpm} L/dk)` });
     }
     // Sürekli akış tespiti
-    if (reading.flow_lpm > 0.1) {
+    if (contEnabled && reading.flow_lpm > 0.1) {
       const cutoffCont = new Date(Date.now() - contFlowMin * 60 * 1000).toISOString();
       const contRows = await db.queryAll(
         `SELECT flow_lpm FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 ORDER BY ts DESC`,
@@ -1152,7 +1160,7 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
     // Sızıntı tespiti (düşük sürekli akış)
     const leakFlowLpm = settings?.leak_flow_lpm ?? 0.3;
     const leakContMin = settings?.leak_cont_min  ?? 30;
-    if (reading.flow_lpm > 0 && reading.flow_lpm <= leakFlowLpm) {
+    if (leakEnabled && reading.flow_lpm > 0 && reading.flow_lpm <= leakFlowLpm) {
       const cutoffLeak = new Date(Date.now() - leakContMin * 60 * 1000).toISOString();
       const leakRows = await db.queryAll(
         `SELECT flow_lpm FROM readings WHERE user_id=$1 AND device_id=$2 AND ts>=$3 ORDER BY ts DESC`,
