@@ -1034,13 +1034,14 @@ app.post('/api/sensor', sensorLimiter, requireDeviceKey, async (req, res) => {
       await db.queryRun(`UPDATE anomalies SET resolved=$1 WHERE id=$2`, [resolvedVal, openOffline.id]);
       broadcastToUser(reading.user_id, { type: 'anomaly', payload: { id: openOffline.id, type: 'cihaz-offline', device: reading.device_id, resolved: true } });
       const devName = req.device.name || reading.device_id;
-      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id FROM user_settings WHERE user_id=$1`, [reading.user_id]);
+      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id, notify_realtime_email FROM user_settings WHERE user_id=$1`, [reading.user_id]);
       const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [reading.user_id]);
       const reconnMsg = `🟢 <b>Cihaz Yeniden Bağlandı</b>\n\n📡 ${devName}\n⏱ ${new Date().toLocaleString('tr-TR')}\n\nBağlantı yeniden kuruldu.`;
-      if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
+      if (s?.notify_telegram && s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
         await sendTelegram(s.telegram_chat_id.trim(), reconnMsg).catch(() => {});
       }
-      if (user?.email) {
+      const reconnEmailEnabled = s?.notify_realtime_email === true || s?.notify_realtime_email === 1;
+      if (reconnEmailEnabled && user?.email) {
         sendMail({
           to: user.email,
           subject: `🟢 SuSayar — ${devName} yeniden bağlandı`,
@@ -1764,8 +1765,8 @@ async function checkOfflineDevices() {
       );
       broadcastToUser(dev.user_id, { type: 'anomaly', payload: { id: anomId, type: 'cihaz-offline', device: dev.device_id, detail, ts: new Date().toISOString(), resolved: false } });
 
-      // Telegram + E-posta bildirimi (offline_enabled kontrolü)
-      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id, offline_enabled FROM user_settings WHERE user_id=$1`, [dev.user_id]);
+      // Telegram + E-posta bildirimi (offline_enabled + kanal toggle kontrolü)
+      const s    = await db.queryOne(`SELECT notify_telegram, telegram_chat_id, notify_realtime_email, offline_enabled FROM user_settings WHERE user_id=$1`, [dev.user_id]);
       const user = await db.queryOne(`SELECT name, email FROM users WHERE id=$1`, [dev.user_id]);
       const offlineEnabled = s?.offline_enabled !== 0 && s?.offline_enabled !== false;
       if (!offlineEnabled) {
@@ -1773,10 +1774,11 @@ async function checkOfflineDevices() {
         continue;
       }
       const offlineMsg = `🔴 <b>Cihaz Bağlantısı Kesildi</b>\n\n📡 ${dev.name || dev.device_id}\n⏱ Son veri: ${offlineSince}\n\nCihazı kontrol edin.`;
-      if (s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
+      if (s?.notify_telegram && s?.telegram_chat_id && process.env.TELEGRAM_BOT_TOKEN) {
         await sendTelegram(s.telegram_chat_id.trim(), offlineMsg).catch(() => {});
       }
-      if (user?.email) {
+      const offlineEmailEnabled = s?.notify_realtime_email === true || s?.notify_realtime_email === 1;
+      if (offlineEmailEnabled && user?.email) {
         sendMail({
           to: user.email,
           subject: `🔴 SuSayar — ${dev.name || dev.device_id} bağlantısı kesildi`,
