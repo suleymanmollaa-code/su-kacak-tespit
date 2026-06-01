@@ -3967,15 +3967,23 @@ async function saveAnomalyTypeSettings() {
     leak_enabled:        g('at-leak-enabled')?.checked    ?? true,
     offline_enabled:     g('at-offline-enabled')?.checked ?? true,
   };
-  const url = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
+  // Eşikler her zaman global olarak kaydedilir (device branch sadece 3 alan destekler)
   try {
-    const r = await fetch(url, {
+    const r = await fetch(`${API}/api/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
-    if (r.ok) showToast(device ? `✅ ${device} cihaz eşikleri kaydedildi` : '✅ Eşik ayarları kaydedildi');
-    else { const err = await r.json().catch(() => ({})); showToast('❌ ' + (err.error || 'Kayıt başarısız')); }
+    if (!r.ok) { const err = await r.json().catch(() => ({})); showToast('❌ ' + (err.error || 'Kayıt başarısız')); return; }
+    // Cihaz seçiliyse cihaza özel alert saati de kaydet
+    if (device) {
+      await fetch(`${API}/api/settings?device=${encodeURIComponent(device)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ alert_after_hour: body.alert_after_hour, alert_after_minute: body.alert_after_minute, continuous_flow_min: body.continuous_flow_min }),
+      });
+    }
+    showToast(device ? `✅ ${device} + global eşikler kaydedildi` : '✅ Eşik ayarları kaydedildi');
   } catch (e) { showToast('❌ Bağlantı hatası: ' + e.message); }
 }
 
