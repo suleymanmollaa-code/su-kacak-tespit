@@ -1746,10 +1746,6 @@
             </div>
           </div>
 
-          <div style="margin-top:1.25rem;text-align:right">
-            <button type="button" class="btn btn-primary" onclick="saveAnomalyTypeSettings()" style="padding:.5rem 1.5rem;font-size:.82rem">Kaydet</button>
-          </div>
-
         </div>
       </div><!-- /split-col sağ -->
 
@@ -4610,40 +4606,53 @@ async function testTelegram() {
 function guardedAnomalyToggle(checkbox, label, rulesId) {
   toggleSlider(checkbox);
   _toggleRule(rulesId, checkbox.checked);
-  if (!checkbox.checked) {
-    // Kapatma: basit onay — ONAYLA yazmak gerekmez
-    const cbId = checkbox.id;
-    openModal('Uyarı Tipini Kapat',
-      `<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#ef4444">
-        🔕 <strong>${esc(label)}</strong> artık tespit edilmeyecek ve bildirim oluşturmayacak.
-      </div>
-      <p style="font-size:.8rem;color:var(--muted2);line-height:1.6;margin-bottom:1.1rem">
-        Tekrar açmak için toggle'ı açık konuma getirin.
-      </p>
-      <div style="display:flex;gap:.5rem;justify-content:flex-end">
-        <button class="btn-sm" onclick="anomalyToggleCancel('${cbId}','${rulesId}')">Vazgeç</button>
-        <button class="btn-sm btn-primary" onclick="anomalyToggleConfirm()">Kapat</button>
-      </div>`
-    );
-    window._anomalyToggleCbId   = cbId;
-    window._anomalyToggleRuleId = rulesId;
-  } else {
-    saveEnabledToggle();
-  }
+  const cbId   = checkbox.id;
+  const isOpen = checkbox.checked; // toggle sonrası durum
+  const title  = isOpen ? 'Uyarı Tipini Aç' : 'Uyarı Tipini Kapat';
+  const icon   = isOpen ? '🔔' : '🔕';
+  const action = isOpen ? 'artık tespit edilecek ve bildirim oluşturacak' : 'artık tespit edilmeyecek ve bildirim oluşturmayacak';
+  const bg     = isOpen ? 'rgba(34,197,94,.07)'  : 'rgba(239,68,68,.07)';
+  const border = isOpen ? 'rgba(34,197,94,.2)'   : 'rgba(239,68,68,.2)';
+  const clr    = isOpen ? '#22c55e'              : '#ef4444';
+  openModal(title,
+    `<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;font-size:.8rem;color:${clr}">
+      ${icon} <strong>${esc(label)}</strong> ${action}.
+    </div>
+    <p style="font-size:.8rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
+      Onaylamak için aşağıya <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.
+    </p>
+    <input id="anomaly-confirm-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
+      style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600"
+      oninput="document.getElementById('anomaly-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn-sm" onclick="anomalyToggleCancel('${cbId}','${rulesId}',${isOpen})">Vazgeç</button>
+      <button id="anomaly-confirm-btn" class="btn-sm btn-primary" disabled onclick="anomalyToggleConfirm()">Onayla</button>
+    </div>`
+  );
+  setTimeout(() => document.getElementById('anomaly-confirm-input')?.focus(), 100);
+  window._anomalyToggleCbId    = cbId;
+  window._anomalyToggleRuleId  = rulesId;
+  window._anomalyToggleIsOpen  = isOpen;
 }
 
 function anomalyToggleConfirm() {
-  window._anomalyToggleCbId   = null; // closeModal override'dan önce temizle
+  window._anomalyToggleCbId   = null;
   window._anomalyToggleRuleId = null;
+  window._anomalyToggleIsOpen = undefined;
   closeModal();
   saveEnabledToggle();
 }
 
-function anomalyToggleCancel(cbId, rulesId) {
+function anomalyToggleCancel(cbId, rulesId, wasGoingToOpen) {
   const cb = document.getElementById(cbId);
-  if (cb) { cb.checked = true; toggleSlider(cb); _toggleRule(rulesId, true); }
+  if (cb) {
+    cb.checked = !wasGoingToOpen; // önceki duruma geri dön
+    toggleSlider(cb);
+    _toggleRule(rulesId, cb.checked);
+  }
   window._anomalyToggleCbId   = null;
   window._anomalyToggleRuleId = null;
+  window._anomalyToggleIsOpen = undefined;
   closeModal();
 }
 
@@ -4701,10 +4710,20 @@ closeModal = function() {
     window._guardedCheckboxId = null;
     window._guardedAfterFn    = null;
   }
-  // guardedAnomalyToggle — X ile kapatılırsa toggle'ı geri al
+  // guardedAnomalyToggle — X ile kapatılırsa ONAYLA yazılmamışsa geri al
   if (window._anomalyToggleCbId) {
-    anomalyToggleCancel(window._anomalyToggleCbId, window._anomalyToggleRuleId);
-    return; // anomalyToggleCancel closeModal'ı tekrar çağırır
+    const inp = document.getElementById('anomaly-confirm-input');
+    if (!inp || inp.value.trim().toUpperCase() !== 'ONAYLA') {
+      const cb = document.getElementById(window._anomalyToggleCbId);
+      if (cb) {
+        cb.checked = !window._anomalyToggleIsOpen;
+        toggleSlider(cb);
+        _toggleRule(window._anomalyToggleRuleId, cb.checked);
+      }
+    }
+    window._anomalyToggleCbId   = null;
+    window._anomalyToggleRuleId = null;
+    window._anomalyToggleIsOpen = undefined;
   }
   _origCloseModal();
 };
