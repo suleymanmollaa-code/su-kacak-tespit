@@ -1574,7 +1574,7 @@
             <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem">Düzenli Raporlar</div>
             <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;margin-bottom:.6rem;border:1px solid var(--border)">
               <div style="position:relative;width:36px;height:20px;flex-shrink:0">
-                <input type="checkbox" id="setting-daily" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <input type="checkbox" id="setting-daily" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Günlük rapor bildirimini',null,saveSettings)">
                 <div class="slider-track" id="track-setting-daily" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                 <div class="slider-thumb" id="thumb-setting-daily" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
               </div>
@@ -1585,7 +1585,7 @@
             </label>
             <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;background:var(--bg3);border-radius:9px;cursor:pointer;border:1px solid var(--border)">
               <div style="position:relative;width:36px;height:20px;flex-shrink:0">
-                <input type="checkbox" id="setting-weekly" style="opacity:0;position:absolute;width:0;height:0" onchange="toggleSlider(this)">
+                <input type="checkbox" id="setting-weekly" style="opacity:0;position:absolute;width:0;height:0" onchange="guardedToggle(this,'Haftalık rapor bildirimini',null,saveSettings)">
                 <div class="slider-track" id="track-setting-weekly" style="position:absolute;inset:0;border-radius:999px;background:var(--bg3);border:1px solid var(--border2);transition:background .2s"></div>
                 <div class="slider-thumb" id="thumb-setting-weekly" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s"></div>
               </div>
@@ -1594,9 +1594,6 @@
                 <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Her Pazartesi sabah haftalık özet e-postası.</div>
               </div>
             </label>
-          </div>
-          <div style="display:flex;justify-content:flex-end;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)">
-            <button class="btn-sm btn-primary" onclick="saveSettings()">Kaydet</button>
           </div>
         </div>
 
@@ -1638,13 +1635,13 @@
                   </div>
                   <div id="at-night-inputs" style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
                     <span style="font-size:.72rem;color:var(--muted)">Başlangıç</span>
-                    <input id="at-night-start-h" type="number" min="0" max="23" value="0" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-night-start-h" type="number" min="0" max="23" value="0" class="at-input">
                     <span style="color:var(--muted)">:</span>
-                    <input id="at-night-start-m" type="number" min="0" max="59" step="5" value="0" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-night-start-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
                     <span style="font-size:.72rem;color:var(--muted);margin:0 .2rem">→ Bitiş</span>
-                    <input id="at-night-end-h" type="number" min="0" max="23" value="5" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-night-end-h" type="number" min="0" max="23" value="5" class="at-input">
                     <span style="color:var(--muted)">:</span>
-                    <input id="at-night-end-m" type="number" min="0" max="59" step="5" value="0" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-night-end-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
                   </div>
                 </div>
               </div>
@@ -1661,9 +1658,9 @@
                     </label>
                   </div>
                   <div id="at-alert-inputs" style="display:flex;align-items:center;gap:.4rem">
-                    <input id="at-alert-h" type="number" min="0" max="23" value="22" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-alert-h" type="number" min="0" max="23" value="22" class="at-input">
                     <span style="color:var(--muted)">:</span>
-                    <input id="at-alert-m" type="number" min="0" max="59" step="5" value="0" class="at-input" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-alert-m" type="number" min="0" max="59" step="5" value="0" class="at-input">
                     <span style="font-size:.72rem;color:var(--muted)">sonrası</span>
                   </div>
                 </div>
@@ -1681,7 +1678,7 @@
                     </label>
                   </div>
                   <div id="at-high-inputs" style="display:flex;align-items:center;gap:.4rem">
-                    <input id="at-high-flow" type="number" min="1" max="50" step="0.5" value="8" class="at-input" style="width:62px" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-high-flow" type="number" min="1" max="50" step="0.5" value="8" class="at-input" style="width:62px">
                     <span style="font-size:.72rem;color:var(--muted)">L/dk üzeri</span>
                   </div>
                 </div>
@@ -1699,7 +1696,7 @@
                     </label>
                   </div>
                   <div id="at-cont-inputs" style="display:flex;align-items:center;gap:.4rem">
-                    <input id="at-cont-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-cont-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px">
                     <span style="font-size:.72rem;color:var(--muted)">dk sonra alarm</span>
                   </div>
                 </div>
@@ -1717,9 +1714,9 @@
                     </label>
                   </div>
                   <div id="at-leak-inputs" style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-                    <input id="at-leak-flow" type="number" min="0.01" max="2" step="0.05" value="0.3" class="at-input" style="width:62px" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-leak-flow" type="number" min="0.01" max="2" step="0.05" value="0.3" class="at-input" style="width:62px">
                     <span style="font-size:.72rem;color:var(--muted)">L/dk altı,</span>
-                    <input id="at-leak-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-leak-min" type="number" min="5" max="240" step="5" value="30" class="at-input" style="width:62px">
                     <span style="font-size:.72rem;color:var(--muted)">dk sürekli</span>
                   </div>
                 </div>
@@ -1737,13 +1734,17 @@
                     </label>
                   </div>
                   <div id="at-offline-inputs" style="display:flex;align-items:center;gap:.4rem">
-                    <input id="at-offline-repeat" type="number" min="10" max="1440" step="10" value="60" class="at-input" style="width:70px" onblur="saveAnomalyTypeSettings()">
+                    <input id="at-offline-repeat" type="number" min="10" max="1440" step="10" value="60" class="at-input" style="width:70px">
                     <span style="font-size:.72rem;color:var(--muted)">dk'da bir bildirim</span>
                   </div>
                 </div>
               </div>
 
             </div>
+          </div>
+
+          <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+            <button type="button" class="btn btn-primary" onclick="confirmSaveThresholds()" style="padding:.5rem 1.5rem;font-size:.82rem">Kaydet</button>
           </div>
 
         </div>
@@ -4654,6 +4655,22 @@ function anomalyToggleCancel(cbId, rulesId, wasGoingToOpen) {
   window._anomalyToggleRuleId = null;
   window._anomalyToggleIsOpen = undefined;
   closeModal();
+}
+
+function confirmSaveThresholds() {
+  openModal('Eşik Ayarlarını Kaydet',
+    `<p style="font-size:.8rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">
+      Onaylamak için aşağıya <strong style="color:var(--blue-lt)">ONAYLA</strong> yazın.
+    </p>
+    <input id="thresh-confirm-input" type="text" class="form-input" placeholder="ONAYLA" autocomplete="off"
+      style="margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600"
+      oninput="document.getElementById('thresh-confirm-btn').disabled=this.value.trim().toUpperCase()!=='ONAYLA'">
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn-sm" onclick="closeModal()">Vazgeç</button>
+      <button id="thresh-confirm-btn" class="btn-sm btn-primary" disabled onclick="closeModal();saveAnomalyTypeSettings()">Kaydet</button>
+    </div>`
+  );
+  setTimeout(() => document.getElementById('thresh-confirm-input')?.focus(), 100);
 }
 
 function guardedToggle(checkbox, label, afterFn, saveFn) {
