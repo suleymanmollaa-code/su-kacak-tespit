@@ -2068,7 +2068,7 @@ navItems.forEach(item => {
     if (pageId === 'cihazlarim') loadDevicesPage();
     if (pageId === 'cihaz-ayarlari') loadCihazAyarlariPage();
     if (pageId === 'anomaliler')      { loadAnomalies(); }
-    if (pageId === 'bildirimler')     { loadSettings(); }
+    if (pageId === 'bildirimler')     { loadSettings(); loadAnomalyTypeSettings(); }
     if (pageId === 'ai-yonetim')      { loadAiInsights(); }
     if (pageId === 'sistem-ogreniyor') { loadSettings(); loadAnomalyTypeSettings(); } // loadSettings for reports, loadAnomalyTypeSettings for thresholds+device-list
   });
@@ -3948,79 +3948,66 @@ async function saveEnabledToggle() {
 }
 
 async function saveAnomalyTypeSettings() {
-  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-  const token  = localStorage.getItem('susayar_token') || '';
-  const device = document.getElementById('at-device')?.value || '';
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
   const g = id => document.getElementById(id);
-  const body = {
-    alert_after_hour:    parseInt(g('at-alert-h')?.value        ?? 22),
-    alert_after_minute:  parseInt(g('at-alert-m')?.value        ?? 0),
-    continuous_flow_min: parseInt(g('at-cont-min')?.value       ?? 30),
-    night_start_hour:    parseInt(g('at-night-start-h')?.value  ?? 0),
-    night_start_minute:  parseInt(g('at-night-start-m')?.value  ?? 0),
-    night_end_hour:      parseInt(g('at-night-end-h')?.value    ?? 5),
-    night_end_minute:    parseInt(g('at-night-end-m')?.value    ?? 0),
-    high_flow_lpm:       parseFloat(g('at-high-flow')?.value    ?? 8),
-    leak_flow_lpm:       parseFloat(g('at-leak-flow')?.value    ?? 0.3),
-    leak_cont_min:       parseInt(g('at-leak-min')?.value       ?? 30),
-    offline_repeat_min:  parseInt(g('at-offline-repeat')?.value ?? 60),
-    night_flow_enabled:  g('at-night-enabled')?.checked   ?? true,
-    alert_hour_enabled:  g('at-alert-enabled')?.checked   ?? true,
-    high_flow_enabled:   g('at-high-enabled')?.checked    ?? true,
-    cont_flow_enabled:   g('at-cont-enabled')?.checked    ?? true,
-    leak_enabled:        g('at-leak-enabled')?.checked    ?? true,
-    offline_enabled:     g('at-offline-enabled')?.checked ?? true,
-  };
-  // Eşikler her zaman global olarak kaydedilir (device branch sadece 3 alan destekler)
   try {
     const r = await fetch(`${API}/api/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        alert_after_hour:    parseInt(g('at-alert-h')?.value)         || 22,
+        alert_after_minute:  parseInt(g('at-alert-m')?.value)         || 0,
+        continuous_flow_min: parseInt(g('at-cont-min')?.value)        || 30,
+        night_start_hour:    parseInt(g('at-night-start-h')?.value)   || 0,
+        night_start_minute:  parseInt(g('at-night-start-m')?.value)   || 0,
+        night_end_hour:      parseInt(g('at-night-end-h')?.value)     || 5,
+        night_end_minute:    parseInt(g('at-night-end-m')?.value)     || 0,
+        high_flow_lpm:       parseFloat(g('at-high-flow')?.value)     || 8,
+        leak_flow_lpm:       parseFloat(g('at-leak-flow')?.value)     || 0.3,
+        leak_cont_min:       parseInt(g('at-leak-min')?.value)        || 30,
+        offline_repeat_min:  parseInt(g('at-offline-repeat')?.value)  || 60,
+        night_flow_enabled:  g('at-night-enabled')?.checked   ?? true,
+        alert_hour_enabled:  g('at-alert-enabled')?.checked   ?? true,
+        high_flow_enabled:   g('at-high-enabled')?.checked    ?? true,
+        cont_flow_enabled:   g('at-cont-enabled')?.checked    ?? true,
+        leak_enabled:        g('at-leak-enabled')?.checked    ?? true,
+        offline_enabled:     g('at-offline-enabled')?.checked ?? true,
+      }),
     });
     if (!r.ok) { const err = await r.json().catch(() => ({})); showToast('❌ ' + (err.error || 'Kayıt başarısız')); return; }
-    // Cihaz seçiliyse cihaza özel alert saati de kaydet
-    if (device) {
-      await fetch(`${API}/api/settings?device=${encodeURIComponent(device)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ alert_after_hour: body.alert_after_hour, alert_after_minute: body.alert_after_minute, continuous_flow_min: body.continuous_flow_min }),
-      });
-    }
-    showToast(device ? `✅ ${device} + global eşikler kaydedildi` : '✅ Eşik ayarları kaydedildi');
+    showToast('✅ Eşik ayarları kaydedildi');
   } catch (e) { showToast('❌ Bağlantı hatası: ' + e.message); }
 }
 
 async function loadAnomalyTypeSettings() {
-  const API    = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-  const token  = localStorage.getItem('susayar_token') || '';
+  const API   = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+  const token = localStorage.getItem('susayar_token') || '';
   await loadSettingsDeviceList();
-  const device = document.getElementById('at-device')?.value || '';
-  const url    = `${API}/api/settings${device ? '?device=' + encodeURIComponent(device) : ''}`;
   try {
-    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(`${API}/api/settings`, { headers: { Authorization: `Bearer ${token}` } });
     if (!r.ok) return;
-    const { settings } = await r.json();
-    const s = settings || {};
+    const { settings: s } = await r.json();
+    if (!s) return;
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
     const setEnabled = (id, val) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.checked = val !== false;
+      el.checked = val !== false && val !== 0;
       toggleSlider(el);
       _toggleRule(id.replace('-enabled', '-inputs'), el.checked);
     };
-    set('at-night-start-h', s.night_start_hour   ?? 0);
-    set('at-night-start-m', s.night_start_minute ?? 0);
-    set('at-night-end-h',   s.night_end_hour     ?? 5);
-    set('at-night-end-m',   s.night_end_minute   ?? 0);
-    set('at-alert-h',       s.alert_after_hour   ?? 22);
-    set('at-alert-m',       s.alert_after_minute ?? 0);
-    set('at-high-flow',     s.high_flow_lpm      ?? 8);
-    set('at-cont-min',      s.continuous_flow_min ?? 30);
-    set('at-leak-flow',     s.leak_flow_lpm      ?? 0.3);
-    set('at-leak-min',      s.leak_cont_min      ?? 30);
-    set('at-offline-repeat',s.offline_repeat_min ?? 60);
+    set('at-night-start-h',  s.night_start_hour    ?? 0);
+    set('at-night-start-m',  s.night_start_minute  ?? 0);
+    set('at-night-end-h',    s.night_end_hour      ?? 5);
+    set('at-night-end-m',    s.night_end_minute    ?? 0);
+    set('at-alert-h',        s.alert_after_hour    ?? 22);
+    set('at-alert-m',        s.alert_after_minute  ?? 0);
+    set('at-high-flow',      s.high_flow_lpm       ?? 8);
+    set('at-cont-min',       s.continuous_flow_min ?? 30);
+    set('at-leak-flow',      s.leak_flow_lpm       ?? 0.3);
+    set('at-leak-min',       s.leak_cont_min       ?? 30);
+    set('at-offline-repeat', s.offline_repeat_min  ?? 60);
     setEnabled('at-night-enabled',   s.night_flow_enabled);
     setEnabled('at-alert-enabled',   s.alert_hour_enabled);
     setEnabled('at-high-enabled',    s.high_flow_enabled);
@@ -4028,7 +4015,7 @@ async function loadAnomalyTypeSettings() {
     setEnabled('at-leak-enabled',    s.leak_enabled);
     setEnabled('at-offline-enabled', s.offline_enabled);
     _updateTatilUI(s);
-  } catch { /* sessiz */ }
+  } catch (e) { showToast('❌ Ayarlar yüklenemedi: ' + e.message); }
 }
 
 async function toggleSuppression(device, type, currentlySuppressed) {

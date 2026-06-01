@@ -870,145 +870,95 @@ app.delete('/api/learning', requireAuth, async (req, res) => {
 // ── Kullanıcı Ayarları ────────────────────────────────────────
 app.get('/api/settings', requireAuth, async (req, res) => {
   try {
-    const device = req.query.device;
-    const global = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]);
-    if (device) {
-      const ds = await db.queryOne(`SELECT * FROM device_alert_settings WHERE user_id=$1 AND device_id=$2`, [req.user.id, device]) || {};
-      const g = global || {};
-      res.json({ ok: true, settings: {
-        alert_after_hour:    ds.alert_after_hour    ?? g.alert_after_hour    ?? 22,
-        alert_after_minute:  ds.alert_after_minute  ?? g.alert_after_minute  ?? 0,
-        continuous_flow_min: ds.continuous_flow_min ?? g.continuous_flow_min ?? 30,
-        daily_report:            !!g.daily_report,
-        weekly_report:           !!g.weekly_report,
-        notify_realtime_email:   !!g.notify_realtime_email,
-        notify_telegram:         !!g.notify_telegram,
-        telegram_chat_id:        g.telegram_chat_id || '',
-        night_flow_enabled:  g.night_flow_enabled  !== 0 && g.night_flow_enabled  !== false,
-        alert_hour_enabled:  g.alert_hour_enabled  !== 0 && g.alert_hour_enabled  !== false,
-        high_flow_enabled:   g.high_flow_enabled   !== 0 && g.high_flow_enabled   !== false,
-        cont_flow_enabled:   g.cont_flow_enabled   !== 0 && g.cont_flow_enabled   !== false,
-        leak_enabled:        g.leak_enabled        !== 0 && g.leak_enabled        !== false,
-        offline_enabled:     g.offline_enabled     !== 0 && g.offline_enabled     !== false,
-      }});
-    } else {
-      const s = global || {};
-      res.json({ ok: true, settings: {
-        alert_after_hour:    s.alert_after_hour    ?? 22,
-        alert_after_minute:  s.alert_after_minute  ?? 0,
-        continuous_flow_min: s.continuous_flow_min ?? 30,
-        daily_report:           !!s.daily_report,
-        weekly_report:          !!s.weekly_report,
-        notify_realtime_email:  !!s.notify_realtime_email,
-        notify_telegram:        !!s.notify_telegram,
-        telegram_chat_id:       s.telegram_chat_id || '',
-        ai_auto_manage:         !!(s.ai_auto_manage),
-        ai_last_action:         s.ai_last_action || null,
-        ai_last_action_ts:      s.ai_last_action_ts || null,
-        tatil_modu:             !!(s.tatil_modu),
-        tatil_modu_until:       s.tatil_modu_until || null,
-        tatil_yetkili:          s.tatil_yetkili || '',
-        night_start_hour:       s.night_start_hour   ?? 0,
-        night_start_minute:     s.night_start_minute ?? 0,
-        night_end_hour:         s.night_end_hour     ?? 5,
-        night_end_minute:       s.night_end_minute   ?? 0,
-        high_flow_lpm:          s.high_flow_lpm      ?? 8,
-        leak_flow_lpm:          s.leak_flow_lpm      ?? 0.3,
-        leak_cont_min:          s.leak_cont_min      ?? 30,
-        offline_repeat_min:     s.offline_repeat_min ?? 60,
-        night_flow_enabled:     s.night_flow_enabled  !== 0 && s.night_flow_enabled  !== false,
-        alert_hour_enabled:     s.alert_hour_enabled  !== 0 && s.alert_hour_enabled  !== false,
-        high_flow_enabled:      s.high_flow_enabled   !== 0 && s.high_flow_enabled   !== false,
-        cont_flow_enabled:      s.cont_flow_enabled   !== 0 && s.cont_flow_enabled   !== false,
-        leak_enabled:           s.leak_enabled        !== 0 && s.leak_enabled        !== false,
-        offline_enabled:        s.offline_enabled     !== 0 && s.offline_enabled     !== false,
-      }});
-    }
+    const s = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
+    const bool = v => v !== 0 && v !== false && v !== null && v !== undefined;
+    res.json({ ok: true, settings: {
+      alert_after_hour:      s.alert_after_hour      ?? 22,
+      alert_after_minute:    s.alert_after_minute     ?? 0,
+      continuous_flow_min:   s.continuous_flow_min    ?? 30,
+      daily_report:          bool(s.daily_report),
+      weekly_report:         bool(s.weekly_report),
+      notify_realtime_email: bool(s.notify_realtime_email),
+      notify_telegram:       bool(s.notify_telegram),
+      telegram_chat_id:      s.telegram_chat_id       || '',
+      ai_auto_manage:        bool(s.ai_auto_manage),
+      ai_last_action:        s.ai_last_action         || null,
+      ai_last_action_ts:     s.ai_last_action_ts      || null,
+      tatil_modu:            bool(s.tatil_modu),
+      tatil_modu_until:      s.tatil_modu_until       || null,
+      tatil_yetkili:         s.tatil_yetkili          || '',
+      night_start_hour:      s.night_start_hour       ?? 0,
+      night_start_minute:    s.night_start_minute     ?? 0,
+      night_end_hour:        s.night_end_hour         ?? 5,
+      night_end_minute:      s.night_end_minute       ?? 0,
+      high_flow_lpm:         s.high_flow_lpm          ?? 8,
+      leak_flow_lpm:         s.leak_flow_lpm          ?? 0.3,
+      leak_cont_min:         s.leak_cont_min          ?? 30,
+      offline_repeat_min:    s.offline_repeat_min     ?? 60,
+      night_flow_enabled:    bool(s.night_flow_enabled  ?? 1),
+      alert_hour_enabled:    bool(s.alert_hour_enabled  ?? 1),
+      high_flow_enabled:     bool(s.high_flow_enabled   ?? 1),
+      cont_flow_enabled:     bool(s.cont_flow_enabled   ?? 1),
+      leak_enabled:          bool(s.leak_enabled        ?? 1),
+      offline_enabled:       bool(s.offline_enabled     ?? 1),
+    }});
   } catch (e) { res.status(500).json({ error: 'Sunucu hatası' }); }
 });
 
 app.put('/api/settings', requireAuth, async (req, res) => {
   try {
-    const device = req.query.device;
-    const { alert_after_hour, alert_after_minute, continuous_flow_min, daily_report, weekly_report,
-            notify_realtime_email, notify_telegram, telegram_chat_id,
-            night_start_hour, night_start_minute, night_end_hour, night_end_minute,
-            high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min,
-            ai_auto_manage,
-            tatil_modu, tatil_modu_until, tatil_yetkili,
-            night_flow_enabled, alert_hour_enabled, high_flow_enabled,
-            cont_flow_enabled, leak_enabled, offline_enabled } = req.body;
-    const hour   = parseInt(alert_after_hour   ?? 22);
-    const minute = parseInt(alert_after_minute ?? 0);
-    const mins   = parseInt(continuous_flow_min ?? 30);
-    if (hour < 0 || hour > 23)    return res.status(400).json({ error: 'Saat 0-23 arasında olmalı' });
-    if (minute < 0 || minute > 59) return res.status(400).json({ error: 'Dakika 0-59 arasında olmalı' });
-    if (mins < 5 || mins > 1440)  return res.status(400).json({ error: 'Süre 5-1440 dk arasında olmalı' });
-    if (device) {
-      await db.queryRun(
-        `INSERT INTO device_alert_settings (user_id,device_id,alert_after_hour,alert_after_minute,continuous_flow_min)
-         VALUES ($1,$2,$3,$4,$5)
-         ON CONFLICT (user_id,device_id) DO UPDATE SET alert_after_hour=$3, alert_after_minute=$4, continuous_flow_min=$5`,
-        [req.user.id, device, hour, minute, mins]
-      );
-    } else {
-      // Mevcut ayarları yükle — body'de gelmeyen alanlar için DB değerini koru
-      const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
-      // alert_after_hour/minute ve continuous_flow_min de DB'den koru
-      const hour_save = alert_after_hour   !== undefined ? parseInt(alert_after_hour)   : (cur.alert_after_hour   ?? 22);
-      const min_save  = alert_after_minute !== undefined ? parseInt(alert_after_minute) : (cur.alert_after_minute ?? 0);
-      const mins_save = continuous_flow_min !== undefined ? parseInt(continuous_flow_min) : (cur.continuous_flow_min ?? 30);
-      const nsh = night_start_hour   !== undefined ? parseInt(night_start_hour)   : (cur.night_start_hour   ?? 0);
-      const nsm = night_start_minute !== undefined ? parseInt(night_start_minute) : (cur.night_start_minute ?? 0);
-      const neh = night_end_hour     !== undefined ? parseInt(night_end_hour)     : (cur.night_end_hour     ?? 5);
-      const nem = night_end_minute   !== undefined ? parseInt(night_end_minute)   : (cur.night_end_minute   ?? 0);
-      const hfl = high_flow_lpm      !== undefined ? parseFloat(high_flow_lpm)    : (cur.high_flow_lpm      ?? 8);
-      const lfl = leak_flow_lpm      !== undefined ? parseFloat(leak_flow_lpm)    : (cur.leak_flow_lpm      ?? 0.3);
-      const lcm = leak_cont_min      !== undefined ? parseInt(leak_cont_min)      : (cur.leak_cont_min      ?? 30);
-      const orm = offline_repeat_min !== undefined ? parseInt(offline_repeat_min) : (cur.offline_repeat_min ?? 60);
-      // Bildirim alanları da aynı şekilde koru
-      const nre = notify_realtime_email !== undefined ? notify_realtime_email : cur.notify_realtime_email;
-      const ntg = notify_telegram       !== undefined ? notify_telegram       : cur.notify_telegram;
-      const cid = telegram_chat_id      !== undefined ? telegram_chat_id      : cur.telegram_chat_id;
-      const dr  = daily_report          !== undefined ? daily_report          : cur.daily_report;
-      const wr  = weekly_report         !== undefined ? weekly_report         : cur.weekly_report;
-      const aam = ai_auto_manage        !== undefined ? ai_auto_manage        : cur.ai_auto_manage;
-      const tm  = tatil_modu            !== undefined ? tatil_modu            : cur.tatil_modu;
-      const tmu = tatil_modu_until      !== undefined ? tatil_modu_until      : cur.tatil_modu_until;
-      const tmy = tatil_yetkili         !== undefined ? tatil_yetkili         : cur.tatil_yetkili;
-      const nfe = night_flow_enabled  !== undefined ? night_flow_enabled  : (cur.night_flow_enabled  ?? 1);
-      const ahe = alert_hour_enabled  !== undefined ? alert_hour_enabled  : (cur.alert_hour_enabled  ?? 1);
-      const hfe = high_flow_enabled   !== undefined ? high_flow_enabled   : (cur.high_flow_enabled   ?? 1);
-      const cfe = cont_flow_enabled   !== undefined ? cont_flow_enabled   : (cur.cont_flow_enabled   ?? 1);
-      const le  = leak_enabled        !== undefined ? leak_enabled        : (cur.leak_enabled        ?? 1);
-      const oe  = offline_enabled     !== undefined ? offline_enabled     : (cur.offline_enabled     ?? 1);
-      await db.queryRun(
-        `INSERT INTO user_settings
-           (user_id,alert_after_hour,alert_after_minute,continuous_flow_min,daily_report,weekly_report,
-            notify_realtime_email,notify_telegram,telegram_chat_id,
-            night_start_hour,night_start_minute,night_end_hour,night_end_minute,
-            high_flow_lpm,leak_flow_lpm,leak_cont_min,offline_repeat_min,ai_auto_manage,
-            tatil_modu,tatil_modu_until,tatil_yetkili,
-            night_flow_enabled,alert_hour_enabled,high_flow_enabled,cont_flow_enabled,leak_enabled,offline_enabled)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
-         ON CONFLICT (user_id) DO UPDATE SET
-           alert_after_hour=$2, alert_after_minute=$3, continuous_flow_min=$4,
-           daily_report=$5, weekly_report=$6, notify_realtime_email=$7, notify_telegram=$8, telegram_chat_id=$9,
-           night_start_hour=$10, night_start_minute=$11, night_end_hour=$12, night_end_minute=$13,
-           high_flow_lpm=$14, leak_flow_lpm=$15, leak_cont_min=$16, offline_repeat_min=$17,
-           ai_auto_manage=$18, tatil_modu=$19, tatil_modu_until=$20, tatil_yetkili=$21,
-           night_flow_enabled=$22, alert_hour_enabled=$23, high_flow_enabled=$24,
-           cont_flow_enabled=$25, leak_enabled=$26, offline_enabled=$27`,
-        [req.user.id, hour_save, min_save, mins_save,
-         dr ? 1 : 0, wr ? 1 : 0,
-         nre ? 1 : 0, ntg ? 1 : 0,
-         cid || null,
-         nsh, nsm, neh, nem, hfl, lfl, lcm, orm,
-         aam ? 1 : 0,
-         tm ? 1 : 0, tmu || null, tmy || null,
-         nfe ? 1 : 0, ahe ? 1 : 0, hfe ? 1 : 0, cfe ? 1 : 0, le ? 1 : 0, oe ? 1 : 0]
-      );
-    }
+    const cur = await db.queryOne(`SELECT * FROM user_settings WHERE user_id=$1`, [req.user.id]) || {};
+    const b = req.body;
+    // Body'de gelen değeri kullan, yoksa mevcut DB değerini koru, o da yoksa default
+    const num  = (key, def, fn) => b[key] !== undefined ? fn(b[key]) : (cur[key] ?? def);
+    const flag = (key, def)     => b[key] !== undefined ? (b[key] ? 1 : 0) : (cur[key] ?? def);
+    const str  = (key)          => b[key] !== undefined ? (b[key] || null)  : (cur[key] || null);
+
+    const hour = num('alert_after_hour',  22, parseInt);
+    const min  = num('alert_after_minute', 0, parseInt);
+    const cont = num('continuous_flow_min',30, parseInt);
+    if (hour < 0 || hour > 23)   return res.status(400).json({ error: 'Saat 0-23 arası olmalı' });
+    if (min  < 0 || min  > 59)   return res.status(400).json({ error: 'Dakika 0-59 arası olmalı' });
+    if (cont < 5 || cont > 1440) return res.status(400).json({ error: 'Süre 5-1440 dk arası olmalı' });
+
+    await db.queryRun(
+      `INSERT INTO user_settings
+         (user_id, alert_after_hour, alert_after_minute, continuous_flow_min,
+          daily_report, weekly_report, notify_realtime_email, notify_telegram, telegram_chat_id,
+          night_start_hour, night_start_minute, night_end_hour, night_end_minute,
+          high_flow_lpm, leak_flow_lpm, leak_cont_min, offline_repeat_min,
+          ai_auto_manage, tatil_modu, tatil_modu_until, tatil_yetkili,
+          night_flow_enabled, alert_hour_enabled, high_flow_enabled,
+          cont_flow_enabled, leak_enabled, offline_enabled)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
+       ON CONFLICT (user_id) DO UPDATE SET
+         alert_after_hour=$2,    alert_after_minute=$3,  continuous_flow_min=$4,
+         daily_report=$5,        weekly_report=$6,        notify_realtime_email=$7,
+         notify_telegram=$8,     telegram_chat_id=$9,
+         night_start_hour=$10,   night_start_minute=$11,  night_end_hour=$12,   night_end_minute=$13,
+         high_flow_lpm=$14,      leak_flow_lpm=$15,       leak_cont_min=$16,    offline_repeat_min=$17,
+         ai_auto_manage=$18,     tatil_modu=$19,          tatil_modu_until=$20, tatil_yetkili=$21,
+         night_flow_enabled=$22, alert_hour_enabled=$23,  high_flow_enabled=$24,
+         cont_flow_enabled=$25,  leak_enabled=$26,        offline_enabled=$27`,
+      [
+        req.user.id,
+        hour, min, cont,
+        flag('daily_report',          0), flag('weekly_report',         0),
+        flag('notify_realtime_email', 0), flag('notify_telegram',       0),
+        str('telegram_chat_id'),
+        num('night_start_hour',   0, parseInt),  num('night_start_minute', 0, parseInt),
+        num('night_end_hour',     5, parseInt),  num('night_end_minute',   0, parseInt),
+        num('high_flow_lpm',      8, parseFloat),
+        num('leak_flow_lpm',    0.3, parseFloat),
+        num('leak_cont_min',     30, parseInt),
+        num('offline_repeat_min',60, parseInt),
+        flag('ai_auto_manage', 0),
+        flag('tatil_modu', 0), str('tatil_modu_until'), str('tatil_yetkili'),
+        flag('night_flow_enabled', 1), flag('alert_hour_enabled', 1),
+        flag('high_flow_enabled',  1), flag('cont_flow_enabled',  1),
+        flag('leak_enabled',       1), flag('offline_enabled',    1),
+      ]
+    );
     res.json({ ok: true });
   } catch (e) { console.error('[PUT /api/settings]', e?.message || e); res.status(500).json({ error: e?.message || 'Sunucu hatası' }); }
 });
