@@ -744,7 +744,6 @@ nav {
     <a href="#ozellikler">Özellikler</a>
     <a href="#teknolojiler">Teknoloji</a>
     <a href="#kullanim-alanlari">Kullanım Alanları</a>
-    <a href="#yorumlar">Yorumlar</a>
   </div>
   <div class="nav-ctas">
     <a class="btn btn-ghost" href="/susayar-auth.html?tab=login">Giriş Yap</a>
@@ -758,7 +757,6 @@ nav {
   <a href="#ozellikler" onclick="closeMobileMenu()">Özellikler</a>
   <a href="#teknolojiler" onclick="closeMobileMenu()">Teknoloji</a>
   <a href="#kullanim-alanlari" onclick="closeMobileMenu()">Kullanım Alanları</a>
-  <a href="#yorumlar" onclick="closeMobileMenu()">Yorumlar</a>
   <a href="/susayar-auth.html?tab=login" onclick="closeMobileMenu()">Giriş Yap</a>
   <a href="#" onclick="openTalep();closeMobileMenu();return false;" style="color:var(--blue);font-weight:700">Kurulum Talep Et →</a>
 </div>
@@ -1163,139 +1161,7 @@ nav {
   <p style="text-align:center;margin-top:2rem;font-size:.83rem;color:var(--sub)">Farklı bir alan mı var? <a href="mailto:info@susayar.com" style="color:var(--blue)">Bize yazın</a>, birlikte değerlendirelim.</p>
 </div>
 
-<!-- YORUMLAR -->
-<div class="section-wrap" id="yorumlar">
-  <div class="section-header">
-    <div class="s-label">Yorumlar</div>
-    <h2 class="s-h">Kullanıcılar ne diyor?</h2>
-    <p class="s-p">Gerçek kullanıcılardan gerçek deneyimler — konuttan restorana, ofisten siteye.</p>
-  </div>
 
-  <!-- Özet istatistik -->
-  <div style="display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem">
-    <div style="text-align:center">
-      <div style="font-size:2rem;font-weight:900;color:var(--blue)">4.9</div>
-      <div style="color:#f59e0b;font-size:1rem;margin:.15rem 0">★★★★★</div>
-      <div style="font-size:.75rem;color:var(--muted)">Ortalama Puan</div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-size:2rem;font-weight:900;color:var(--blue)">47+</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Aktif Kullanıcı</div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-size:2rem;font-weight:900;color:var(--blue)">%94</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Yeniden Öneririm</div>
-    </div>
-  </div>
-
-  <!-- 3 öne çıkan yorum -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;max-width:960px;margin:0 auto 2rem">
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Konut</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Geceleri su boşa akıyormuş, hiç haberim yoktu. SuSayar sayesinde iki günde fark ettim. Hem para hem de su tasarrufu sağladım."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">💧 Gece akış anomalisi ile 340 litre tasarruf</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2a9ebe,#3bb5d4);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">AK</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Ahmet K.</div>
-          <div style="font-size:.72rem;color:var(--muted)">İstanbul, Kadıköy · 3 ay önce</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Restoran</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Restoranımızın mutfak hattını izliyorum. Bir gece vanadan damladığını sisteme bakınca fark ettim — ekip ertesi sabah müdahale etti. Başka türlü haftalarca fark etmezdim."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">🔴 Sızıntı erken tespiti — tamir maliyeti minimuma indi</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">SY</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Selin Y.</div>
-          <div style="font-size:.72rem;color:var(--muted)">Restoran Sahibi, Beşiktaş · 2 ay önce</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Ofis</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Ofisimizin su faturası önceki aya göre %22 düştü. Hangi saatlerde ne kadar harcandığını gördükten sonra ufak alışkanlıklar değişti ve fark yarattı."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">📉 İlk ayda %22 fatura düşüşü</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0891b2,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">KA</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Kemal A.</div>
-          <div style="font-size:.72rem;color:var(--muted)">Ofis Yöneticisi, Levent · 1 ay önce</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Airbnb</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Misafirler gidince fatura şişiyor ama neden anlayamıyordum. SuSayar ile her konuk için ayrı tüketim raporu alıyorum. Bir misafir 3 günde 800 litre kullanmış — artık bunları görebiliyorum."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">🏠 Misafir başına tüketim takibi — şeffaf kiralama</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#be123c,#fb7185);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">DA</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Deniz A.</div>
-          <div style="font-size:.72rem;color:var(--muted)">Airbnb Ev Sahibi, Beyoğlu · 5 hafta önce</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Apartman</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"12 daireli apartmanımızın ortak su hattını izliyorum. Bodrumdaki otomatik sulama sistemi arızalanmış, 4 gün boyunca boşa akmış. SuSayar anında uyardı, saatler içinde kapattık."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">🏢 Sürekli akış alarmı — 4 günlük kayıp önlendi</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#059669,#34d399);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">MO</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Mehmet O.</div>
-          <div style="font-size:.72rem;color:var(--muted)">Apartman Yöneticisi, Bornova · 6 hafta önce</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.85rem">
-        <span style="color:#f59e0b;font-size:.95rem">★★★★★</span>
-        <span style="font-size:.7rem;color:var(--muted);background:var(--bg3);padding:.2rem .55rem;border-radius:20px">Otel</span>
-      </div>
-      <p style="font-size:.88rem;color:var(--sub);line-height:1.7;margin-bottom:1rem;flex:1">"Otelimizdeki 3 ayrı hatta SuSayar taktık. Havuz teknik odasındaki sızıntıyı gece 3'te tespit etti, sabah ekibimiz müdahale etti. Eski yöntemle fatura gelene kadar anlayamazdık."</p>
-      <div style="font-size:.72rem;color:var(--muted);background:rgba(59,181,212,.08);border-radius:8px;padding:.45rem .7rem;margin-bottom:1rem">🏨 Çok hatlı izleme — havuz hattı sızıntısı gece tespiti</div>
-      <div style="display:flex;align-items:center;gap:.65rem">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0f766e,#2dd4bf);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">EK</div>
-        <div>
-          <div style="font-size:.82rem;font-weight:700">Emre K.</div>
-          <div style="font-size:.72rem;color:var(--muted)">Otel Teknik Müdürü, Şişli · 1 ay önce</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Tüm yorumlar butonu -->
-  <div style="text-align:center">
-    <a href="/susayar-yorumlar.html" class="btn btn-ghost btn-lg" style="display:inline-flex;align-items:center;gap:.5rem">
-      Tüm Yorumları Gör <span style="font-size:1.1rem">→</span>
-    </a>
-  </div>
-</div>
 
 <hr class="div-line">
 
@@ -1402,7 +1268,6 @@ nav {
       <a href="#ozellikler">Özellikler</a>
       <a href="#teknolojiler">Teknoloji</a>
       <a href="#kullanim-alanlari">Kullanım Alanları</a>
-      <a href="#yorumlar">Yorumlar</a>
       <a href="#sss">SSS</a>
       <a href="mailto:info@susayar.com">İletişim</a>
       <a href="/susayar-auth.html">Giriş / Kayıt</a>
