@@ -11,25 +11,25 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:        #090c14;
-    --bg2:       #0e1220;
-    --bg3:       #161c2e;
-    --bg4:       #1c2338;
-    --border:    rgba(255,255,255,.07);
-    --border2:   rgba(255,255,255,.12);
-    --blue:      #3bb5d4;
-    --blue-lt:   #5ec8e4;
-    --blue-dk:   #2a9ebe;
+    --bg:        #f0f4f8;
+    --bg2:       #ffffff;
+    --bg3:       #f1f5f9;
+    --bg4:       #e2e8f0;
+    --border:    rgba(0,0,0,.08);
+    --border2:   rgba(0,0,0,.14);
+    --blue:      #0891b2;
+    --blue-lt:   #0ea5c9;
+    --blue-dk:   #0e7490;
     --cyan:      #06b6d4;
-    --green:     #10b981;
-    --yellow:    #f59e0b;
-    --red:       #ef4444;
-    --text:      #e2e8f0;
-    --text2:     #cbd5e1;
+    --green:     #059669;
+    --yellow:    #d97706;
+    --red:       #dc2626;
+    --text:      #0f172a;
+    --text2:     #1e293b;
     --muted:     #64748b;
-    --muted2:    #94a3b8;
-    --card:      #111827;
-    --card2:     #162032;
+    --muted2:    #475569;
+    --card:      #ffffff;
+    --card2:     #f8fafc;
   }
 
   body {
@@ -59,7 +59,7 @@
     position: absolute;
     top: 0; right: 0; bottom: 0;
     width: 1px;
-    background: linear-gradient(180deg, transparent, rgba(59,181,212,.15) 40%, transparent);
+    background: linear-gradient(180deg, transparent, rgba(8,145,178,.1) 40%, transparent);
     pointer-events: none;
   }
 
@@ -106,7 +106,7 @@
     user-select: none;
     border-radius: 0;
   }
-  .nav-item:hover { color: var(--text2); background: rgba(255,255,255,.035); }
+  .nav-item:hover { color: var(--text2); background: rgba(0,0,0,.04); }
   .nav-item.active {
     color: var(--blue-lt);
     background: linear-gradient(90deg, rgba(59,181,212,.12), rgba(59,181,212,.03));
@@ -198,7 +198,7 @@
     color: var(--muted2);
     border: 1px solid var(--border2);
   }
-  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.04); }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(0,0,0,.22); background: rgba(0,0,0,.04); }
 
   /* ── CONTENT ────────────────────────────── */
   .content { flex: 1; overflow: hidden; padding: 1.75rem; display: flex; flex-direction: column; min-height: 0; }
@@ -281,7 +281,7 @@
   .kpi-change { font-size: .7rem; color: var(--muted); }
   .kpi-change .up   { color: var(--red); font-weight: 600; }
   .kpi-change .down { color: var(--green); font-weight: 600; }
-  .kpi-bar { height: 3px; background: rgba(255,255,255,.06); border-radius: 2px; margin-top: .85rem; overflow: hidden; }
+  .kpi-bar { height: 3px; background: rgba(0,0,0,.08); border-radius: 2px; margin-top: .85rem; overflow: hidden; }
   .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width .7s ease; }
 
   /* ── GRID LAYOUTS ───────────────────────── */
@@ -308,10 +308,10 @@
     font-weight: 700;
     letter-spacing: .03em;
   }
-  .chip-green  { background: rgba(16,185,129,.12); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
-  .chip-yellow { background: rgba(245,158,11,.12); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
-  .chip-red    { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
-  .chip-blue   { background: rgba(59,181,212,.12); color: var(--blue-lt); border: 1px solid rgba(59,181,212,.2); }
+  .chip-green  { background: rgba(5,150,105,.1); color: #047857; border: 1px solid rgba(5,150,105,.2); }
+  .chip-yellow { background: rgba(217,119,6,.1); color: #b45309; border: 1px solid rgba(217,119,6,.2); }
+  .chip-red    { background: rgba(220,38,38,.1); color: #b91c1c; border: 1px solid rgba(220,38,38,.2); }
+  .chip-blue   { background: rgba(8,145,178,.1); color: var(--blue-lt); border: 1px solid rgba(8,145,178,.2); }
 
   /* ── BAR CHART ──────────────────────────── */
   .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 120px; }
@@ -370,7 +370,7 @@
   .flow-ring-inner {
     width: 116px; height: 116px;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, #162032, var(--card));
+    background: radial-gradient(circle at 50% 50%, #e8f0f7, var(--card));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -464,7 +464,7 @@
   }
   .week-table td { font-size: .8rem; padding: .6rem .75rem; border-bottom: 1px solid var(--border); color: var(--text2); }
   .week-table tr:last-child td { border: none; }
-  .week-table tr:hover td { background: rgba(255,255,255,.025); }
+  .week-table tr:hover td { background: rgba(0,0,0,.03); }
   .trend { font-size: .7rem; font-weight: 700; }
   .trend.up   { color: var(--red); }
   .trend.down { color: var(--green); }
@@ -473,8 +473,8 @@
   /* ── SCROLLBAR ──────────────────────────── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.14); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.22); }
 
   /* ── MODAL ──────────────────────────────── */
   .modal-overlay {
@@ -520,7 +520,7 @@
     border-radius: 6px;
     transition: all .15s;
   }
-  .modal-close:hover { color: var(--text); background: rgba(255,255,255,.07); }
+  .modal-close:hover { color: var(--text); background: rgba(0,0,0,.06); }
   .modal-body { padding: 1.375rem; }
 
   /* ── FORM ───────────────────────────────── */
@@ -611,7 +611,7 @@
   .kalib-progress { flex: 1; }
   .kalib-title { font-size: .8rem; font-weight: 700; margin-bottom: .3rem; }
   .kalib-sub { font-size: .7rem; color: var(--muted); }
-  .kalib-bar { height: 4px; background: rgba(255,255,255,.07); border-radius: 3px; margin-top: .5rem; overflow: hidden; }
+  .kalib-bar { height: 4px; background: rgba(0,0,0,.08); border-radius: 3px; margin-top: .5rem; overflow: hidden; }
   .kalib-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9ebe, #5ec8e4); border-radius: 3px; width: 43%; transition: width 1s ease; }
 
   /* ── TOGGLE ROWS ────────────────────────── */
@@ -668,7 +668,7 @@
     transition: all .15s;
     font-family: inherit;
   }
-  .cfg-btn:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,.04); }
+  .cfg-btn:hover { color: var(--text); border-color: var(--border2); background: rgba(0,0,0,.04); }
   .cfg-btn.re-enable { border-color: rgba(16,185,129,.35); color: #34d399; }
   .cfg-btn.re-enable:hover { background: rgba(16,185,129,.08); }
 
@@ -701,7 +701,7 @@
   .ar-time { font-size: .66rem; color: var(--muted); margin-top: .22rem; }
   .ar-metrics { display: flex; gap: .55rem; flex-wrap: wrap; }
   .ar-metric {
-    background: rgba(255,255,255,.035);
+    background: rgba(0,0,0,.04);
     border: 1px solid var(--border);
     border-radius: 7px;
     padding: .38rem .65rem;
@@ -748,7 +748,7 @@
     border-radius: 6px;
     transition: background .15s;
   }
-  .hamburger:hover { background: rgba(255,255,255,.06); }
+  .hamburger:hover { background: rgba(0,0,0,.07); }
 
   .sidebar-overlay {
     display: none;
@@ -873,7 +873,7 @@
   .flow-big-inner {
     width: 168px; height: 168px;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 30%, #162032, var(--card));
+    background: radial-gradient(circle at 50% 30%, #e8f0f7, var(--card));
     display: flex; align-items: center; justify-content: center; flex-direction: column;
   }
   .flow-big-num {
@@ -1012,7 +1012,7 @@
         style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;font-weight:600">
         &#x1F4E1; Cihazlarım
       </button>
-      <div style="display:flex;align-items:center;gap:.5rem;border-left:1px solid rgba(255,255,255,.08);padding-left:.875rem;margin-left:.125rem">
+      <div style="display:flex;align-items:center;gap:.5rem;border-left:1px solid rgba(0,0,0,.08);padding-left:.875rem;margin-left:.125rem">
         <span style="font-size:.78rem;color:#94a3b8;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="user-display-name">Kullanıcı</span>
         <button class="btn-sm" onclick="doLogout()" title="Çıkış Yap"
           style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:.35rem .65rem;font-size:.78rem">
@@ -1311,7 +1311,7 @@
     <div class="page" id="page-cihaz-detay">
       <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
         <button onclick="showPage('cihazlarim','Cihazlarım')"
-          style="background:rgba(255,255,255,.06);border:1px solid var(--border2);color:var(--muted);padding:.35rem .75rem;border-radius:7px;cursor:pointer;font-size:.8rem">
+          style="background:rgba(0,0,0,.07);border:1px solid var(--border2);color:var(--muted);padding:.35rem .75rem;border-radius:7px;cursor:pointer;font-size:.8rem">
           ← Geri
         </button>
         <div style="flex:1">
@@ -2080,7 +2080,7 @@ for (let i = 0; i < 30; i++) {
   const b = document.createElement('div');
   b.className = 'fh-bar';
   b.style.height = '3%';
-  b.style.background = 'rgba(255,255,255,.06)';
+  b.style.background = 'rgba(0,0,0,.07)';
   flowHistEl.appendChild(b);
   flowHistory.push(0);
 }
@@ -2093,7 +2093,7 @@ function updateFlowHistory(lpm) {
   bars.forEach((b, i) => {
     const h = Math.max((flowHistory[i] / maxH) * 100, 3);
     b.style.height = h + '%';
-    b.style.background = flowHistory[i] === 0 ? 'rgba(255,255,255,.06)' :
+    b.style.background = flowHistory[i] === 0 ? 'rgba(0,0,0,.07)' :
       flowHistory[i] > 4 ? 'rgba(239,68,68,.6)' : 'rgba(6,182,212,.4)';
   });
 }
@@ -2223,7 +2223,7 @@ function renderTodayFlowChart(hours) {
     const liters = parseFloat(h.total_liters || 0);
     const pct = Math.max((lpm / maxLpm) * 100, lpm > 0 ? 4 : 2);
     const isCurrent = hNum === nowH;
-    const bg = isCurrent ? 'var(--cyan)' : lpm > 0 ? 'rgba(6,182,212,.4)' : 'rgba(255,255,255,.07)';
+    const bg = isCurrent ? 'var(--cyan)' : lpm > 0 ? 'rgba(6,182,212,.4)' : 'rgba(0,0,0,.08)';
     const lbl = isCurrent ? 'Şim' : String(hNum).padStart(2, '0');
     const lblColor = isCurrent ? 'color:var(--cyan)' : '';
     return `<div class="bar-wrap"><div class="bar" style="height:${pct}%;background:${bg}"><div class="bar-tooltip">${String(hNum).padStart(2,'0')}:00 — ${liters.toFixed(1)} L</div></div><div class="bar-lbl" style="${lblColor}">${lbl}</div></div>`;
@@ -3351,7 +3351,7 @@ function openCihazBaglaModal() {
   `;
   modal.innerHTML = `
     <div style="
-      background:#161c2e;border:1px solid rgba(255,255,255,.12);
+      background:#f1f5f9;border:1px solid rgba(0,0,0,.12);
       border-radius:16px;padding:2rem;width:100%;max-width:520px;
       box-shadow:0 24px 64px rgba(0,0,0,.6)
     ">
@@ -3393,7 +3393,7 @@ async function loadDeviceList() {
       return;
     }
     area.innerHTML = devs.map(d => `
-      <div style="background:#0e1220;border:1px solid rgba(255,255,255,.08);border-radius:10px;
+      <div style="background:#ffffff;border:1px solid rgba(0,0,0,.08);border-radius:10px;
                   padding:.85rem 1rem;margin-bottom:.6rem">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
@@ -3401,7 +3401,7 @@ async function loadDeviceList() {
             <div style="color:#64748b;font-family:monospace;font-size:.75rem">${esc(d.device_id)}</div>
           </div>
         </div>
-        <div style="margin-top:.6rem;background:#161c2e;border-radius:6px;padding:.5rem .7rem;
+        <div style="margin-top:.6rem;background:#f1f5f9;border-radius:6px;padding:.5rem .7rem;
                     display:flex;align-items:center;gap:.5rem">
           <code id="apikey-${d.id}" data-key="${d.api_key}" style="color:#4ade80;font-size:.72rem;flex:1;word-break:break-all">${d.api_key.slice(0,4)}${'•'.repeat(24)}${d.api_key.slice(-4)}</code>
           <button onclick="toggleApiKey('${d.id}')"
@@ -3522,7 +3522,7 @@ async function loadDailyReport() {
       for (let i = 0; i < 24; i++) {
         const l = hourMap[i] || 0;
         const pct = Math.max((l / maxL) * 100, l > 0 ? 4 : 0);
-        const color = l === 0 ? 'rgba(255,255,255,.06)' : l > maxL * 0.7 ? 'var(--red)' : 'var(--cyan)';
+        const color = l === 0 ? 'rgba(0,0,0,.07)' : l > maxL * 0.7 ? 'var(--red)' : 'var(--cyan)';
         bars += `<div title="${i}:00 — ${l.toFixed(1)} L" style="flex:1;height:${pct}%;background:${color};border-radius:3px 3px 0 0;min-height:2px;cursor:default;transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"></div>`;
       }
       chartEl.innerHTML = bars;
@@ -4229,11 +4229,11 @@ async function loadDevicesPage() {
         <div style="margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.4rem">
           <code style="font-size:.68rem;color:var(--green);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="devpg-key-${d.id}">${d.api_key.slice(0,4)}${'•'.repeat(20)}${d.api_key.slice(-4)}</code>
           <button onclick="event.stopPropagation();(function(el,key){el.textContent===el.textContent.replace(/•/g,'') ? el.textContent=key.slice(0,4)+'${'•'.repeat(20)}'+key.slice(-4) : el.textContent=key})(document.getElementById('devpg-key-${d.id}'),'${d.api_key}')"
-            style="font-size:.68rem;padding:.2rem .45rem;background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">👁</button>
+            style="font-size:.68rem;padding:.2rem .45rem;background:rgba(0,0,0,.05);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">👁</button>
           <button onclick="event.stopPropagation();navigator.clipboard.writeText('${d.api_key}');showToast('API anahtarı kopyalandı!')"
             style="font-size:.68rem;padding:.2rem .45rem;background:rgba(59,181,212,.15);color:var(--blue-lt);border:1px solid rgba(59,181,212,.3);border-radius:4px;cursor:pointer;flex-shrink:0">Kopyala</button>
           <button onclick="event.stopPropagation();openDeviceDetail(${JSON.stringify(d)})"
-            style="font-size:.68rem;padding:.2rem .5rem;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">Detay ›</button>
+            style="font-size:.68rem;padding:.2rem .5rem;background:rgba(0,0,0,.07);color:var(--muted);border:1px solid var(--border2);border-radius:4px;cursor:pointer;flex-shrink:0">Detay ›</button>
         </div>
       </div>`;
     }).join('');
