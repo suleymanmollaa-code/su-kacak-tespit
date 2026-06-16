@@ -1273,25 +1273,25 @@ nav {
 
 
 <!-- KURULUM TALEP MODAL -->
-<div id="talep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:2rem;max-width:440px;width:100%;position:relative">
-    <button onclick="closeTalep()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer">✕</button>
-    <h2 style="font-size:1.2rem;font-weight:800;color:#f1f5f9;margin-bottom:.4rem">Kurulum Talep Et</h2>
-    <p style="font-size:.82rem;color:#94a3b8;margin-bottom:1.5rem">Bilgilerinizi bırakın, sizi arayalım.</p>
-    <div id="talep-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
-    <div id="talep-success" style="display:none;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
+<div id="talep-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,.09);border-radius:18px;padding:2rem;max-width:440px;width:100%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.12)">
+    <button onclick="closeTalep()" style="position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.06);border:none;color:#64748b;font-size:1rem;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+    <h2 style="font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:.4rem">Kurulum Talep Et</h2>
+    <p style="font-size:.82rem;color:#64748b;margin-bottom:1.5rem">Bilgilerinizi bırakın, sizi arayalım.</p>
+    <div id="talep-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
+    <div id="talep-success" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem"></div>
     <div style="display:flex;flex-direction:column;gap:.85rem">
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Ad Soyad</label>
-        <input id="talep-name" type="text" placeholder="Adınız Soyadınız" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+        <label style="font-size:.78rem;font-weight:600;color:#475569;display:block;margin-bottom:.35rem">Ad Soyad</label>
+        <input id="talep-name" type="text" placeholder="Adınız Soyadınız" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;color:#0f172a;border-radius:8px;padding:.65rem .9rem;font-size:.88rem;box-sizing:border-box;outline:none;font-family:inherit" onfocus="this.style.borderColor='#0891b2';this.style.boxShadow='0 0 0 3px rgba(8,145,178,.1)';this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
       </div>
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Telefon</label>
-        <input id="talep-phone" type="tel" placeholder="05XX XXX XX XX" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box">
+        <label style="font-size:.78rem;font-weight:600;color:#475569;display:block;margin-bottom:.35rem">Telefon</label>
+        <input id="talep-phone" type="tel" placeholder="05XX XXX XX XX" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;color:#0f172a;border-radius:8px;padding:.65rem .9rem;font-size:.88rem;box-sizing:border-box;outline:none;font-family:inherit" onfocus="this.style.borderColor='#0891b2';this.style.boxShadow='0 0 0 3px rgba(8,145,178,.1)';this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'">
       </div>
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İl</label>
-        <select id="talep-il" onchange="updateIlceler()" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;appearance:none;cursor:pointer">
+        <label style="font-size:.78rem;font-weight:600;color:#475569;display:block;margin-bottom:.35rem">İl</label>
+        <select id="talep-il" onchange="updateIlceler()" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;color:#0f172a;border-radius:8px;padding:.65rem .9rem;font-size:.88rem;box-sizing:border-box;outline:none;cursor:pointer;font-family:inherit">
           <option value="">İl seçin…</option>
           <option value="İstanbul">İstanbul ✓ (Hizmet verilen)</option>
           <option value="Ankara" disabled>Ankara (Yakında)</option>
@@ -1301,18 +1301,18 @@ nav {
         </select>
       </div>
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">İlçe</label>
-        <select id="talep-ilce" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;appearance:none;cursor:pointer">
+        <label style="font-size:.78rem;font-weight:600;color:#475569;display:block;margin-bottom:.35rem">İlçe</label>
+        <select id="talep-ilce" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;color:#0f172a;border-radius:8px;padding:.65rem .9rem;font-size:.88rem;box-sizing:border-box;outline:none;cursor:pointer;font-family:inherit">
           <option value="">Önce il seçin</option>
         </select>
       </div>
       <div>
-        <label style="font-size:.78rem;color:#94a3b8;display:block;margin-bottom:.35rem">Not (isteğe bağlı)</label>
-        <textarea id="talep-note" placeholder="Daire mi, müstakil mi? Ek bilgi..." rows="2" style="width:100%;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:.6rem .85rem;font-size:.88rem;box-sizing:border-box;resize:none"></textarea>
+        <label style="font-size:.78rem;font-weight:600;color:#475569;display:block;margin-bottom:.35rem">Not (isteğe bağlı)</label>
+        <textarea id="talep-note" placeholder="Daire mi, müstakil mi? Ek bilgi..." rows="2" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;color:#0f172a;border-radius:8px;padding:.65rem .9rem;font-size:.88rem;box-sizing:border-box;resize:none;outline:none;font-family:inherit" onfocus="this.style.borderColor='#0891b2';this.style.boxShadow='0 0 0 3px rgba(8,145,178,.1)';this.style.background='#fff'" onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';this.style.background='#f8fafc'"></textarea>
       </div>
     </div>
-    <button onclick="submitTalep()" id="talep-btn" style="width:100%;margin-top:1.25rem;padding:.75rem;background:#3bb5d4;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">Talep Gönder</button>
-    <p style="font-size:.72rem;color:#475569;text-align:center;margin-top:.75rem">Sizi en kısa sürede arayacağız.</p>
+    <button onclick="submitTalep()" id="talep-btn" style="width:100%;margin-top:1.25rem;padding:.78rem;background:linear-gradient(135deg,#0891b2,#0ea5c9);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(8,145,178,.3);font-family:inherit">Talep Gönder</button>
+    <p style="font-size:.72rem;color:#94a3b8;text-align:center;margin-top:.75rem">Sizi en kısa sürede arayacağız.</p>
   </div>
 </div>
 
